@@ -15,7 +15,8 @@ export type ActivityDetail = {
   distanceM: number | null
   paceSecondsPerKm: number | null
   level: ActivityLevel | null
-  maxParticipants: number
+  /** NULL means no participant limit. */
+  maxParticipants: number | null
   status: ActivityStatus
   participantCount: number
   owner: {

@@ -18,7 +18,7 @@ export type Database = {
           id: string
           level: Database['public']['Enums']['activity_level'] | null
           location_label: string
-          max_participants: number
+          max_participants: number | null
           meeting_point: unknown
           owner_id: string
           pace_seconds_per_km: number | null
@@ -37,7 +37,7 @@ export type Database = {
           id?: string
           level?: Database['public']['Enums']['activity_level'] | null
           location_label: string
-          max_participants?: number
+          max_participants?: number | null
           meeting_point: unknown
           owner_id: string
           pace_seconds_per_km?: number | null
@@ -56,7 +56,7 @@ export type Database = {
           id?: string
           level?: Database['public']['Enums']['activity_level'] | null
           location_label?: string
-          max_participants?: number
+          max_participants?: number | null
           meeting_point?: unknown
           owner_id?: string
           pace_seconds_per_km?: number | null

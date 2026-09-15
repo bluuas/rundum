@@ -80,11 +80,14 @@ export const activityInputSchema = z
       .optional()
       .transform((value) => value ?? null),
 
+    // null means no limit. Kept as null rather than a sentinel so it can never
+    // be mistaken for a count.
     maxParticipants: z
       .number()
       .int()
       .min(1, 'Allow at least one participant')
-      .max(100, 'Keep it under 100 participants'),
+      .max(100, 'Pick a number up to 100, or choose no limit')
+      .nullable(),
   })
   // Distance and pace are meaningless for yoga or padel. Rejecting them here
   // rather than silently dropping them keeps bad client state visible.

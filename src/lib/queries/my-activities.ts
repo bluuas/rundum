@@ -15,7 +15,8 @@ export type MyActivity = {
   level: ActivityLevel | null
   distanceM: number | null
   paceSecondsPerKm: number | null
-  maxParticipants: number
+  /** NULL means no participant limit. */
+  maxParticipants: number | null
   participantCount: number
   pendingCount: number
   /** Set only for activities the user joined rather than organized. */
@@ -49,7 +50,7 @@ type Row = {
   level: ActivityLevel | null
   distance_m: number | null
   pace_seconds_per_km: number | null
-  max_participants: number
+  max_participants: number | null
 }
 
 /**

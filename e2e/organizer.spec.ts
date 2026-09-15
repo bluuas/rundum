@@ -117,3 +117,50 @@ test('someone else cannot reach the edit page or see organizer tools', async ({
   await page.goto(`/activities/${activity.id}/edit`)
   await expect(page.getByText('Page not found')).toBeVisible()
 })
+
+test('an activity can be created with no participant limit', async ({ page }) => {
+  await signInAsDemoUser(page)
+  const title = `Unlimited ${Date.now()}`
+
+  await page.goto('/activities/new')
+  await page.getByRole('button', { name: 'Running' }).click()
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  await page.getByLabel('Date').fill(tomorrow)
+  await page.getByLabel('Start time').fill('07:30')
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByLabel('Name this area').fill('Hauptplatz Schwyz')
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByLabel('Title').fill(title)
+
+  // The number input disappears once there is no limit to enter.
+  await expect(page.getByLabel('Maximum participants')).toBeVisible()
+  await page.getByLabel('No limit — anyone can join').check()
+  await expect(page.getByLabel('Maximum participants')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await expect(page.getByText('No limit')).toBeVisible()
+  await page.getByRole('button', { name: 'Publish activity' }).click()
+
+  await page.waitForURL(/\/activities\/[0-9a-f-]{36}$/)
+  const url = page.url()
+
+  // No denominator anywhere, and the join button never reads "Full".
+  await expect(page.getByText('0 joined · no limit')).toBeVisible()
+
+  await page.goto('/?sports=run')
+  const card = page.getByRole('link').filter({ hasText: title })
+  await expect(card).toContainText('0 joined')
+  await expect(card).not.toContainText('/')
+
+  // The limit can be reinstated by editing.
+  await page.goto(`${url}/edit`)
+  await page.getByLabel('No limit — anyone can join').uncheck()
+  await page.getByLabel('Maximum participants').fill('8')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await page.waitForURL(url)
+  await expect(page.getByText('0 of 8')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Delete activity' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.waitForURL('**/me')
+})

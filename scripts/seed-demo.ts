@@ -128,7 +128,8 @@ type DemoActivity = {
   distanceM?: number
   paceSecondsPerKm?: number
   level?: 'beginner' | 'intermediate' | 'advanced' | 'all_levels'
-  maxParticipants: number
+  /** null means no limit. */
+  maxParticipants: number | null
   status?: 'published' | 'cancelled' | 'hidden'
 }
 
@@ -185,7 +186,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     distanceM: 5000,
     paceSecondsPerKm: 360,
     level: 'all_levels',
-    maxParticipants: 20,
+    maxParticipants: null,
   },
 
   {
@@ -237,7 +238,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     radiusKm: 25,
     distanceM: 7000,
     level: 'all_levels',
-    maxParticipants: 15,
+    maxParticipants: null,
   },
   {
     owner: 7,

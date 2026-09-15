@@ -65,3 +65,23 @@ export function isArchived(startsAt: string | Date, now = new Date()): boolean {
   const date = typeof startsAt === 'string' ? new Date(startsAt) : startsAt
   return date.getTime() < now.getTime()
 }
+
+/**
+ * Participant count for display.
+ *
+ * `max` is null when the organizer set no limit, in which case there is no
+ * denominator to show — "12 joined", not "12/∞ joined".
+ */
+export function formatParticipants(count: number, max: number | null): string {
+  return max === null ? `${count} joined` : `${count}/${max} joined`
+}
+
+/** An activity with no limit is never full. */
+export function isFull(count: number, max: number | null): boolean {
+  return max !== null && count >= max
+}
+
+/** Human label for the limit itself, used on detail and review screens. */
+export function formatParticipantLimit(count: number, max: number | null): string {
+  return max === null ? `${count} joined · no limit` : `${count} of ${max}`
+}

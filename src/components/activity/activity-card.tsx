@@ -1,13 +1,12 @@
 import Link from 'next/link'
 import { SportBadge, StravaConnectedBadge } from '@/components/activity/badges'
-import { formatStartShort } from '@/lib/format'
+import { formatParticipants, formatStartShort, isFull } from '@/lib/format'
 import { formatActivityDistance, formatDistanceBucket, formatPace } from '@/lib/geo'
 import { LEVEL_LABELS, type Level } from '@/lib/sports'
 import type { NearbyActivity } from '@/lib/supabase/rows'
 
 export function ActivityCard({ activity }: { activity: NearbyActivity }) {
-  const spotsLeft = activity.max_participants - activity.participant_count
-  const isFull = spotsLeft <= 0
+  const full = isFull(activity.participant_count, activity.max_participants)
 
   const facts = [
     formatActivityDistance(activity.activity_distance_m),
@@ -60,14 +59,14 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
 
         <span
           className={
-            isFull
+            full
               ? 'text-fg-subtle shrink-0 text-xs font-medium'
               : 'text-fg-muted shrink-0 text-xs font-medium'
           }
         >
-          {isFull
+          {full
             ? 'Full'
-            : `${activity.participant_count}/${activity.max_participants} joined`}
+            : formatParticipants(activity.participant_count, activity.max_participants)}
         </span>
       </div>
     </Link>

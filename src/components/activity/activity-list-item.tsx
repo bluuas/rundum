@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArchivedBadge, SportBadge, StatusBadge } from '@/components/activity/badges'
-import { formatStartShort, isArchived } from '@/lib/format'
+import { formatParticipants, formatStartShort, isArchived } from '@/lib/format'
 import { formatActivityDistance, formatPace } from '@/lib/geo'
 import { LEVEL_LABELS, type Level } from '@/lib/sports'
 import type { MyActivity } from '@/lib/queries/my-activities'
@@ -51,7 +51,7 @@ export function ActivityListItem({
 
       <div className="border-border mt-3 flex items-center justify-between gap-2 border-t pt-3 text-xs">
         <span className="text-fg-muted font-medium">
-          {activity.participantCount}/{activity.maxParticipants} joined
+          {formatParticipants(activity.participantCount, activity.maxParticipants)}
         </span>
 
         {role === 'organizer' && activity.pendingCount > 0 && !archived ? (

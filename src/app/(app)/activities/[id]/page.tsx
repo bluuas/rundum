@@ -11,7 +11,7 @@ import { AreaMap } from '@/components/map/area-map'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
 import { Button } from '@/components/ui/button'
-import { formatStartFull, isArchived } from '@/lib/format'
+import { formatParticipantLimit, formatStartFull, isArchived, isFull } from '@/lib/format'
 import { formatActivityDistance, formatPace, formatRadius } from '@/lib/geo'
 import { getActivityDetail, getComments } from '@/lib/queries/activity-detail'
 import { LEVEL_LABELS, getSport, type Level } from '@/lib/sports'
@@ -44,7 +44,7 @@ export default async function ActivityDetailPage({
   const archived = isArchived(activity.startsAt)
   const sport = getSport(activity.sportKey)
   const isOwner = userId === activity.ownerId
-  const spotsLeft = activity.maxParticipants - activity.participantCount
+  const full = isFull(activity.participantCount, activity.maxParticipants)
 
   const facts = [
     formatActivityDistance(activity.distanceM),
@@ -151,7 +151,10 @@ export default async function ActivityDetailPage({
           <div className="flex items-baseline justify-between">
             <h2 className="text-fg text-base font-semibold">Participants</h2>
             <p className="text-fg-muted text-sm">
-              {activity.participantCount} of {activity.maxParticipants}
+              {formatParticipantLimit(
+                activity.participantCount,
+                activity.maxParticipants,
+              )}
             </p>
           </div>
 
@@ -164,7 +167,7 @@ export default async function ActivityDetailPage({
               <Button fullWidth size="lg" disabled>
                 {archived || activity.status === 'cancelled'
                   ? 'No longer open'
-                  : spotsLeft <= 0
+                  : full
                     ? 'Full'
                     : 'Request to join'}
               </Button>

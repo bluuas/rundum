@@ -23,6 +23,7 @@ export type NearbyActivity = Omit<
   | 'pace_seconds_per_km'
   | 'level'
   | 'owner_avatar_url'
+  | 'max_participants'
 > & {
   description: string | null
   /** Route length in metres, not a distance from the viewer. */
@@ -30,6 +31,8 @@ export type NearbyActivity = Omit<
   pace_seconds_per_km: number | null
   level: Database['public']['Enums']['activity_level'] | null
   owner_avatar_url: string | null
+  /** NULL means no participant limit. */
+  max_participants: number | null
 }
 
 export type ActivityRow = Database['public']['Tables']['activities']['Row']

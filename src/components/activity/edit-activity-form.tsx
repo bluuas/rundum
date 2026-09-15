@@ -7,6 +7,7 @@ import { updateActivity } from '@/app/(app)/activities/actions'
 import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
+import { ParticipantLimitField } from '@/components/activity/participant-limit-field'
 import {
   RADIUS_OPTIONS_M,
   formatPace,
@@ -51,7 +52,9 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       : '',
   )
   const [level, setLevel] = useState<string>(activity.level ?? '')
-  const [maxParticipants, setMaxParticipants] = useState(String(activity.maxParticipants))
+  const [maxParticipants, setMaxParticipants] = useState<number | null>(
+    activity.maxParticipants,
+  )
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -77,7 +80,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
           : null,
       paceSecondsPerKm: sport.supportsPace && pace ? parsePace(pace) : null,
       level: level ? level : null,
-      maxParticipants: Number(maxParticipants),
+      maxParticipants,
     }
   }
 
@@ -256,26 +259,16 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         </SelectInput>
       </Field>
 
-      <Field
-        label="Maximum participants"
-        htmlFor="max"
+      <ParticipantLimitField
+        value={maxParticipants}
+        onChange={setMaxParticipants}
         hint={
           activity.participantCount > 0
             ? `${activity.participantCount} ${activity.participantCount === 1 ? 'person has' : 'people have'} already joined.`
             : undefined
         }
         error={fieldErrors.maxParticipants?.[0]}
-      >
-        <TextInput
-          id="max"
-          type="number"
-          inputMode="numeric"
-          min="1"
-          max="100"
-          value={maxParticipants}
-          onChange={(event) => setMaxParticipants(event.target.value)}
-        />
-      </Field>
+      />
 
       {formError ? (
         <p role="alert" className="text-danger text-sm">

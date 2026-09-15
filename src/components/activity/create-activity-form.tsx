@@ -6,6 +6,7 @@ import { createActivity } from '@/app/(app)/activities/actions'
 import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
+import { ParticipantLimitField } from '@/components/activity/participant-limit-field'
 import {
   DEFAULT_CITY_CENTER,
   DEFAULT_RADIUS_M,
@@ -42,7 +43,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
   const [distanceKm, setDistanceKm] = useState('')
   const [pace, setPace] = useState('')
   const [level, setLevel] = useState('')
-  const [maxParticipants, setMaxParticipants] = useState('10')
+  const [maxParticipants, setMaxParticipants] = useState<number | null>(10)
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -69,7 +70,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
           : null,
       paceSecondsPerKm: sport?.supportsPace && pace ? parsePace(pace) : null,
       level: level ? level : null,
-      maxParticipants: Number(maxParticipants),
+      maxParticipants,
     }
   }
 
@@ -82,7 +83,9 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
       case 'Where':
         return locationLabel.trim().length >= 2
       case 'Details':
-        return title.trim().length >= 3 && Number(maxParticipants) >= 1
+        return (
+          title.trim().length >= 3 && (maxParticipants === null || maxParticipants >= 1)
+        )
       default:
         return true
     }
@@ -328,21 +331,11 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
             </SelectInput>
           </Field>
 
-          <Field
-            label="Maximum participants"
-            htmlFor="max"
+          <ParticipantLimitField
+            value={maxParticipants}
+            onChange={setMaxParticipants}
             error={fieldErrors.maxParticipants?.[0]}
-          >
-            <TextInput
-              id="max"
-              type="number"
-              inputMode="numeric"
-              min="1"
-              max="100"
-              value={maxParticipants}
-              onChange={(event) => setMaxParticipants(event.target.value)}
-            />
-          </Field>
+          />
         </div>
       ) : null}
 
@@ -386,7 +379,10 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
               <Row label="Pace" value={`${pace} /km`} />
             ) : null}
             {level ? <Row label="Level" value={LEVEL_LABELS[level as never]} /> : null}
-            <Row label="Max participants" value={maxParticipants} />
+            <Row
+              label="Max participants"
+              value={maxParticipants === null ? 'No limit' : String(maxParticipants)}
+            />
           </dl>
 
           {formError ? (
