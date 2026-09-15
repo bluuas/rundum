@@ -12,7 +12,7 @@ others have planned within a radius you choose.
 > only as a sign-in provider, with the user's explicit consent, and never reads
 > or displays Strava activity data.
 
-**Status:** early prototype, under active development. Phases 1–9 of 10.
+**Status:** working prototype. All ten build phases are done; not yet launched.
 
 ## What it does
 
@@ -170,14 +170,44 @@ approve their own join request, that a pending requester cannot see who else is
 coming, that a report has to name something real, and that blocking someone
 actually removes them from the feed.
 
+## Deploying
+
+Rundum deploys to Vercel as a standard Next.js app; there is nothing to
+configure beyond environment variables.
+
+1. Import the repository in Vercel and set the Node version to 24.
+2. Add the environment variables from `.env.example`. Only the two
+   `NEXT_PUBLIC_` ones reach the browser; the rest must stay server-side.
+3. **Do not set `ALLOW_MOCK_AUTH` in production.** The mock login route also
+   refuses to load when `NODE_ENV=production`, so the flag alone cannot open it
+   — but do not set it.
+4. Set `STRAVA_REDIRECT_URI` to `https://<your-domain>/api/auth/strava/callback`
+   and register exactly that as the callback domain in your Strava application
+   settings. Leave `STRAVA_AUTH_BASE_URL` unset so the app talks to real Strava.
+5. Apply migrations to the production database with `npm run db:push`, and add
+   your production domain to Supabase's allowed redirect URLs.
+
+Before real users can sign in with Strava, the application has to leave
+single-player mode: Strava limits a new application to its own owner until it
+has ten connected athletes and passes review.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs formatting, typecheck, lint, unit tests and a
+production build on every pull request.
+
+The database and browser tests are opt-in, because they need a real Supabase
+project. Set the repository variable `RUN_E2E` to `true` and add
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
+`SUPABASE_SERVICE_ROLE_KEY` as secrets. That job reseeds the demo data, checks
+the security boundaries with `db:verify`, and runs Playwright against the local
+Strava stand-in — never against Strava itself.
+
 ## Contributing
 
-Issues and pull requests are welcome. Please note:
-
-- **Never commit secrets.** `.env.local` is gitignored; `.env.example` documents
-  the variables without values.
-- Do not add scraping of Strava, or any feature that exposes a user's exact
-  location.
+See [CONTRIBUTING.md](CONTRIBUTING.md). The short version: never commit
+secrets, never store or display an exact location, keep Strava tokens
+server-side, and ask before adding anything outside the MVP.
 
 ## License
 
