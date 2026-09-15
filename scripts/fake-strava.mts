@@ -196,6 +196,20 @@ function json(res: import('node:http').ServerResponse, status: number, body: unk
   res.end(JSON.stringify(body))
 }
 
+// Without this, a second copy dies on an unhandled 'error' event and prints a
+// Node stack trace, which says nothing about what to do next.
+server.on('error', (error: NodeJS.ErrnoException) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use — fake Strava may already be running.`)
+    console.error(
+      `Check with: curl -s -o /dev/null -w '%{http_code}' http://localhost:${PORT}/oauth/authorize`,
+    )
+    console.error(`Or use another port: FAKE_STRAVA_PORT=4401 npm run dev:strava`)
+    process.exit(1)
+  }
+  throw error
+})
+
 server.listen(PORT, () => {
   console.log(`Fake Strava listening on http://localhost:${PORT}`)
   console.log('Set these in .env.local to use it:\n')
