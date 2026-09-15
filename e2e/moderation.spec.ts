@@ -9,8 +9,8 @@ import { path, signInAsDemoUser } from './helpers'
  * that blocking removes someone from view, and that it can be undone.
  */
 
-const ORGANIZER = 'Mara K.'
-const OTHER = 'Noah S.'
+const ORGANIZER = 'Anouk A.'
+const OTHER = 'Hanna H.'
 
 async function createActivity(page: Page, title: string) {
   await page.goto(path('/activities/new'))

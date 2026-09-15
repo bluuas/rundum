@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test'
 import { signInAsDemoUser, path } from './helpers'
 
 test('My activities lists what you organize', async ({ page }) => {
-  // Anouk organizes several seeded activities.
-  await signInAsDemoUser(page, 'Anouk B.')
+  // Clara organizes several seeded activities.
+  await signInAsDemoUser(page, 'Clara C.')
   await page.goto(path('/me'))
 
   await expect(page.getByRole('heading', { name: 'Organizing' })).toBeVisible()
@@ -15,7 +15,7 @@ test('My activities lists what you organize', async ({ page }) => {
 })
 
 test('My activities sections fold, and Past starts folded', async ({ page }) => {
-  await signInAsDemoUser(page, 'Anouk B.')
+  await signInAsDemoUser(page, 'Clara C.')
   await page.goto(path('/me'))
 
   const item = page.getByRole('link').filter({ hasText: 'After-work 5k' }).first()
@@ -43,10 +43,10 @@ test('My activities prompts a signed-out visitor to sign in', async ({ page }) =
 })
 
 test('Profile shows the signed-in user and can sign out', async ({ page }) => {
-  await signInAsDemoUser(page, 'Mara K.')
+  await signInAsDemoUser(page, 'Anouk A.')
   await page.goto(path('/profile'))
 
-  await expect(page.getByRole('heading', { name: 'Mara K.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Anouk A.' })).toBeVisible()
   await expect(page.getByText('Trail runner. Happiest above 1500 m.')).toBeVisible()
   await expect(page.getByText('Strava-connected')).toBeVisible()
   await expect(page.getByText('Schwyz')).toBeVisible()
@@ -62,8 +62,8 @@ test('Profile shows the signed-in user and can sign out', async ({ page }) => {
 })
 
 test('a user without Strava is not labelled as connected', async ({ page }) => {
-  // Anouk B. is seeded without a Strava connection.
-  await signInAsDemoUser(page, 'Anouk B.')
+  // Clara C. is seeded without a Strava connection.
+  await signInAsDemoUser(page, 'Clara C.')
   await page.goto(path('/profile'))
 
   await expect(page.getByText('Not connected to Strava')).toBeVisible()

@@ -10,7 +10,7 @@ import { anon, signInAsDemoUser, path } from './helpers'
 const PAGES = ['/', '/me', '/profile', '/activities/new']
 
 test('no page ever renders AM/PM or a month-first date', async ({ page }) => {
-  await signInAsDemoUser(page, 'Anouk B.')
+  await signInAsDemoUser(page, 'Clara C.')
 
   const { data } = await anon.rpc('nearby_activities', {
     p_lat: 47.0207,
@@ -68,7 +68,7 @@ test('the create form prefills today and confirms the choice in Swiss format', a
 test('Strava is referenced only in permitted, non-endorsing wording', async ({
   page,
 }) => {
-  await signInAsDemoUser(page, 'Mara K.')
+  await signInAsDemoUser(page, 'Anouk A.')
 
   for (const route of PAGES) {
     await page.goto(path(route))

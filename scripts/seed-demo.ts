@@ -38,59 +38,92 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 /** Shared password for demo accounts. Development only — never used in production. */
 const DEMO_PASSWORD = 'rundum-demo-password'
 
+/**
+ * The demo cast, A-H so they are easy to tell apart in screenshots and tests.
+ *
+ * `key` is the identity: activities below name their organizer by key, and the
+ * admin flag is set here. Nothing depends on the order of this array, so it can
+ * be re-sorted or renamed without silently handing someone else's activities —
+ * or admin rights — to a different person.
+ */
+const DEMO_USER_KEYS = [
+  'anouk',
+  'basil',
+  'clara',
+  'dominic',
+  'esther',
+  'fabian',
+  'gabriel',
+  'hanna',
+] as const
+
+type DemoUserKey = (typeof DEMO_USER_KEYS)[number]
+
 type DemoUser = {
+  key: DemoUserKey
   email: string
   displayName: string
   stravaConnected: boolean
   bio: string
+  /** Can open /insights. Exactly one demo user has this. */
+  isAdmin?: boolean
 }
 
 const DEMO_USERS: DemoUser[] = [
   {
-    email: 'mara@demo.rundum.app',
-    displayName: 'Mara K.',
+    key: 'anouk',
+    email: 'anouk@demo.rundum.app',
+    displayName: 'Anouk A.',
     stravaConnected: true,
     bio: 'Trail runner. Happiest above 1500 m.',
+    isAdmin: true,
   },
   {
-    email: 'tobias@demo.rundum.app',
-    displayName: 'Tobias R.',
+    key: 'basil',
+    email: 'basil@demo.rundum.app',
+    displayName: 'Basil B.',
     stravaConnected: true,
     bio: 'Road cyclist, coffee stops mandatory.',
   },
   {
-    email: 'anouk@demo.rundum.app',
-    displayName: 'Anouk B.',
+    key: 'clara',
+    email: 'clara@demo.rundum.app',
+    displayName: 'Clara C.',
     stravaConnected: false,
     bio: 'New in Schwyz, looking for a running group.',
   },
   {
-    email: 'luca@demo.rundum.app',
-    displayName: 'Luca F.',
+    key: 'dominic',
+    email: 'dominic@demo.rundum.app',
+    displayName: 'Dominic D.',
     stravaConnected: true,
     bio: 'Padel most evenings. Always need a fourth.',
   },
   {
-    email: 'sofia@demo.rundum.app',
-    displayName: 'Sofia M.',
+    key: 'esther',
+    email: 'esther@demo.rundum.app',
+    displayName: 'Esther E.',
     stravaConnected: false,
     bio: 'Yoga teacher. Slow mornings by the lake.',
   },
   {
-    email: 'jonas@demo.rundum.app',
-    displayName: 'Jonas W.',
+    key: 'fabian',
+    email: 'fabian@demo.rundum.app',
+    displayName: 'Fabian F.',
     stravaConnected: true,
     bio: 'Swimming, hiking, and anything in the Muotatal.',
   },
   {
-    email: 'elif@demo.rundum.app',
-    displayName: 'Elif D.',
+    key: 'gabriel',
+    email: 'gabriel@demo.rundum.app',
+    displayName: 'Gabriel G.',
     stravaConnected: true,
     bio: 'Weight training four times a week.',
   },
   {
-    email: 'noah@demo.rundum.app',
-    displayName: 'Noah S.',
+    key: 'hanna',
+    email: 'hanna@demo.rundum.app',
+    displayName: 'Hanna H.',
     stravaConnected: false,
     bio: 'Walks the Lauerzersee loop most Sundays.',
   },
@@ -117,7 +150,7 @@ const PLACES = {
 type PlaceKey = keyof typeof PLACES
 
 type DemoActivity = {
-  owner: number
+  owner: DemoUserKey
   sport: string
   title: string
   description: string
@@ -135,7 +168,7 @@ type DemoActivity = {
 
 const DEMO_ACTIVITIES: DemoActivity[] = [
   {
-    owner: 0,
+    owner: 'anouk',
     sport: 'run',
     title: 'Easy morning loop around Ibach',
     description:
@@ -149,7 +182,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 12,
   },
   {
-    owner: 0,
+    owner: 'anouk',
     sport: 'run',
     title: 'Hill repeats up to Rickenbach',
     description: 'Six by three minutes uphill, jog back down. Bring a jacket for after.',
@@ -162,7 +195,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 8,
   },
   {
-    owner: 2,
+    owner: 'clara',
     sport: 'run',
     title: 'Sunday long run, Lauerzersee loop',
     description:
@@ -176,7 +209,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 10,
   },
   {
-    owner: 2,
+    owner: 'clara',
     sport: 'run',
     title: 'After-work 5k, all paces',
     description: 'Short and social. We split into two groups if the spread is wide.',
@@ -190,7 +223,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 1,
+    owner: 'basil',
     sport: 'ride',
     title: 'Rigi climb from Goldau',
     description: 'Steady climb, no racing. Regroup at the top before the descent.',
@@ -203,7 +236,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 8,
   },
   {
-    owner: 1,
+    owner: 'basil',
     sport: 'ride',
     title: 'Lakeside spin to Gersau and back',
     description: 'Flat, about two hours, coffee in Gersau. Road bikes.',
@@ -216,7 +249,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 10,
   },
   {
-    owner: 6,
+    owner: 'gabriel',
     sport: 'ride',
     title: 'Gravel through the Muotatal',
     description: 'Mixed surface, some loose sections. Tyres 38mm and up.',
@@ -229,7 +262,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 7,
+    owner: 'hanna',
     sport: 'walk',
     title: 'Sunday walk around the Lauerzersee',
     description: 'Two hours at a gentle pace. Dogs welcome, kids welcome.',
@@ -241,7 +274,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: null,
   },
   {
-    owner: 7,
+    owner: 'hanna',
     sport: 'walk',
     title: 'Evening stroll along the Brunnen waterfront',
     description: 'Short and flat, finishing at the gelateria.',
@@ -254,7 +287,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 5,
+    owner: 'fabian',
     sport: 'hike',
     title: 'Fronalpstock sunrise hike',
     description: 'Early start, head torch needed for the first hour. Down by cable car.',
@@ -266,7 +299,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 8,
   },
   {
-    owner: 5,
+    owner: 'fabian',
     sport: 'hike',
     title: 'Stoos ridge, easy half day',
     description: 'Well-marked ridge path with a long lunch stop. No exposure.',
@@ -278,7 +311,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 10,
   },
   {
-    owner: 0,
+    owner: 'anouk',
     sport: 'hike',
     title: 'Sattel to Mostelberg family hike',
     description: 'Short, shaded, and a playground at the top.',
@@ -291,7 +324,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 6,
+    owner: 'gabriel',
     sport: 'workout',
     title: 'Outdoor circuit at the Hauptplatz',
     description: 'Bodyweight circuit, 40 on 20 off, six rounds. Bring a mat.',
@@ -302,7 +335,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 14,
   },
   {
-    owner: 6,
+    owner: 'gabriel',
     sport: 'workout',
     title: 'Stair intervals in Seewen',
     description: 'Thirty minutes of stairs. Harder than it sounds.',
@@ -314,7 +347,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 6,
+    owner: 'gabriel',
     sport: 'weight_training',
     title: 'Pull day, open to anyone',
     description: 'Happy to spot and to show the basics if you are starting out.',
@@ -325,7 +358,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 4,
   },
   {
-    owner: 6,
+    owner: 'gabriel',
     sport: 'weight_training',
     title: 'Squat session, early evening',
     description: 'Working sets around 5x5. Bring your own belt.',
@@ -337,7 +370,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 5,
+    owner: 'fabian',
     sport: 'swim',
     title: 'Open water swim at Lauerzersee',
     description: 'About 1500 m along the shore. Bring a tow float.',
@@ -350,7 +383,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 8,
   },
   {
-    owner: 5,
+    owner: 'fabian',
     sport: 'swim',
     title: 'Lake swim and breakfast in Arth',
     description: 'Short swim, long breakfast. The better ratio.',
@@ -363,7 +396,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 4,
+    owner: 'esther',
     sport: 'yoga',
     title: 'Sunrise yoga by the lake',
     description: 'Slow flow, 60 minutes, suitable for complete beginners. Mats provided.',
@@ -374,7 +407,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 12,
   },
   {
-    owner: 4,
+    owner: 'esther',
     sport: 'yoga',
     title: 'Evening yin in Steinen',
     description: 'Long holds, quiet room, no experience needed.',
@@ -385,7 +418,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 10,
   },
   {
-    owner: 4,
+    owner: 'esther',
     sport: 'yoga',
     title: 'Post-run mobility, 30 minutes',
     description: 'Hips and calves, straight after the Thursday group run.',
@@ -397,7 +430,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 3,
+    owner: 'dominic',
     sport: 'tennis',
     title: 'Doubles in Seewen, two spots left',
     description: 'Friendly doubles, mixed levels. Balls provided.',
@@ -408,7 +441,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 4,
   },
   {
-    owner: 3,
+    owner: 'dominic',
     sport: 'tennis',
     title: 'Saturday hitting session',
     description: 'Just rallying and drills, no matches. Good for rebuilding consistency.',
@@ -420,7 +453,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
   },
 
   {
-    owner: 3,
+    owner: 'dominic',
     sport: 'padel',
     title: 'Padel, need a fourth',
     description: 'Two hours booked. Intermediate level, quick rotation.',
@@ -431,7 +464,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 4,
   },
   {
-    owner: 3,
+    owner: 'dominic',
     sport: 'padel',
     title: 'Beginner padel evening',
     description:
@@ -443,7 +476,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 8,
   },
   {
-    owner: 1,
+    owner: 'basil',
     sport: 'padel',
     title: 'Sunday morning padel ladder',
     description: 'Rotating pairs, everyone plays everyone. Three hours.',
@@ -456,7 +489,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
 
   // Edge states, so the UI gets exercised beyond the happy path.
   {
-    owner: 0,
+    owner: 'anouk',
     sport: 'run',
     title: 'Cancelled: track session in Ibach',
     description: 'Track is closed for maintenance. Rescheduling for next week.',
@@ -469,7 +502,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     status: 'cancelled',
   },
   {
-    owner: 1,
+    owner: 'basil',
     sport: 'ride',
     title: 'Draft: club ride, route not final',
     description: 'Hidden while I work out the route.',
@@ -482,7 +515,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     status: 'hidden',
   },
   {
-    owner: 2,
+    owner: 'clara',
     sport: 'run',
     title: 'Last week: easy 10k',
     description: 'This one has already happened and should be archived.',
@@ -495,7 +528,7 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     maxParticipants: 10,
   },
   {
-    owner: 4,
+    owner: 'esther',
     sport: 'yoga',
     title: 'Yesterday: lunchtime flow',
     description: 'Archived, kept so the past view has something in it.',
@@ -528,7 +561,23 @@ async function main() {
     (existingList?.users ?? []).map((user) => [user.email ?? '', user.id]),
   )
 
+  // A rename leaves the previous cast behind: same demo domain, no longer in
+  // DEMO_USERS. They would keep their activities and keep showing up in the
+  // feed next to their replacements, so they go. Scoped to the demo domain so
+  // a real account on the same project is never touched.
+  const demoEmails = new Set(DEMO_USERS.map((demo) => demo.email))
+  const stale = (existingList?.users ?? []).filter(
+    (user) => user.email?.endsWith('@demo.rundum.app') && !demoEmails.has(user.email),
+  )
+  for (const user of stale) {
+    // profiles cascades from auth.users, and activities cascade from profiles.
+    const { error } = await supabase.auth.admin.deleteUser(user.id)
+    if (error) throw error
+    console.log(`  removed stale demo account ${user.email}`)
+  }
+
   const userIds: string[] = []
+  const userIdByKey = new Map<DemoUserKey, string>()
 
   for (const demo of DEMO_USERS) {
     const existingId = existingByEmail.get(demo.email)
@@ -549,6 +598,8 @@ async function main() {
       userIds.push(data.user.id)
     }
 
+    userIdByKey.set(demo.key, userIds[userIds.length - 1])
+
     // The handle_new_user trigger created the profile; fill in the rest.
     const { error: profileError } = await supabase
       .from('profiles')
@@ -557,9 +608,9 @@ async function main() {
         bio: demo.bio,
         strava_connected: demo.stravaConnected,
         city_id: city.id,
-        // The first demo account can open /insights. Without one, the metrics
-        // page would be unreachable in a fresh checkout and so never looked at.
-        is_admin: demo.email === DEMO_USERS[0].email,
+        // One demo account can open /insights. Without one, the metrics page
+        // would be unreachable in a fresh checkout and so never looked at.
+        is_admin: demo.isAdmin === true,
       })
       .eq('id', userIds[userIds.length - 1])
 
@@ -579,7 +630,7 @@ async function main() {
   const rows = DEMO_ACTIVITIES.map((activity) => {
     const place = PLACES[activity.place]
     return {
-      owner_id: userIds[activity.owner],
+      owner_id: userIdByKey.get(activity.owner)!,
       city_id: city.id,
       sport_key: activity.sport,
       title: activity.title,
@@ -708,7 +759,8 @@ async function main() {
   console.log(`  ${commentRows.length} comments created`)
 
   console.log(`\nDone. Sign in as any demo user with the dev switcher, or with`)
-  console.log(`  ${DEMO_USERS[0].email} / ${DEMO_PASSWORD}\n`)
+  const admin = DEMO_USERS.find((demo) => demo.isAdmin) ?? DEMO_USERS[0]
+  console.log(`  ${admin.email} / ${DEMO_PASSWORD}\n`)
 }
 
 main().catch((error) => {

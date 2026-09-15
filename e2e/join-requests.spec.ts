@@ -8,9 +8,9 @@ import { signInAsDemoUser, path } from './helpers'
  * leaks to the wrong viewer.
  */
 
-const ORGANIZER = 'Mara K.'
-const JOINER = 'Anouk B.'
-const BYSTANDER = 'Noah S.'
+const ORGANIZER = 'Anouk A.'
+const JOINER = 'Clara C.'
+const BYSTANDER = 'Hanna H.'
 
 async function createActivity(page: Page, title: string, maxParticipants?: string) {
   await page.goto(path('/activities/new'))

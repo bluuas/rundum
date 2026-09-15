@@ -236,7 +236,7 @@ test.describe(() => {
     // A different, signed-in account tries to claim the same athlete.
     const other = await browser.newContext()
     const otherPage = await other.newPage()
-    await signInAsDemoUser(otherPage, 'Anouk B.')
+    await signInAsDemoUser(otherPage, 'Clara C.')
     await otherPage.goto(path('/profile'))
     await authorize(otherPage, '900001')
 

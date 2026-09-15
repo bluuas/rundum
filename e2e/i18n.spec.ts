@@ -37,7 +37,7 @@ test('sport names are translated, in filters and on cards', async ({ page }) => 
 })
 
 test('the language switcher keeps you on the same page', async ({ page }) => {
-  await signInAsDemoUser(page, 'Anouk B.')
+  await signInAsDemoUser(page, 'Clara C.')
   await page.goto(path('/me', 'en'))
   await expect(page.getByRole('heading', { name: 'Organizing' })).toBeVisible()
 

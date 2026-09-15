@@ -9,8 +9,8 @@ import { path, signInAsDemoUser } from './helpers'
  * not advertise its own existence.
  */
 
-const ADMIN = 'Mara K.'
-const NOT_ADMIN = 'Anouk B.'
+const ADMIN = 'Anouk A.'
+const NOT_ADMIN = 'Clara C.'
 
 test('an admin sees the primary metric, and it moves when an activity is created', async ({
   page,
