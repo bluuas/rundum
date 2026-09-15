@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { DevAuthBar } from '@/components/dev/dev-auth-bar'
 
 /**
  * Sticky top bar. `title` replaces the wordmark on sub-pages so the user always
@@ -35,7 +36,11 @@ export function AppHeader({
           </Link>
         )}
 
-        <div className="ml-auto flex items-center gap-1">{action}</div>
+        <div className="ml-auto flex items-center gap-2">
+          {/* Renders nothing unless mock auth is enabled. */}
+          <DevAuthBar />
+          {action}
+        </div>
       </div>
     </header>
   )
