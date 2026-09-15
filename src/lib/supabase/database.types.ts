@@ -307,6 +307,7 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          is_admin: boolean
           strava_athlete_id: number | null
           strava_connected: boolean
           strava_profile_consent_at: string | null
@@ -319,6 +320,7 @@ export type Database = {
           created_at?: string
           display_name: string
           id: string
+          is_admin?: boolean
           strava_athlete_id?: number | null
           strava_connected?: boolean
           strava_profile_consent_at?: string | null
@@ -331,6 +333,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          is_admin?: boolean
           strava_athlete_id?: number | null
           strava_connected?: boolean
           strava_profile_consent_at?: string | null
@@ -509,9 +512,40 @@ export type Database = {
         Returns: Database['public']['Enums']['join_request_status']
       }
       delete_comment: { Args: { p_comment_id: string }; Returns: undefined }
+      is_admin: { Args: never; Returns: boolean }
       is_blocked_between: {
         Args: { p_a: string; p_b: string }
         Returns: boolean
+      }
+      metrics_by_sport: {
+        Args: never
+        Returns: {
+          activities_created: number
+          sport_key: string
+        }[]
+      }
+      metrics_daily: {
+        Args: { p_days?: number }
+        Returns: {
+          activities_created: number
+          day: string
+        }[]
+      }
+      metrics_summary: {
+        Args: never
+        Returns: {
+          activities_created_30d: number
+          activities_created_7d: number
+          activities_created_total: number
+          activities_live: number
+          activities_upcoming: number
+          comments_total: number
+          creators_7d: number
+          creators_total: number
+          join_requests_approved: number
+          join_requests_total: number
+          reports_open: number
+        }[]
       }
       nearby_activities: {
         Args: {

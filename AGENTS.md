@@ -31,6 +31,18 @@ Schwyz, CH. Primary success metric: **number of activities created**.
   `formatStartFull`.
 - **Ask before adding anything outside the MVP scope.**
 
+## Measuring
+
+The primary success metric is **the number of activities created**. It is
+counted from `activity_events`, not from rows in `activities`: an activity that
+was later cancelled or deleted was still created, and the metric is about
+whether people are using Rundum to plan, not about what survived. Anything that
+would make creating an activity slower or more daunting needs a very good
+reason.
+
+`profiles.is_admin` gates the metrics functions and nothing else. It is not a
+moderation role and bypasses no policy.
+
 ## Safety
 
 - **Blocking is symmetric and has consequences beyond visibility.** `block_user`

@@ -333,6 +333,29 @@ export const de: Dictionary = {
     consentDecline: 'Nein danke',
   },
 
+  insights: {
+    title: 'Auswertung',
+    heroLabel: 'Erstellte Aktivitäten',
+    heroNote: 'Die Zahl, für die Rundum gebaut ist. Alles darunter ist Einordnung.',
+    last7: 'Letzte 7 Tage',
+    last30: 'Letzte 30 Tage',
+    allTime: 'Insgesamt',
+    dailyHeading: 'Pro Tag erstellt',
+    dailyEmpty: 'In diesem Zeitraum wurde noch nichts erstellt.',
+    sportHeading: 'Nach Sportart',
+    healthHeading: 'Rund um die Zahl',
+    live: 'Veröffentlicht',
+    upcoming: 'Noch bevorstehend',
+    creators: 'Personen mit mindestens einer',
+    creators7: 'Erstellende diese Woche',
+    joinRequests: 'Teilnahmeanfragen',
+    joinApproved: 'Angenommen',
+    comments: 'Kommentare',
+    reportsOpen: 'Offene Meldungen',
+    footnote:
+      'Gezählt wird aus dem Ereignisprotokoll: Eine später abgesagte Aktivität zählt weiterhin als erstellt — es geht darum, ob geplant wird, nicht darum, was übrig bleibt.',
+  },
+
   moderation: {
     safetyHeading: 'Stimmt etwas nicht?',
     report: 'Melden',

@@ -12,7 +12,7 @@ others have planned within a radius you choose.
 > only as a sign-in provider, with the user's explicit consent, and never reads
 > or displays Strava activity data.
 
-**Status:** early prototype, under active development. Phases 1–8 of 10.
+**Status:** early prototype, under active development. Phases 1–9 of 10.
 
 ## What it does
 
@@ -83,6 +83,21 @@ npm run dev
 ```
 
 Open http://localhost:3000.
+
+### Metrics
+
+`/insights` shows how Rundum is doing against its one stated goal — the number
+of activities created — and 404s for everyone else, with the gate enforced in
+the database rather than in the page. The seed marks the first demo account as
+an admin so the page is reachable in a fresh checkout. To grant it to a real
+account:
+
+```sql
+update profiles set is_admin = true where id = '<user-id>';
+```
+
+`is_admin` grants access to the metrics functions and nothing else. It is not a
+moderation role and does not bypass any policy.
 
 ### Database
 

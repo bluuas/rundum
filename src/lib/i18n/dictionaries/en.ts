@@ -326,6 +326,29 @@ export const en = {
     consentDecline: 'No thanks',
   },
 
+  insights: {
+    title: 'Insights',
+    heroLabel: 'Activities created',
+    heroNote: 'The number Rundum is built to move. Everything below is context.',
+    last7: 'Last 7 days',
+    last30: 'Last 30 days',
+    allTime: 'All time',
+    dailyHeading: 'Created per day',
+    dailyEmpty: 'Nothing created in this period yet.',
+    sportHeading: 'By sport',
+    healthHeading: 'Around the metric',
+    live: 'Published',
+    upcoming: 'Still to come',
+    creators: 'People who created one',
+    creators7: 'Creators this week',
+    joinRequests: 'Join requests',
+    joinApproved: 'Approved',
+    comments: 'Comments',
+    reportsOpen: 'Open reports',
+    footnote:
+      'Counted from the event log, so an activity that was later cancelled still counts as created — the metric is about whether people are planning, not about what survived.',
+  },
+
   moderation: {
     safetyHeading: 'Something wrong?',
     report: 'Report',

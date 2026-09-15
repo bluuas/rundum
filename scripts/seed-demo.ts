@@ -557,6 +557,9 @@ async function main() {
         bio: demo.bio,
         strava_connected: demo.stravaConnected,
         city_id: city.id,
+        // The first demo account can open /insights. Without one, the metrics
+        // page would be unreachable in a fresh checkout and so never looked at.
+        is_admin: demo.email === DEMO_USERS[0].email,
       })
       .eq('id', userIds[userIds.length - 1])
 
@@ -648,6 +651,33 @@ async function main() {
   const { error: joinError } = await supabase.from('join_requests').insert(joinRows)
   if (joinError) throw joinError
   console.log(`  ${joinRows.length} join requests created`)
+
+  // --- Analytics events ---------------------------------------------------
+  // The seed inserts activities directly rather than through the Server Action,
+  // so the activity_created events that action would have written do not exist.
+  // Without them /insights reads zero against thirty visible activities, which
+  // looks like a broken metric rather than an unseeded one.
+  //
+  // Backdated across two weeks so the daily chart has a shape.
+  await supabase
+    .from('activity_events')
+    .delete()
+    .eq('event_type', 'activity_created')
+    .in('user_id', userIds)
+
+  const eventRows = (inserted ?? []).map((activity, index) => ({
+    event_type: 'activity_created',
+    activity_id: activity.id,
+    user_id: activity.owner_id,
+    created_at: new Date(
+      Date.now() - ((index * 11) % 14) * 86_400_000 - (index % 7) * 3_600_000,
+    ).toISOString(),
+    metadata: {},
+  }))
+
+  const { error: eventError } = await supabase.from('activity_events').insert(eventRows)
+  if (eventError) throw eventError
+  console.log(`  ${eventRows.length} analytics events created`)
 
   const commentBodies = [
     'Is this still going ahead if it rains?',
