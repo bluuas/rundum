@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { DevAuthBar } from '@/components/dev/dev-auth-bar'
+import { isDemoModeEnabled } from '@/lib/auth/dev'
+import { getDictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
 
 /**
@@ -43,11 +45,23 @@ export function AppHeader({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Renders nothing unless mock auth is enabled. */}
+          {/* Renders nothing unless mock auth or demo mode is enabled. */}
           <DevAuthBar />
           {action}
         </div>
       </div>
+
+      {/*
+        Inside the sticky header on purpose: a published demo hands out shared
+        accounts, so the warning has to still be there when someone scrolls down
+        and starts typing. Above the header it would also fight the header's own
+        safe-area padding on a notched phone.
+      */}
+      {isDemoModeEnabled() ? (
+        <p className="bg-warning-soft text-warning px-4 py-1.5 text-center text-xs font-medium">
+          {getDictionary(locale).demo.banner}
+        </p>
+      ) : null}
     </header>
   )
 }

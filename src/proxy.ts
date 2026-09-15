@@ -88,7 +88,11 @@ export const config = {
     /*
      * Everything except API routes, static assets and image files. API routes
      * are not localised, and static files never need a session.
+     *
+     * robots.txt and sitemap.xml have to be listed too. They live at the root
+     * by definition, so prefixing them with a locale does not redirect a
+     * crawler to the German copy — it redirects it to a 404.
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

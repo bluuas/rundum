@@ -432,8 +432,12 @@ export const en = {
 
   dev: {
     signedOut: 'Signed out',
-    heading: 'Development sign-in',
+    heading: 'Choose a demo account',
     noAccounts: 'No demo accounts found. Run npm run db:seed.',
+  },
+
+  demo: {
+    banner: 'Demo: everyone shares these accounts. Nothing you write here is private.',
   },
 }
 

@@ -107,6 +107,21 @@ state check, the code exchange, token storage, profile staging, consent and
 deauthorization are the same code. Do not add a "pretend to be connected"
 shortcut in the app; that would leave the real path untested.
 
+## Demo deployments
+
+`ALLOW_MOCK_AUTH` is disarmed when `NODE_ENV=production`, so that a stray env
+var can never open a real deployment. Keep that. A published demo uses
+`DEMO_MODE=true` instead — a separate flag that does work in production,
+because that is what it is for, and whose name says so.
+
+Neither flag widens _who_ can be impersonated. The login route resolves the
+address from `auth.users` and refuses anything that is not a seeded
+`@demo.rundum.app` account. That check, not the mode, is the security boundary,
+and an account created through Strava is unreachable through it.
+
+A demo deployment must stay obviously a demo: the shared-accounts banner in
+`AppHeader`, `robots.txt` disallowing everything, and `noindex`.
+
 ## Languages
 
 German and English, German by default — Schwyz is German-speaking.

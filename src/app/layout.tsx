@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { isDemoModeEnabled } from '@/lib/auth/dev'
 import './globals.css'
 
 const geistSans = Geist({
@@ -20,6 +21,8 @@ export const metadata: Metadata = {
   description:
     'Discover and plan local sports activities nearby — running, cycling, hiking, yoga, tennis and more.',
   applicationName: 'Rundum',
+  // robots.txt alone does not stop a linked page being indexed.
+  ...(isDemoModeEnabled() ? { robots: { index: false, follow: false } } : {}),
 }
 
 export const viewport: Viewport = {
@@ -28,8 +31,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#faf9f7' },
-    { media: '(prefers-color-scheme: dark)', color: '#0d0c0b' },
+    // Matches --bg in globals.css, light and dark.
+    { media: '(prefers-color-scheme: light)', color: '#fcfaf7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f0d0b' },
   ],
 }
 

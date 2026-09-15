@@ -178,9 +178,10 @@ configure beyond environment variables.
 1. Import the repository in Vercel and set the Node version to 24.
 2. Add the environment variables from `.env.example`. Only the two
    `NEXT_PUBLIC_` ones reach the browser; the rest must stay server-side.
-3. **Do not set `ALLOW_MOCK_AUTH` in production.** The mock login route also
-   refuses to load when `NODE_ENV=production`, so the flag alone cannot open it
-   — but do not set it.
+3. **Do not set `ALLOW_MOCK_AUTH` or `DEMO_MODE` in production.** The mock
+   login route refuses to load when `NODE_ENV=production`, so that flag alone
+   cannot open it. `DEMO_MODE` deliberately does work in production — see
+   _Publishing a demo_ below — so a real deployment must leave it unset.
 4. Set `STRAVA_REDIRECT_URI` to `https://<your-domain>/api/auth/strava/callback`
    and register exactly that as the callback domain in your Strava application
    settings. Leave `STRAVA_AUTH_BASE_URL` unset so the app talks to real Strava.
@@ -190,6 +191,39 @@ configure beyond environment variables.
 Before real users can sign in with Strava, the application has to leave
 single-player mode: Strava limits a new application to its own owner until it
 has ten connected athletes and passes review.
+
+## Publishing a demo
+
+Until Strava sign-in is available there is a second kind of deployment: a demo
+anyone can try, where the seeded accounts are shared and you pick one from the
+header. Deploy as above, then set `DEMO_MODE=true` and leave the three
+`STRAVA_` values blank, which hides the Strava button rather than offering a
+sign-in that cannot work.
+
+Demo mode is a separate flag from `ALLOW_MOCK_AUTH` on purpose. That one is
+disarmed in production so a stray env var can never open a real deployment, and
+that property is worth keeping; this one says what it does in its name. What it
+does _not_ change is who can be impersonated: the login route resolves the
+address from `auth.users` and refuses anything that is not a seeded
+`@demo.rundum.app` account, in every mode. An account created through Strava
+belongs to a real person and is unreachable either way.
+
+What a demo deployment gets:
+
+- a shared-accounts warning in the header, on every screen;
+- `robots.txt` disallowing everything, plus `noindex` — a demo full of seeded
+  activities should not be what a search for Rundum finds;
+- no Strava button, as long as the `STRAVA_` values are blank.
+
+Two things to know before sending the link round:
+
+- **Visitors write to a real database.** Give the demo its own Supabase
+  project unless you are happy sharing one with development: `npm run db:seed`
+  deletes every activity the demo accounts own, so a reseed throws away
+  whatever your testers made, and the Playwright suite writes to the same
+  tables while it runs.
+- **Everyone can reach `/insights`**, since the admin account is one of the
+  accounts on offer.
 
 ## Continuous integration
 

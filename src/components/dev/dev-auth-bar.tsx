@@ -1,13 +1,14 @@
-import { isMockAuthEnabled } from '@/lib/auth/dev'
+import { isAccountSwitchingEnabled } from '@/lib/auth/dev'
 import { createClient } from '@/lib/supabase/server'
 import { UserSwitcher, type DemoAccount } from './user-switcher'
 
 /**
- * Server wrapper for the dev switcher. Returns null in production, so the
- * client component and its demo account list never reach a real deployment.
+ * Server wrapper for the account switcher. Returns null unless development mock
+ * auth or demo mode is on, so the client component and its account list never
+ * reach a real deployment.
  */
 export async function DevAuthBar() {
-  if (!isMockAuthEnabled()) return null
+  if (!isAccountSwitchingEnabled()) return null
 
   const supabase = await createClient()
 

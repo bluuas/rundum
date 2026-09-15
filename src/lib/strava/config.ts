@@ -1,4 +1,5 @@
 import 'server-only'
+import { isDemoModeEnabled } from '@/lib/auth/dev'
 
 /**
  * Strava OAuth endpoints and credentials.
@@ -48,6 +49,12 @@ export type StravaConfig = {
  * absence of any NEXT_PUBLIC_ prefix.
  */
 export function getStravaConfig(): StravaConfig | null {
+  // A published demo hands out shared accounts, so Strava is off there whatever
+  // the credentials say: a real athlete's grant must never land on an account
+  // the next visitor can sign in as. It would also be a sign-in nobody could
+  // complete, since a new Strava application only admits its own owner.
+  if (isDemoModeEnabled()) return null
+
   const clientId = process.env.STRAVA_CLIENT_ID
   const clientSecret = process.env.STRAVA_CLIENT_SECRET
   const redirectUri = process.env.STRAVA_REDIRECT_URI

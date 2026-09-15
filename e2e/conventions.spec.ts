@@ -9,6 +9,16 @@ import { anon, signInAsDemoUser, path } from './helpers'
 
 const PAGES = ['/', '/me', '/profile', '/activities/new']
 
+test('robots.txt is served from the root, not redirected into a locale', async ({
+  request,
+}) => {
+  // It lives at the root by definition, so a locale prefix does not send a
+  // crawler to the German copy — it sends it to a 404.
+  const response = await request.get('/robots.txt', { maxRedirects: 0 })
+  expect(response.status()).toBe(200)
+  expect(await response.text()).toContain('User-Agent')
+})
+
 test('no page ever renders AM/PM or a month-first date', async ({ page }) => {
   await signInAsDemoUser(page, 'Clara C.')
 

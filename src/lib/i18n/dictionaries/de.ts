@@ -439,7 +439,12 @@ export const de: Dictionary = {
 
   dev: {
     signedOut: 'Abgemeldet',
-    heading: 'Entwicklungs-Anmeldung',
+    heading: 'Demo-Konto wählen',
     noAccounts: 'Keine Demo-Konten gefunden. Führe npm run db:seed aus.',
+  },
+
+  demo: {
+    banner:
+      'Demo: Alle teilen sich diese Konten. Nichts, was du hier schreibst, ist privat.',
   },
 }
