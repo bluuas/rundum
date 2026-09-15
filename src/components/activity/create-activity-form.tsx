@@ -22,6 +22,7 @@ import { activityInputSchema, combineDateAndTime } from '@/lib/validation/activi
 import { formatStartFull, toDateInputValue } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { fill } from '@/lib/i18n'
+import { localeHref } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/provider'
 import { z } from 'zod'
 
@@ -119,7 +120,12 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
         setFieldErrors(result.fieldErrors ?? {})
         return
       }
-      router.push(`/activities/${result.data.id}`)
+      // Through localeHref: an unprefixed path makes proxy.ts answer the
+      // client-side navigation with a 307, and a redirect in the middle of an
+      // RSC fetch cannot be parsed — the browser falls back to a full page
+      // load, having logged an error. It also loses the language you were
+      // reading in, since the proxy picks from the cookie instead.
+      router.push(localeHref(locale, `/activities/${result.data.id}`))
     })
   }
 

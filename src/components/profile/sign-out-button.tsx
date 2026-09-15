@@ -7,14 +7,14 @@ import { useI18n } from '@/lib/i18n/provider'
 
 export function SignOutButton() {
   const [pending, startTransition] = useTransition()
-  const { t } = useI18n()
+  const { locale, t } = useI18n()
 
   return (
     <Button
       variant="secondary"
       fullWidth
       disabled={pending}
-      onClick={() => startTransition(() => signOut())}
+      onClick={() => startTransition(() => signOut(locale))}
     >
       {pending ? t.common.signingOut : t.common.signOut}
     </Button>

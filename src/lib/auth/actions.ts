@@ -3,7 +3,13 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { LOCALE_PREFERENCE_COOKIE, isLocale, type Locale } from '@/lib/i18n/config'
+import {
+  DEFAULT_LOCALE,
+  LOCALE_PREFERENCE_COOKIE,
+  isLocale,
+  localeHref,
+  type Locale,
+} from '@/lib/i18n/config'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -12,11 +18,15 @@ import { createClient } from '@/lib/supabase/server'
  * A Server Action rather than the dev-only logout route, because this one ships
  * to production: it is how a Strava-connected user signs out too.
  */
-export async function signOut() {
+export async function signOut(locale?: Locale) {
   const supabase = await createClient()
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
-  redirect('/')
+
+  // Back to the feed in the language they were reading. Redirecting to '/'
+  // would hand the choice to proxy.ts, which reads the preference cookie — so
+  // signing out of an English page could land you in German.
+  redirect(localeHref(isLocale(locale) ? locale : DEFAULT_LOCALE, '/'))
 }
 
 /**

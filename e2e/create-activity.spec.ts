@@ -8,6 +8,26 @@ test('a signed-in user can create an activity and it appears in the feed', async
 
   const title = `Test run ${Date.now()}`
 
+  /*
+   * Watch for the two symptoms of a navigation that skipped the locale prefix.
+   * The URL alone proves nothing: proxy.ts redirects an unprefixed path, so by
+   * the time the browser settles it looks correct either way. What gives it
+   * away is the redirect itself, and the console error from a client-side
+   * navigation that met one mid-RSC-fetch.
+   */
+  const redirects: string[] = []
+  const consoleErrors: string[] = []
+
+  page.on('response', (response) => {
+    if (response.status() === 307 && response.url().includes('/activities/')) {
+      redirects.push(response.url())
+    }
+  })
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text())
+  })
+  page.on('pageerror', (error) => consoleErrors.push(error.message))
+
   await page.goto(path('/activities/new'))
 
   // Step 1 — sport. Choosing one advances automatically.
@@ -40,7 +60,10 @@ test('a signed-in user can create an activity and it appears in the feed', async
   await page.getByRole('button', { name: 'Publish activity' }).click()
 
   // Lands on the new activity's detail page.
-  await page.waitForURL(/\/activities\/[0-9a-f-]{36}$/)
+  // Locale-prefixed, and arrived at directly rather than via the proxy.
+  await page.waitForURL(/\/en\/activities\/[0-9a-f-]{36}$/)
+  expect(redirects).toEqual([])
+  expect(consoleErrors).toEqual([])
   const url = page.url()
   await expect(page.getByRole('heading', { name: title })).toBeVisible()
   await expect(page.getByText('8.0 km')).toBeVisible()

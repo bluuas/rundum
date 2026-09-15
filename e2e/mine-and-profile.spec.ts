@@ -29,8 +29,10 @@ test('Profile shows the signed-in user and can sign out', async ({ page }) => {
   await expect(page.getByText('Schwyz')).toBeVisible()
   await expect(page.getByText('Your location privacy')).toBeVisible()
 
+  // Back to the feed in the language you were reading, not wherever the
+  // preference cookie happens to point.
   await page.getByRole('button', { name: 'Sign out' }).click()
-  await page.waitForURL('**/')
+  await page.waitForURL(/\/en$/)
 
   await page.goto(path('/profile'))
   await expect(page.getByText('Not signed in')).toBeVisible()
