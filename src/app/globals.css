@@ -1,0 +1,174 @@
+@import 'tailwindcss';
+
+/*
+  Rundum design tokens.
+
+  Every colour is declared once on bare `:root` (the light palette) and
+  redefined in the dark block. Utilities reference the vars through
+  `@theme inline`, so a token swap propagates without rebuilding classes.
+*/
+
+:root {
+  /* Surfaces */
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --surface-muted: #f3f1ee;
+  --border: #e4e0da;
+  --border-strong: #cfc9c0;
+
+  /* Text */
+  --fg: #1c1917;
+  --fg-muted: #6b6560;
+  --fg-subtle: #938c85;
+
+  /* Brand — alpine teal. Deliberately not Strava orange. */
+  --brand: #0f766e;
+  --brand-hover: #115e56;
+  --brand-fg: #ffffff;
+  --brand-soft: #d6f0ec;
+  --brand-soft-fg: #0b544f;
+
+  /* Status */
+  --danger: #b42318;
+  --danger-soft: #fde8e6;
+  --warning: #b54708;
+  --warning-soft: #fdf0e3;
+  --success: #067647;
+  --success-soft: #dcf5e8;
+
+  --ring: #0f766e;
+  --radius: 0.875rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0c0b;
+    --surface: #1a1918;
+    --surface-muted: #242220;
+    --border: #322f2c;
+    --border-strong: #46423e;
+
+    --fg: #f5f3f1;
+    --fg-muted: #a8a19b;
+    --fg-subtle: #7b746e;
+
+    --brand: #2dd4bf;
+    --brand-hover: #5eead4;
+    --brand-fg: #05201d;
+    --brand-soft: #123c38;
+    --brand-soft-fg: #99f6e4;
+
+    --danger: #f97066;
+    --danger-soft: #3d1a17;
+    --warning: #f79009;
+    --warning-soft: #3a2410;
+    --success: #47cd89;
+    --success-soft: #10301f;
+
+    --ring: #2dd4bf;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-fg: var(--brand-soft-fg);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: var(--radius);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    /* Prevent iOS rubber-band from revealing a mismatched colour behind the nav */
+    overscroll-behavior-y: none;
+  }
+
+  /* Every interactive element gets a visible, consistent focus ring. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Inputs must be >=16px on iOS or Safari zooms the viewport on focus. */
+  input,
+  select,
+  textarea {
+    font-size: max(1rem, 16px);
+  }
+}
+
+@layer utilities {
+  /* Bottom nav and any fixed footer sit above the iOS home indicator. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .shimmer {
+    background-image: linear-gradient(
+      90deg,
+      var(--surface-muted) 0%,
+      var(--border) 50%,
+      var(--surface-muted) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
