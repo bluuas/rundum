@@ -248,6 +248,104 @@ if (signIn.error || !signIn.data.user) {
   })
   check('a member can withdraw', withdraw.error === null, withdraw.error?.message)
 
+  // -------------------------------------------------------------------------
+  // Reporting and blocking
+  // -------------------------------------------------------------------------
+
+  const selfReport = await member.rpc('submit_report', {
+    p_target_type: 'activity',
+    p_target_id: (rows.find((r) => r.owner_id === me)?.id as string) ?? targetId,
+    p_reason: 'spam',
+  })
+  // Falls through to a plain success if this member happens to own nothing
+  // nearby, so only assert when there really was an own activity to report.
+  if (rows.some((r) => r.owner_id === me)) {
+    check(
+      'you cannot report your own content',
+      selfReport.error?.code === 'RU021',
+      selfReport.error?.code ?? 'no error',
+    )
+  }
+
+  const ghostReport = await member.rpc('submit_report', {
+    p_target_type: 'activity',
+    p_target_id: '11111111-1111-1111-1111-111111111111',
+    p_reason: 'spam',
+  })
+  check(
+    'a report must name something that exists',
+    ghostReport.error?.code === 'RU020',
+    ghostReport.error?.code ?? 'no error',
+  )
+
+  const realReport = await member.rpc('submit_report', {
+    p_target_type: 'activity',
+    p_target_id: targetId,
+    p_reason: 'spam',
+    p_details: 'Verification run',
+  })
+  check('a member can report', realReport.error === null, realReport.error?.message)
+
+  // Reports are between the reporter and the moderators. Nobody else — least of
+  // all the reported person — may read them.
+  const anonReports = await anon.from('reports').select('id')
+  check(
+    'reports are not public',
+    (anonReports.data?.length ?? 0) === 0,
+    `rows=${anonReports.data?.length ?? 0}`,
+  )
+
+  // Blocking somebody must actually remove them from what you see.
+  const owner = target?.owner_id as string
+
+  const forgedBlock = await member
+    .from('blocks')
+    .insert({ blocker_id: owner, blocked_id: me } as never)
+  check(
+    "you cannot block on somebody else's behalf",
+    forgedBlock.error !== null,
+    forgedBlock.error?.code,
+  )
+
+  const block = await member.rpc('block_user', { p_blocked_id: owner })
+  check('a member can block', block.error === null, block.error?.message)
+
+  const afterBlock = await member.rpc('nearby_activities', {
+    p_lat: 47.0207,
+    p_lng: 8.653,
+    p_radius_m: 50000,
+  })
+  const stillThere = ((afterBlock.data ?? []) as Array<{ owner_id: string }>).some(
+    (r) => r.owner_id === owner,
+  )
+  check('a blocked organizer disappears from the feed', !stillThere)
+
+  const blockedProfile = await member
+    .from('profiles')
+    .select('id')
+    .eq('id', owner)
+    .maybeSingle()
+  check('a blocked account is unreadable', blockedProfile.data === null)
+
+  const blockedList = await member.rpc('blocked_accounts')
+  check(
+    'the block is listed so it can be undone',
+    ((blockedList.data ?? []) as Array<{ user_id: string }>).some(
+      (r) => r.user_id === owner,
+    ),
+    `rows=${blockedList.data?.length ?? 0}`,
+  )
+
+  const unblock = await member.rpc('unblock_user', { p_blocked_id: owner })
+  check('a member can unblock', unblock.error === null, unblock.error?.message)
+
+  const afterUnblock = await member
+    .from('profiles')
+    .select('id')
+    .eq('id', owner)
+    .maybeSingle()
+  check('unblocking restores visibility', afterUnblock.data !== null)
+
   await member.auth.signOut()
 }
 

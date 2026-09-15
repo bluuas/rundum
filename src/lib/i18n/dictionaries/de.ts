@@ -333,6 +333,47 @@ export const de: Dictionary = {
     consentDecline: 'Nein danke',
   },
 
+  moderation: {
+    safetyHeading: 'Stimmt etwas nicht?',
+    report: 'Melden',
+    reportActivity: 'Diese Aktivität melden',
+    reportComment: 'Diesen Kommentar melden',
+    reportUser: '{name} melden',
+    reportHeading: 'Was stimmt nicht?',
+    reasons: {
+      spam: 'Spam oder Werbung',
+      harassment: 'Belästigung oder Hass',
+      unsafe: 'Unsicher oder gefährlich',
+      misleading: 'Irreführend oder gefälscht',
+      other: 'Etwas anderes',
+    },
+    detailsLabel: 'Sollten wir noch etwas wissen?',
+    detailsPlaceholder: 'Optional. Was ist passiert, und wo sollen wir schauen?',
+    submit: 'Meldung senden',
+    sending: 'Wird gesendet …',
+    thanksTitle: 'Danke, wir haben es',
+    thanksBody:
+      'Ein Mensch schaut sich das an. Wir verraten der anderen Seite nie, wer gemeldet hat.',
+    close: 'Schliessen',
+    block: '{name} blockieren',
+    blockConfirm:
+      '{name} blockieren? Ihr seht euch danach gegenseitig nicht mehr, und belegte Plätze bei den Aktivitäten der anderen Person werden frei.',
+    blockYes: 'Ja, blockieren',
+    blockedHeading: 'Blockierte Konten',
+    blockedEmpty: 'Du hast niemanden blockiert.',
+    blockedSince: 'Blockiert am {date}',
+    unblock: 'Blockierung aufheben',
+    unblockNote:
+      'Danach seht ihr euch wieder. Niemand wird dadurch zu einer Aktivität zurückgeholt.',
+    errors: {
+      signedOut: 'Bitte melde dich zuerst an.',
+      notFound: 'Das ist nicht mehr verfügbar.',
+      ownContent: 'Eigene Inhalte kannst du nicht melden.',
+      self: 'Du kannst dich nicht selbst blockieren.',
+      unknown: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+    },
+  },
+
   sports: {
     run: 'Laufen',
     ride: 'Velofahren',

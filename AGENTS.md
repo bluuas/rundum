@@ -31,6 +31,19 @@ Schwyz, CH. Primary success metric: **number of activities created**.
   `formatStartFull`.
 - **Ask before adding anything outside the MVP scope.**
 
+## Safety
+
+- **Blocking is symmetric and has consequences beyond visibility.** `block_user`
+  also withdraws any join request between the two people, in both directions —
+  otherwise a blocked participant keeps a place at an activity RLS no longer
+  lets them see, and it still counts against the limit. Unblocking restores
+  visibility but never puts anyone back into an activity.
+- **A missing activity and a blocked one render the same 404.** Distinguishing
+  them would leak exactly what blocking is for.
+- `reports.reason` stores a stable key (`spam`, `harassment`, …), never
+  translated text: a moderator grouping reports should not be grouping by the
+  reporter's language.
+
 ## Strava API compliance
 
 Binding terms: <https://www.strava.com/legal/api> and the brand guidelines at

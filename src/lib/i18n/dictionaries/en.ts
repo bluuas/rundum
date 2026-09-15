@@ -326,6 +326,47 @@ export const en = {
     consentDecline: 'No thanks',
   },
 
+  moderation: {
+    safetyHeading: 'Something wrong?',
+    report: 'Report',
+    reportActivity: 'Report this activity',
+    reportComment: 'Report this comment',
+    reportUser: 'Report {name}',
+    reportHeading: 'What is wrong?',
+    reasons: {
+      spam: 'Spam or advertising',
+      harassment: 'Harassment or hate',
+      unsafe: 'Unsafe or dangerous',
+      misleading: 'Misleading or fake',
+      other: 'Something else',
+    },
+    detailsLabel: 'Anything else we should know?',
+    detailsPlaceholder: 'Optional. What happened, and where to look.',
+    submit: 'Send report',
+    sending: 'Sending…',
+    thanksTitle: 'Thanks — we have it',
+    thanksBody:
+      'A person will look at this. We never tell the other side who reported them.',
+    close: 'Close',
+    block: 'Block {name}',
+    blockConfirm:
+      'Block {name}? You stop seeing each other entirely, and any place either of you holds at the other\u2019s activity is freed.',
+    blockYes: 'Yes, block',
+    blockedHeading: 'Blocked accounts',
+    blockedEmpty: 'You have not blocked anyone.',
+    blockedSince: 'Blocked {date}',
+    unblock: 'Unblock',
+    unblockNote:
+      'Unblocking lets you see each other again. It does not put either of you back into an activity.',
+    errors: {
+      signedOut: 'Sign in first.',
+      notFound: 'That is no longer available.',
+      ownContent: 'You cannot report your own content.',
+      self: 'You cannot block yourself.',
+      unknown: 'Something went wrong. Please try again.',
+    },
+  },
+
   sports: {
     run: 'Running',
     ride: 'Cycling',

@@ -12,7 +12,7 @@ others have planned within a radius you choose.
 > only as a sign-in provider, with the user's explicit consent, and never reads
 > or displays Strava activity data.
 
-**Status:** early prototype, under active development. Phases 1–7 of 10.
+**Status:** early prototype, under active development. Phases 1–8 of 10.
 
 ## What it does
 
@@ -22,7 +22,8 @@ others have planned within a radius you choose.
 - Discover activities nearby within a configurable radius
 - Request to join with an optional note; organizers approve or decline
 - A public comment section on every activity
-- Report and block, so the space stays usable
+- Report an activity, a comment or a person; block someone and you stop
+  seeing each other
 
 Launch city is **Schwyz, Switzerland**. The data model is multi-city from the
 start — every activity carries a `city_id`.
@@ -150,8 +151,9 @@ policy. It asserts, from outside the app with only the public anon key, that
 invisible, that stored coordinates sit on the grid, and that both the searcher's
 and the organizer's radius are enforced. It then signs in as a demo user to
 check the rules a policy cannot express on its own — that a requester cannot
-approve their own join request, and that a pending requester cannot see who else
-is coming.
+approve their own join request, that a pending requester cannot see who else is
+coming, that a report has to name something real, and that blocking someone
+actually removes them from the feed.
 
 ## Contributing
 

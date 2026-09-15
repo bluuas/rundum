@@ -9,6 +9,8 @@ import { Comments } from '@/components/activity/comments'
 import { JoinPanel } from '@/components/activity/join-panel'
 import { OrganizerControls } from '@/components/activity/organizer-controls'
 import { Roster } from '@/components/activity/roster'
+import { BlockButton } from '@/components/moderation/block-button'
+import { ReportPanel } from '@/components/moderation/report-panel'
 import { AreaMap } from '@/components/map/area-map'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
@@ -219,6 +221,38 @@ export default async function ActivityDetailPage({
           currentUserId={userId}
           activityOwnerId={activity.ownerId}
         />
+
+        {/*
+          Below the comments, not beside the join button: reporting is rare and
+          should not compete with the thing the page exists for. Absent for the
+          organizer, who has the moderation tools instead, and for signed-out
+          visitors, who have no account to report from.
+        */}
+        {userId && !isOwner ? (
+          <section className="space-y-2 pt-2">
+            <h2 className="text-fg-muted text-sm font-semibold">
+              {t.moderation.safetyHeading}
+            </h2>
+            <div className="flex flex-col items-start gap-1">
+              <ReportPanel
+                targetType="activity"
+                targetId={activity.id}
+                label={t.moderation.reportActivity}
+              />
+              <ReportPanel
+                targetType="user"
+                targetId={activity.ownerId}
+                label={fill(t.moderation.reportUser, {
+                  name: activity.owner.displayName,
+                })}
+              />
+              <BlockButton
+                userId={activity.ownerId}
+                displayName={activity.owner.displayName}
+              />
+            </div>
+          </section>
+        ) : null}
       </PageBody>
     </>
   )

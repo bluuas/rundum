@@ -495,6 +495,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      block_user: { Args: { p_blocked_id: string }; Returns: undefined }
+      blocked_accounts: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       decide_join_request: {
         Args: { p_approve: boolean; p_request_id: string }
         Returns: Database['public']['Enums']['join_request_status']
@@ -548,6 +557,16 @@ export type Database = {
         Args: { p_grid_m?: number; p_point: unknown }
         Returns: unknown
       }
+      submit_report: {
+        Args: {
+          p_details?: string
+          p_reason: string
+          p_target_id: string
+          p_target_type: Database['public']['Enums']['report_target']
+        }
+        Returns: undefined
+      }
+      unblock_user: { Args: { p_blocked_id: string }; Returns: undefined }
       withdraw_join_request: {
         Args: { p_activity_id: string }
         Returns: undefined

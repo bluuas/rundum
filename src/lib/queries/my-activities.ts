@@ -205,3 +205,29 @@ export async function getProfileSummary(userId: string): Promise<ProfileSummary 
     activitiesJoined: joined.count ?? 0,
   }
 }
+
+export type BlockedAccount = {
+  userId: string
+  displayName: string
+  createdAt: string
+}
+
+/**
+ * Accounts the signed-in user has blocked.
+ *
+ * Through an RPC rather than a join: `profiles_read` hides anyone in a block
+ * relationship from the viewer, which is right everywhere except here, where
+ * the point is to show a list the user can undo.
+ */
+export async function getBlockedAccounts(): Promise<BlockedAccount[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.rpc('blocked_accounts')
+  if (error || !data) return []
+
+  return data.map((row) => ({
+    userId: row.user_id,
+    displayName: row.display_name,
+    createdAt: row.created_at,
+  }))
+}

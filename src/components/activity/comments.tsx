@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useOptimistic, useRef, useState, useTransition } from 'react'
 import { addComment, deleteComment } from '@/app/[locale]/(app)/activities/actions'
 import { StravaConnectedBadge } from '@/components/activity/badges'
+import { ReportPanel } from '@/components/moderation/report-panel'
 import { Button } from '@/components/ui/button'
 import { TextArea } from '@/components/ui/field'
 import { formatRelative } from '@/lib/format'
@@ -128,18 +129,34 @@ export function Comments({
 
                 <p className="text-fg mt-2 text-sm whitespace-pre-wrap">{comment.body}</p>
 
-                {canDelete ? (
-                  <button
-                    type="button"
-                    onClick={() => onDelete(comment.id)}
-                    disabled={pending}
-                    className="text-fg-subtle hover:text-danger mt-2 min-h-11 text-xs underline"
-                  >
-                    {comment.authorId === currentUserId
-                      ? t.common.delete
-                      : t.comments.removeAsOrganizer}
-                  </button>
-                ) : null}
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  {canDelete ? (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(comment.id)}
+                      disabled={pending}
+                      className="text-fg-subtle hover:text-danger min-h-11 text-xs underline"
+                    >
+                      {comment.authorId === currentUserId
+                        ? t.common.delete
+                        : t.comments.removeAsOrganizer}
+                    </button>
+                  ) : null}
+
+                  {/*
+                    Reporting is for other people's comments. Your own has a
+                    delete button, which is the remedy you actually want.
+                  */}
+                  {!isOptimistic &&
+                  currentUserId !== null &&
+                  comment.authorId !== currentUserId ? (
+                    <ReportPanel
+                      targetType="comment"
+                      targetId={comment.id}
+                      label={t.moderation.reportComment}
+                    />
+                  ) : null}
+                </div>
               </li>
             )
           })}

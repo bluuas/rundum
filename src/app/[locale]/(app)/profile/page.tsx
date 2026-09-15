@@ -9,6 +9,7 @@ import { SignOutButton } from '@/components/profile/sign-out-button'
 import { StravaProfileConsent } from '@/components/profile/strava-profile-consent'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
+import { BlockedAccounts } from '@/components/moderation/blocked-accounts'
 import { StravaAttribution } from '@/components/strava-attribution'
 import { ButtonLink } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/states'
@@ -16,7 +17,7 @@ import { getPendingStravaProfile } from '@/lib/auth/strava-consent.server'
 import { formatDate } from '@/lib/format'
 import { fill, getDictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
-import { getProfileSummary } from '@/lib/queries/my-activities'
+import { getBlockedAccounts, getProfileSummary } from '@/lib/queries/my-activities'
 import { isStravaConfigured } from '@/lib/strava/config'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
@@ -38,7 +39,10 @@ export default async function ProfilePage({
 
   const stravaConfigured = isStravaConfigured()
   const userId = await getCurrentUserId()
-  const profile = userId ? await getProfileSummary(userId) : null
+  const [profile, blocked] = await Promise.all([
+    userId ? getProfileSummary(userId) : Promise.resolve(null),
+    userId ? getBlockedAccounts() : Promise.resolve([]),
+  ])
 
   // Only present when Strava returned profile details the user has not yet
   // decided about. Until phase 7 populates the staging table, this is null.
@@ -127,6 +131,8 @@ export default async function ProfilePage({
           connected={profile.stravaConnected}
           configured={stravaConfigured}
         />
+
+        <BlockedAccounts accounts={blocked} />
 
         <LanguageSwitcher />
 
