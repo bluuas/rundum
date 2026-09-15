@@ -6,16 +6,22 @@ import {
   StravaConnectedBadge,
 } from '@/components/activity/badges'
 import { Comments } from '@/components/activity/comments'
+import { JoinPanel } from '@/components/activity/join-panel'
 import { OrganizerControls } from '@/components/activity/organizer-controls'
+import { Roster } from '@/components/activity/roster'
 import { AreaMap } from '@/components/map/area-map'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
-import { Button } from '@/components/ui/button'
 import { formatStartFull, isArchived, isFull } from '@/lib/format'
 import { formatActivityDistance, formatPace, formatRadius } from '@/lib/geo'
 import { fill, getDictionary } from '@/lib/i18n'
 import type { Locale } from '@/lib/i18n/config'
-import { getActivityDetail, getComments } from '@/lib/queries/activity-detail'
+import {
+  getActivityDetail,
+  getComments,
+  getMyJoinRequest,
+  getRoster,
+} from '@/lib/queries/activity-detail'
 import { isSportKey, type Level } from '@/lib/sports'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
@@ -45,10 +51,21 @@ export default async function ActivityDetailPage({
   // Rendering the same 404 for both is intentional.
   if (!activity) notFound()
 
-  const comments = await getComments(id)
   const archived = isArchived(activity.startsAt)
   const full = isFull(activity.participantCount, activity.maxParticipants)
   const isOwner = userId === activity.ownerId
+
+  // The roster RPC and the join-request read both return nothing for a signed
+  // out viewer, so they are safe to run unconditionally — but skipping them
+  // saves two round trips on the most common anonymous page view.
+  const [comments, roster, myRequestStatus] = await Promise.all([
+    getComments(id),
+    userId ? getRoster(id) : Promise.resolve([]),
+    userId && !isOwner ? getMyJoinRequest(id, userId) : Promise.resolve(null),
+  ])
+
+  // Requests are only meaningful while the activity is still going to happen.
+  const openForRequests = !archived && activity.status === 'published'
 
   const sportLabel = isSportKey(activity.sportKey)
     ? t.sports[activity.sportKey]
@@ -154,7 +171,7 @@ export default async function ActivityDetailPage({
           </div>
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-3">
           <div className="flex items-baseline justify-between">
             <h2 className="text-fg text-base font-semibold">{t.detail.participants}</h2>
             <p className="text-fg-muted text-sm">
@@ -170,19 +187,22 @@ export default async function ActivityDetailPage({
           {isOwner ? (
             <p className="text-fg-muted text-sm">{t.detail.youOrganize}</p>
           ) : (
-            <>
-              <Button fullWidth size="lg" disabled>
-                {archived || activity.status === 'cancelled'
-                  ? t.detail.noLongerOpen
-                  : full
-                    ? t.activity.full
-                    : t.detail.requestToJoin}
-              </Button>
-              <p className="text-fg-subtle text-center text-xs">
-                {t.detail.joinComingSoon}
-              </p>
-            </>
+            <JoinPanel
+              activityId={activity.id}
+              status={myRequestStatus}
+              signedIn={userId !== null}
+              open={openForRequests}
+              full={full}
+            />
           )}
+
+          <Roster
+            activityId={activity.id}
+            entries={roster}
+            isOwner={isOwner}
+            currentUserId={userId}
+            full={full}
+          />
         </section>
 
         {isOwner ? (

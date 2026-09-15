@@ -42,3 +42,15 @@ export type JoinRequestRow = Database['public']['Tables']['join_requests']['Row'
 export type ActivityStatus = Database['public']['Enums']['activity_status']
 export type ActivityLevel = Database['public']['Enums']['activity_level']
 export type JoinRequestStatus = Database['public']['Enums']['join_request_status']
+
+type RawRosterRow = Database['public']['Functions']['activity_roster']['Returns'][number]
+
+/**
+ * A roster entry. Same generator caveat as NearbyActivity: every column of a
+ * RETURNS TABLE is reported non-null, but `message` is null for participants
+ * (who never see it) and for requests sent without one.
+ */
+export type RosterEntry = Omit<RawRosterRow, 'avatar_url' | 'message'> & {
+  avatar_url: string | null
+  message: string | null
+}

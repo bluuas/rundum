@@ -104,7 +104,13 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
     startTransition(async () => {
       const result = await updateActivity(activity.id, buildInput())
       if (!result.ok) {
-        setFormError(result.error)
+        // Failures with a code are phrased here, in the reader's language;
+        // result.error is the English fallback for everything else.
+        setFormError(
+          result.code === 'belowApprovedCount'
+            ? fill(t.edit.belowApprovedCount, { count: activity.participantCount })
+            : result.error,
+        )
         setFieldErrors(result.fieldErrors ?? {})
         return
       }
@@ -259,6 +265,9 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       <ParticipantLimitField
         value={maxParticipants}
         onChange={setMaxParticipants}
+        // Already-approved participants are never dropped to fit a smaller
+        // limit, so the limit cannot go below them.
+        minimum={Math.max(activity.participantCount, 1)}
         hint={
           activity.participantCount > 0
             ? plural(activity.participantCount, {

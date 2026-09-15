@@ -177,10 +177,19 @@ check(
   detailHtml.includes('Approximate meeting area'),
 )
 check('detail page has a comment box', detailHtml.includes('Ask a question'))
-check(
-  'join button present but not yet wired',
-  detailHtml.includes('Request to join') || detailHtml.includes('organizing this'),
+// Deliberately bypassing the cookie jar: the script is signed in by now, and
+// these two assert what a stranger sees. Reusing the signed-in HTML would let
+// an owner's own view satisfy them and assert nothing.
+const strangerHtml = visibleHtml(
+  await (await fetch(`${BASE}${path(`/activities/${target.id}`)}`)).text(),
 )
+check(
+  'signed-out visitors are asked to sign in before joining',
+  strangerHtml.includes('Sign in to ask for a place'),
+)
+// The roster is not public: who is coming is for the organizer and for the
+// people already approved, never for a passer-by.
+check('the roster is not public', !strangerHtml.includes('Who is coming'))
 
 // A missing activity streams, so the status is 200 by design — Next.js cannot
 // change it after the response headers are sent. What matters is that the

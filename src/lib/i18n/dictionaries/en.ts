@@ -105,10 +105,9 @@ export const en = {
     discoverableWithin: 'Discoverable within {radius}.',
     organizerHeading: 'Organizer',
     participants: 'Participants',
-    youOrganize: 'You are organizing this. Approving requests arrives in the next step.',
+    youOrganize: 'You are organizing this activity.',
     requestToJoin: 'Request to join',
     noLongerOpen: 'No longer open',
-    joinComingSoon: 'Join requests arrive in the next step.',
   },
 
   comments: {
@@ -186,8 +185,51 @@ export const en = {
   },
 
   edit: {
+    belowApprovedCount:
+      'You have already approved {count} people. Remove someone before lowering the limit.',
     title: 'Edit activity',
     backToActivity: 'Back to the activity',
+  },
+
+  join: {
+    heading: 'Who is coming',
+    requestsHeading: 'Requests waiting',
+    requestsCountOne: '{count} request waiting',
+    requestsCountOther: '{count} requests waiting',
+    noParticipants: 'Nobody has joined yet.',
+    noRequests: 'No requests waiting.',
+    you: 'You',
+    messageLabel: 'Add a note for the organizer',
+    messagePlaceholder: 'Anything they should know? Your pace, if you are new here…',
+    sending: 'Sending…',
+    pendingTitle: 'Request sent',
+    pendingBody: 'The organizer will get back to you. You can still withdraw.',
+    approvedTitle: 'You are in',
+    approvedBody: 'See you there. Watch the comments for last-minute details.',
+    declinedTitle: 'Not this time',
+    declinedBody: 'The organizer declined this request.',
+    withdraw: 'Withdraw request',
+    leave: 'Leave this activity',
+    confirmLeave: 'Leave this activity? Your place goes back to the pool.',
+    confirmLeaveYes: 'Yes, leave',
+    stay: 'Stay',
+    approve: 'Approve',
+    decline: 'Decline',
+    fullNote: 'This activity is full. Free a place before approving anyone else.',
+    signInToJoin: 'Sign in to ask for a place.',
+    errors: {
+      signedOut: 'Sign in first.',
+      notFound: 'This activity is no longer available.',
+      ownActivity: 'You are organizing this activity.',
+      notOpen: 'This activity is not open for requests.',
+      alreadyStarted: 'This activity has already started.',
+      previouslyDeclined: 'The organizer already declined this request.',
+      full: 'This activity is full.',
+      alreadyDecided: 'You already decided on this request.',
+      notOrganizer: 'Only the organizer can decide this.',
+      nothingToWithdraw: 'There is nothing to withdraw.',
+      unknown: 'Something went wrong. Please try again.',
+    },
   },
 
   organizer: {

@@ -109,10 +109,9 @@ export const de: Dictionary = {
     discoverableWithin: 'Auffindbar im Umkreis von {radius}.',
     organizerHeading: 'Organisation',
     participants: 'Teilnehmende',
-    youOrganize: 'Du organisierst das. Anfragen annehmen kommt im nächsten Schritt.',
+    youOrganize: 'Du organisierst diese Aktivität.',
     requestToJoin: 'Teilnahme anfragen',
     noLongerOpen: 'Nicht mehr offen',
-    joinComingSoon: 'Teilnahmeanfragen kommen im nächsten Schritt.',
   },
 
   comments: {
@@ -190,8 +189,51 @@ export const de: Dictionary = {
   },
 
   edit: {
+    belowApprovedCount:
+      'Du hast bereits {count} Personen angenommen. Melde zuerst jemanden ab, bevor du das Limit senkst.',
     title: 'Aktivität bearbeiten',
     backToActivity: 'Zurück zur Aktivität',
+  },
+
+  join: {
+    heading: 'Wer mitmacht',
+    requestsHeading: 'Offene Anfragen',
+    requestsCountOne: '{count} offene Anfrage',
+    requestsCountOther: '{count} offene Anfragen',
+    noParticipants: 'Noch niemand dabei.',
+    noRequests: 'Keine offenen Anfragen.',
+    you: 'Du',
+    messageLabel: 'Notiz für die Organisatorin oder den Organisator',
+    messagePlaceholder: 'Etwas, das sie wissen sollten? Dein Tempo, ob du neu bist …',
+    sending: 'Wird gesendet …',
+    pendingTitle: 'Anfrage gesendet',
+    pendingBody: 'Du bekommst Bescheid. Du kannst die Anfrage jederzeit zurückziehen.',
+    approvedTitle: 'Du bist dabei',
+    approvedBody: 'Bis dann. Details kommen oft noch in den Kommentaren.',
+    declinedTitle: 'Diesmal nicht',
+    declinedBody: 'Die Anfrage wurde abgelehnt.',
+    withdraw: 'Anfrage zurückziehen',
+    leave: 'Nicht mehr mitmachen',
+    confirmLeave: 'Wirklich abmelden? Dein Platz wird wieder frei.',
+    confirmLeaveYes: 'Ja, abmelden',
+    stay: 'Dabei bleiben',
+    approve: 'Annehmen',
+    decline: 'Ablehnen',
+    fullNote: 'Diese Aktivität ist voll. Mach einen Platz frei, um weitere anzunehmen.',
+    signInToJoin: 'Melde dich an, um einen Platz anzufragen.',
+    errors: {
+      signedOut: 'Bitte melde dich zuerst an.',
+      notFound: 'Diese Aktivität ist nicht mehr verfügbar.',
+      ownActivity: 'Du organisierst diese Aktivität.',
+      notOpen: 'Diese Aktivität nimmt keine Anfragen an.',
+      alreadyStarted: 'Diese Aktivität hat bereits begonnen.',
+      previouslyDeclined: 'Diese Anfrage wurde bereits abgelehnt.',
+      full: 'Diese Aktivität ist voll.',
+      alreadyDecided: 'Über diese Anfrage hast du bereits entschieden.',
+      notOrganizer: 'Nur die organisierende Person kann das entscheiden.',
+      nothingToWithdraw: 'Es gibt nichts zurückzuziehen.',
+      unknown: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+    },
   },
 
   organizer: {

@@ -482,6 +482,23 @@ export type Database = {
         Args: { p_activity_id: string }
         Returns: number
       }
+      activity_roster: {
+        Args: { p_activity_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          display_name: string
+          message: string
+          request_id: string
+          status: Database['public']['Enums']['join_request_status']
+          strava_connected: boolean
+          user_id: string
+        }[]
+      }
+      decide_join_request: {
+        Args: { p_approve: boolean; p_request_id: string }
+        Returns: Database['public']['Enums']['join_request_status']
+      }
       delete_comment: { Args: { p_comment_id: string }; Returns: undefined }
       is_blocked_between: {
         Args: { p_a: string; p_b: string }
@@ -523,9 +540,17 @@ export type Database = {
           visibility_radius_m: number
         }[]
       }
+      request_to_join: {
+        Args: { p_activity_id: string; p_message?: string }
+        Returns: Database['public']['Enums']['join_request_status']
+      }
       snap_point_to_grid: {
         Args: { p_grid_m?: number; p_point: unknown }
         Returns: unknown
+      }
+      withdraw_join_request: {
+        Args: { p_activity_id: string }
+        Returns: undefined
       }
     }
     Enums: {

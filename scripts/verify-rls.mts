@@ -143,5 +143,113 @@ check(
   `rows=${runs.data?.length}`,
 )
 
+// ---------------------------------------------------------------------------
+// Join requests
+//
+// These need a signed-in client. The rules that matter here are not "this row
+// is yours" — they are "which party may move this row to which state", which is
+// exactly the kind of thing an RLS policy gets wrong quietly.
+// ---------------------------------------------------------------------------
+
+const anonRoster = await anon.rpc('activity_roster', {
+  p_activity_id: rows[0].id as string,
+})
+check(
+  'roster empty for anonymous viewers',
+  (anonRoster.data?.length ?? 0) === 0,
+  `rows=${anonRoster.data?.length ?? 0}`,
+)
+
+const anonJoin = await anon.rpc('request_to_join', {
+  p_activity_id: rows[0].id as string,
+})
+check('anon cannot request to join', anonJoin.error !== null, anonJoin.error?.code)
+
+const member = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+)
+const signIn = await member.auth.signInWithPassword({
+  email: 'noah@demo.rundum.app',
+  password: 'rundum-demo-password',
+})
+
+if (signIn.error || !signIn.data.user) {
+  check('sign in as demo user', false, signIn.error?.message ?? 'no user')
+} else {
+  const me = signIn.data.user.id
+
+  // Someone else's activity, so requesting is a legitimate thing to do.
+  const target = rows.find((r) => r.owner_id !== me)
+  const targetId = target?.id as string
+
+  const request = await member.rpc('request_to_join', {
+    p_activity_id: targetId,
+    p_message: 'Verification run',
+  })
+  check(
+    'a member can request to join',
+    request.error === null,
+    request.error?.message ?? String(request.data),
+  )
+
+  const { data: mine } = await member
+    .from('join_requests')
+    .select('id, status')
+    .eq('activity_id', targetId)
+    .eq('user_id', me)
+    .maybeSingle()
+
+  // The whole point of routing decisions through an RPC: the requester must not
+  // be able to grant themselves the thing they are waiting for.
+  const selfApprove = await member
+    .from('join_requests')
+    .update({ status: 'approved' })
+    .eq('id', mine?.id ?? '')
+    .select('id')
+  check(
+    'a requester cannot approve their own request',
+    (selfApprove.data?.length ?? 0) === 0,
+    `rows=${selfApprove.data?.length ?? 0} err=${selfApprove.error?.code ?? 'none'}`,
+  )
+
+  const selfApproveRpc = await member.rpc('decide_join_request', {
+    p_request_id: mine?.id ?? '00000000-0000-0000-0000-000000000000',
+    p_approve: true,
+  })
+  check(
+    'a requester cannot decide their own request',
+    selfApproveRpc.error?.code === 'RU009',
+    selfApproveRpc.error?.code ?? 'no error',
+  )
+
+  const preApproved = await member.from('join_requests').insert({
+    activity_id: rows[1].id as string,
+    user_id: me,
+    status: 'approved',
+  } as never)
+  check(
+    'a request cannot be created pre-approved',
+    preApproved.error !== null,
+    preApproved.error?.code,
+  )
+
+  const otherRoster = await member.rpc('activity_roster', {
+    p_activity_id: targetId,
+  })
+  check(
+    'a pending requester sees no roster',
+    (otherRoster.data?.length ?? 0) === 0,
+    `rows=${otherRoster.data?.length ?? 0}`,
+  )
+
+  const withdraw = await member.rpc('withdraw_join_request', {
+    p_activity_id: targetId,
+  })
+  check('a member can withdraw', withdraw.error === null, withdraw.error?.message)
+
+  await member.auth.signOut()
+}
+
 console.log(`\n${failures === 0 ? 'All checks passed' : failures + ' CHECK(S) FAILED'}`)
 process.exit(failures === 0 ? 0 : 1)

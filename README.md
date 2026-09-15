@@ -12,7 +12,7 @@ others have planned within a radius you choose.
 > only as a sign-in provider, with the user's explicit consent, and never reads
 > or displays Strava activity data.
 
-**Status:** early prototype, under active development. Phases 1–5 of 10.
+**Status:** early prototype, under active development. Phases 1–6 of 10.
 
 ## What it does
 
@@ -20,7 +20,7 @@ others have planned within a radius you choose.
 - Create activities with a sport, time, approximate location, distance,
   pace or level, and a participant limit
 - Discover activities nearby within a configurable radius
-- Request to join; organizers approve or decline
+- Request to join with an optional note; organizers approve or decline
 - A public comment section on every activity
 - Report and block, so the space stays usable
 
@@ -119,7 +119,10 @@ refuses to load when `NODE_ENV=production`, regardless of the flag.
 policy. It asserts, from outside the app with only the public anon key, that
 `strava_tokens` is unreachable, that hidden and archived activities stay
 invisible, that stored coordinates sit on the grid, and that both the searcher's
-and the organizer's radius are enforced.
+and the organizer's radius are enforced. It then signs in as a demo user to
+check the rules a policy cannot express on its own — that a requester cannot
+approve their own join request, and that a pending requester cannot see who else
+is coming.
 
 ## Contributing
 

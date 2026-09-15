@@ -15,12 +15,19 @@ export function ParticipantLimitField({
   onChange,
   hint,
   error,
+  /**
+   * Lowest limit still allowed, i.e. how many people are already approved.
+   * Enforced again in the Server Action; this stops the organizer from typing
+   * a number that would be rejected rather than explaining it afterwards.
+   */
+  minimum = 1,
 }: {
   /** null means no limit. */
   value: number | null
   onChange: (value: number | null) => void
   hint?: string
   error?: string
+  minimum?: number
 }) {
   const unlimited = value === null
   const { t } = useI18n()
@@ -33,12 +40,12 @@ export function ParticipantLimitField({
             id="max"
             type="number"
             inputMode="numeric"
-            min="1"
+            min={String(minimum)}
             max="100"
             value={String(value)}
             onChange={(event) => {
               const next = Number(event.target.value)
-              onChange(Number.isFinite(next) ? next : 1)
+              onChange(Number.isFinite(next) ? Math.max(next, minimum) : minimum)
             }}
           />
         ) : null}
@@ -47,7 +54,9 @@ export function ParticipantLimitField({
           <input
             type="checkbox"
             checked={unlimited}
-            onChange={(event) => onChange(event.target.checked ? null : 10)}
+            onChange={(event) =>
+              onChange(event.target.checked ? null : Math.max(10, minimum))
+            }
             className="accent-brand h-5 w-5"
           />
           {t.create.noLimitOption}

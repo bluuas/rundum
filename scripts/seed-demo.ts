@@ -605,22 +605,44 @@ async function main() {
   // --- Join requests and comments ----------------------------------------
   const joinable = (inserted ?? []).filter((row) => row.status === 'published')
 
+  // Every join state appears somewhere in the seed, so each branch of the join
+  // UI — waiting, in, declined — can be seen without first creating it by hand.
   const joinRows = joinable.slice(0, 12).flatMap((activity, index) => {
     const candidates = userIds.filter((id) => id !== activity.owner_id)
-    return [
+    const rows: Array<{
+      activity_id: string
+      user_id: string
+      status: 'pending' | 'approved' | 'declined'
+      message: string
+      decided_at: string | null
+    }> = [
       {
         activity_id: activity.id,
         user_id: candidates[index % candidates.length],
-        status: 'approved' as const,
+        status: 'approved',
         message: 'Looking forward to it.',
+        decided_at: new Date().toISOString(),
       },
       {
         activity_id: activity.id,
         user_id: candidates[(index + 1) % candidates.length],
-        status: index % 3 === 0 ? ('pending' as const) : ('approved' as const),
+        status: index % 3 === 0 ? 'pending' : 'approved',
         message: 'Is the pace flexible?',
+        decided_at: index % 3 === 0 ? null : new Date().toISOString(),
       },
     ]
+
+    if (index % 4 === 0 && candidates.length > 2) {
+      rows.push({
+        activity_id: activity.id,
+        user_id: candidates[(index + 2) % candidates.length],
+        status: 'declined',
+        message: 'Can I join even though I am much slower?',
+        decided_at: new Date().toISOString(),
+      })
+    }
+
+    return rows
   })
 
   const { error: joinError } = await supabase.from('join_requests').insert(joinRows)

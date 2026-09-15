@@ -96,6 +96,13 @@ German and English, German by default — Schwyz is German-speaking.
   endpoint).
 - Validation schemas in `src/lib/validation/` are shared by the client form and
   the server action, so the two cannot drift.
+- **A rule more specific than "this row is yours" belongs in a `security
+definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
+  not which column they may change or which state transition they may make —
+  which is how `join_requests_update` once let a requester approve their own
+  request. `delete_comment`, `decide_join_request` and `activity_roster` are the
+  pattern. Such RPCs raise application-defined SQLSTATEs (`RU001`…), and the UI
+  maps the code to a translated message; never match on the exception text.
 - Three Supabase clients in `src/lib/supabase/`: `browser`, `server`
   (request-scoped, respects RLS) and `admin` (service-role, bypasses RLS).
   An ESLint rule blocks importing `admin` outside `scripts/`, `src/app/api/`

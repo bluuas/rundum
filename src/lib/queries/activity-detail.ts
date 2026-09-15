@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import type { ActivityLevel, ActivityStatus } from '@/lib/supabase/rows'
+import type {
+  ActivityLevel,
+  ActivityStatus,
+  JoinRequestStatus,
+  RosterEntry,
+} from '@/lib/supabase/rows'
 
 export type ActivityDetail = {
   id: string
@@ -140,4 +145,46 @@ export async function getComments(activityId: string): Promise<CommentWithAuthor
       authorStravaConnected: author?.strava_connected ?? false,
     }
   })
+}
+
+/**
+ * The people on an activity: approved participants, and — for the organizer —
+ * the requests still waiting.
+ *
+ * Returns an empty list for anyone not entitled to see it, which is the same
+ * shape as "nobody has joined yet". The caller does not need to know which,
+ * because both render as no roster; the database decides.
+ */
+export async function getRoster(activityId: string): Promise<RosterEntry[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.rpc('activity_roster', {
+    p_activity_id: activityId,
+  })
+
+  if (error || !data) return []
+  return data as RosterEntry[]
+}
+
+/**
+ * The viewer's own request on this activity, if any.
+ *
+ * Read straight from the table rather than through an RPC: the join_requests
+ * select policy already limits a user to their own rows and their own
+ * activities' rows, so this needs no extra privilege.
+ */
+export async function getMyJoinRequest(
+  activityId: string,
+  userId: string,
+): Promise<JoinRequestStatus | null> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('join_requests')
+    .select('status')
+    .eq('activity_id', activityId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  return data?.status ?? null
 }
