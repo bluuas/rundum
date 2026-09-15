@@ -21,9 +21,47 @@ Schwyz, CH. Primary success metric: **number of activities created**.
 - **Never store or display an exact location.** Every coordinate passes through
   `snapToGrid` in `src/lib/geo.ts` before it reaches the database; feed
   distances are bucketed via `formatDistanceBucket`.
-- **Say "Strava-connected", never "verified".**
-- **Never imply affiliation with Strava**, and never scrape it.
+- **Dates and times are always Swiss.** 24-hour clock, `DD.MM.YYYY`. Never
+  AM/PM, never month-first. Use the helpers in `src/lib/format.ts` and never
+  `toLocaleString`, `toLocaleDateString` or a bare `Intl.DateTimeFormat` for a
+  user-visible date — their output depends on the runtime's locale data, which
+  is exactly how an en-US "7:30 PM" gets in. Native `<input type="date">` and
+  `<input type="time">` render in the _browser's_ locale and cannot be
+  overridden, so always restate the chosen moment underneath with
+  `formatStartFull`.
 - **Ask before adding anything outside the MVP scope.**
+
+## Strava API compliance
+
+Binding terms: <https://www.strava.com/legal/api> and the brand guidelines at
+<https://developers.strava.com/guidelines/>. These are contractual, not
+stylistic.
+
+- **Say "Strava-connected", never "verified".** Rundum has verified nothing
+  about the person, and must not imply Strava endorses them.
+- **Never imply affiliation.** The app is not named after Strava, must not
+  "suggest that your application is an official Strava app", and the word
+  "Strava" must never be set larger or more prominently than "Rundum".
+- **Attribution wording is fixed.** Only "Powered by Strava" or "Compatible
+  with Strava" may be used as an interoperability claim. Rundum uses
+  _Compatible with Strava_, since it does not display Strava activity data.
+- **Never draw a Strava logo.** Logos must be the official unmodified EPS/SVG/
+  PNG assets: "Never modify, alter or animate Strava logos", and "Never use any
+  part of a Strava logo as the icon for your application". Do not approximate
+  one in CSS or SVG — if the asset is not in the repo, use plain text.
+- **Sign-in must use the official "Connect with Strava" button**, unmodified,
+  pointing at `https://www.strava.com/oauth/authorize`.
+- **Links to Strava content read "View on Strava"**, styled bold, underlined,
+  or in `#FC5200`.
+- **A user's Strava data may only be shown to that user.** Strava data about
+  _other_ users may not be displayed at all, even when public on Strava. So
+  Strava-sourced profile fields are a one-time seed for a Rundum profile the
+  user then owns and consents to show; they are never re-read and re-published.
+- **Never scrape, and never bulk-collect.** Only call Strava during sign-in.
+- **Disconnecting must delete.** Removing the Strava connection must delete the
+  `strava_tokens` row and clear Strava-derived fields.
+- **Do not replicate Strava's own functionality.** Rundum plans future
+  activities; it must not record, import or analyse past workouts.
 
 ## Architecture
 

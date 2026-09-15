@@ -79,7 +79,9 @@ export function haversineMeters(a: LatLng, b: LatLng): number {
 export function formatDistanceBucket(meters: number): string {
   if (!Number.isFinite(meters) || meters < 0) return ''
   if (meters < 1_000) return 'under 1 km'
-  if (meters < 10_000) return `~${roundTo(meters / 1_000, 1).toLocaleString('en-CH')} km`
+  // toFixed rather than toLocaleString: Swiss decimals use a dot, and a
+  // locale-dependent call here could render "2,5 km" on another runtime.
+  if (meters < 10_000) return `~${(Math.round(meters / 100) / 10).toFixed(1)} km`
   return `~${Math.round(meters / 1_000)} km`
 }
 

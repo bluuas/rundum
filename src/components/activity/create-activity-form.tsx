@@ -7,6 +7,7 @@ import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
 import { ParticipantLimitField } from '@/components/activity/participant-limit-field'
+import { WhenFields } from '@/components/activity/when-fields'
 import {
   DEFAULT_CITY_CENTER,
   DEFAULT_RADIUS_M,
@@ -18,6 +19,7 @@ import {
 } from '@/lib/geo'
 import { LEVELS, LEVEL_LABELS, SPORTS, getSport, type SportKey } from '@/lib/sports'
 import { activityInputSchema, combineDateAndTime } from '@/lib/validation/activity'
+import { formatStartFull, toDateInputValue } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { z } from 'zod'
 
@@ -33,7 +35,9 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
 
   const [step, setStep] = useState(0)
   const [sportKey, setSportKey] = useState<SportKey | null>(null)
-  const [date, setDate] = useState('')
+  // Prefilled with today: most activities are planned for the next day or
+  // two, so an empty date field is one tap of pure friction.
+  const [date, setDate] = useState(() => toDateInputValue(new Date()))
   const [time, setTime] = useState('')
   const [center, setCenter] = useState<LatLng>(DEFAULT_CITY_CENTER)
   const [locationLabel, setLocationLabel] = useState('')
@@ -169,28 +173,13 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
       {currentStep === 'When' ? (
         <div className="space-y-4">
           <h2 className="text-fg text-base font-semibold">When is it?</h2>
-          <Field label="Date" htmlFor="date" error={fieldErrors.startsAt?.[0]}>
-            <TextInput
-              id="date"
-              type="date"
-              value={date}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(event) => setDate(event.target.value)}
-            />
-          </Field>
-          <Field label="Start time" htmlFor="time">
-            <TextInput
-              id="time"
-              type="time"
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
-            />
-          </Field>
-          {date && time && combineDateAndTime(date, time) <= new Date() ? (
-            <p role="alert" className="text-danger text-xs">
-              That time has already passed. Pick a time in the future.
-            </p>
-          ) : null}
+          <WhenFields
+            date={date}
+            time={time}
+            onDateChange={setDate}
+            onTimeChange={setTime}
+            dateError={fieldErrors.startsAt?.[0]}
+          />
         </div>
       ) : null}
 
@@ -355,17 +344,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
             <Row label="Title" value={title} />
             <Row
               label="When"
-              value={
-                date && time
-                  ? combineDateAndTime(date, time).toLocaleString('en-CH', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
-                  : '—'
-              }
+              value={date && time ? formatStartFull(combineDateAndTime(date, time)) : '—'}
             />
             <Row label="Where" value={`${locationLabel} (approximate area)`} />
             <Row

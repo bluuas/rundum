@@ -1,15 +1,15 @@
 import { StravaConnectedBadge } from '@/components/activity/badges'
 import { SignOutButton } from '@/components/profile/sign-out-button'
+import { StravaAttribution } from '@/components/strava-attribution'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
 import { ButtonLink } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/states'
+import { formatDate } from '@/lib/format'
 import { getProfileSummary } from '@/lib/queries/my-activities'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Profile' }
-
-const MEMBER_SINCE = new Intl.DateTimeFormat('en-CH', { month: 'long', year: 'numeric' })
 
 export default async function ProfilePage() {
   const userId = await getCurrentUserId()
@@ -25,6 +25,7 @@ export default async function ProfilePage() {
             title="Not signed in"
             description="Strava sign-in is coming. Until then, use the account switcher in the header."
           />
+          <StravaAttribution className="mt-6 text-center" />
         </PageBody>
       </>
     )
@@ -72,7 +73,7 @@ export default async function ProfilePage() {
         </dl>
 
         <p className="text-fg-subtle text-xs">
-          Member since {MEMBER_SINCE.format(new Date(profile.createdAt))}
+          Member since {formatDate(profile.createdAt)}
         </p>
 
         {/*
@@ -95,6 +96,8 @@ export default async function ProfilePage() {
           </ButtonLink>
           <SignOutButton />
         </div>
+
+        <StravaAttribution />
       </PageBody>
     </>
   )

@@ -210,7 +210,12 @@ export async function setActivityStatus(
 
   revalidatePath('/')
   revalidatePath('/me')
-  revalidatePath(`/activities/${activityId}`)
+
+  // Revalidating the activity's own path would re-render the page the client is
+  // about to leave, and that render gets aborted mid-stream — which is what
+  // logged "The destination stream closed early". A deleted activity has no
+  // page worth refreshing.
+  if (status !== 'deleted') revalidatePath(`/activities/${activityId}`)
 
   return { ok: true, data: undefined }
 }

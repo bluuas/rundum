@@ -6,10 +6,11 @@ Rundum is a mobile-first web app for discovering and planning local sports
 activities. Create an upcoming run, ride, hike or padel match, and see what
 others have planned within a radius you choose.
 
-> **Not affiliated with Strava.** Rundum is an independent project. It is not
-> affiliated with, endorsed by, or sponsored by Strava. Strava is a trademark of
-> Strava, Inc. Rundum uses Strava only as a sign-in provider, with the user's
-> explicit consent.
+> **Compatible with Strava.** Rundum is an independent project. It is not
+> affiliated with, endorsed by, or sponsored by Strava, and is not an official
+> Strava application. Strava is a trademark of Strava, Inc. Rundum uses Strava
+> only as a sign-in provider, with the user's explicit consent, and never reads
+> or displays Strava activity data.
 
 **Status:** early prototype, under active development. Phases 1–5 of 10.
 
@@ -25,6 +26,25 @@ others have planned within a radius you choose.
 
 Launch city is **Schwyz, Switzerland**. The data model is multi-city from the
 start — every activity carries a `city_id`.
+
+## Strava API compliance
+
+Rundum is built against the [Strava API Agreement](https://www.strava.com/legal/api)
+and [brand guidelines](https://developers.strava.com/guidelines/). In practice:
+
+- The only permitted interoperability phrases are "Powered by Strava" and
+  "Compatible with Strava"; Rundum uses the latter, since it displays no Strava
+  activity data
+- Accounts are labelled **Strava-connected**, never "verified" — Rundum has
+  verified nothing about the person
+- Strava logos are never redrawn or approximated; sign-in uses the official,
+  unmodified "Connect with Strava" button
+- A user's Strava data is only ever shown to that user. Strava-sourced profile
+  fields seed a Rundum profile the user then owns and consents to display
+- Strava is called only during sign-in. Nothing is scraped or bulk-collected
+- Disconnecting deletes the stored tokens and clears Strava-derived fields
+- Rundum plans future activities; it does not record, import or analyse past
+  workouts, so it does not replicate Strava's own functionality
 
 ## Privacy by design
 

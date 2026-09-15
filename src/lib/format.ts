@@ -1,23 +1,54 @@
 /**
- * Date and time formatting for the feed and detail views.
+ * Date and time formatting.
  *
- * Deliberately not date-fns's formatDistanceToNow: "in 14 hours" is worse than
- * "Tomorrow 07:00" for deciding whether you can make it.
+ * Swiss conventions throughout, without exception:
+ *   - 24-hour time, never AM/PM
+ *   - numeric dates as DD.MM.YYYY, never MM/DD/YYYY or YYYY-MM-DD
+ *
+ * These are hand-rolled rather than delegated to Intl.DateTimeFormat, because
+ * Intl output depends on the runtime's ICU data and on the locale tag being
+ * interpreted as expected — which is exactly how an en-US "7:30 PM" slips in.
+ * Formatting this small is not worth that risk, and it makes the rule testable.
+ *
+ * Weekday and month names stay English, since the interface is English. It is
+ * the numeric conventions that are Swiss.
  */
 
-const TIME = new Intl.DateTimeFormat('en-CH', { hour: '2-digit', minute: '2-digit' })
-const WEEKDAY_TIME = new Intl.DateTimeFormat('en-CH', {
-  weekday: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-})
-const FULL = new Intl.DateTimeFormat('en-CH', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  hour: '2-digit',
-  minute: '2-digit',
-})
+const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAY_LONG = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+]
+
+function pad(value: number): string {
+  return String(value).padStart(2, '0')
+}
+
+function toDate(value: string | Date): Date {
+  return typeof value === 'string' ? new Date(value) : value
+}
+
+/** 24-hour time, "19:57". Never 7:57 PM. */
+export function formatTime(value: string | Date): string {
+  const date = toDate(value)
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+/** Swiss numeric date, "15.09.2026". */
+export function formatDate(value: string | Date): string {
+  const date = toDate(value)
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`
+}
+
+/** Swiss date and time together, "15.09.2026, 19:57". */
+export function formatDateTime(value: string | Date): string {
+  return `${formatDate(value)}, ${formatTime(value)}`
+}
 
 function daysApart(a: Date, b: Date): number {
   const startA = new Date(a).setHours(0, 0, 0, 0)
@@ -25,32 +56,35 @@ function daysApart(a: Date, b: Date): number {
   return Math.round((startA - startB) / 86_400_000)
 }
 
-/** Short label for cards: "Today 18:30", "Tomorrow 07:00", "Sat 09:00". */
+/**
+ * Short label for cards: "Today 18:30", "Tomorrow 07:00", "Sat 09:00",
+ * "15.09.2026 09:00".
+ *
+ * Relative words only within a week — beyond that "in 23 days" is harder to act
+ * on than a date.
+ */
 export function formatStartShort(startsAt: string | Date, now = new Date()): string {
-  const date = typeof startsAt === 'string' ? new Date(startsAt) : startsAt
+  const date = toDate(startsAt)
   const days = daysApart(date, now)
+  const time = formatTime(date)
 
-  if (days === 0) return `Today ${TIME.format(date)}`
-  if (days === 1) return `Tomorrow ${TIME.format(date)}`
-  if (days === -1) return `Yesterday ${TIME.format(date)}`
-  if (days > 1 && days < 7) return WEEKDAY_TIME.format(date)
+  if (days === 0) return `Today ${time}`
+  if (days === 1) return `Tomorrow ${time}`
+  if (days === -1) return `Yesterday ${time}`
+  if (days > 1 && days < 7) return `${WEEKDAY_SHORT[date.getDay()]} ${time}`
 
-  return new Intl.DateTimeFormat('en-CH', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
+  return `${formatDate(date)} ${time}`
 }
 
-/** Full label for the detail page. */
+/** Full label for the detail page: "Tuesday, 15.09.2026, 19:57". */
 export function formatStartFull(startsAt: string | Date): string {
-  return FULL.format(typeof startsAt === 'string' ? new Date(startsAt) : startsAt)
+  const date = toDate(startsAt)
+  return `${WEEKDAY_LONG[date.getDay()]}, ${formatDate(date)}, ${formatTime(date)}`
 }
 
-/** Relative label for comments: "just now", "2h ago", "12 Sept". */
+/** Relative label for comments: "just now", "2h ago", then a Swiss date. */
 export function formatRelative(timestamp: string | Date, now = new Date()): string {
-  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp
+  const date = toDate(timestamp)
   const seconds = Math.round((now.getTime() - date.getTime()) / 1000)
 
   if (seconds < 60) return 'just now'
@@ -58,12 +92,21 @@ export function formatRelative(timestamp: string | Date, now = new Date()): stri
   if (seconds < 86_400) return `${Math.floor(seconds / 3_600)}h ago`
   if (seconds < 604_800) return `${Math.floor(seconds / 86_400)}d ago`
 
-  return new Intl.DateTimeFormat('en-CH', { day: 'numeric', month: 'short' }).format(date)
+  return formatDate(date)
 }
 
 export function isArchived(startsAt: string | Date, now = new Date()): boolean {
-  const date = typeof startsAt === 'string' ? new Date(startsAt) : startsAt
-  return date.getTime() < now.getTime()
+  return toDate(startsAt).getTime() < now.getTime()
+}
+
+/** Value for an <input type="date">, which is always ISO regardless of display. */
+export function toDateInputValue(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/** Value for an <input type="time">, which is always 24-hour regardless of display. */
+export function toTimeInputValue(date: Date): string {
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 /**

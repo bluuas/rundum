@@ -41,6 +41,13 @@ test('an organizer can edit their activity', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete activity' }).click()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await page.waitForURL('**/me')
+
+  // Deleted means gone for everyone, including the owner who still has read
+  // access to their own rows at the database level.
+  await page.goto(`/activities/${id}`)
+  await expect(page.getByText('Page not found')).toBeVisible()
+  await page.goto('/me')
+  await expect(page.getByRole('link').filter({ hasText: title })).toHaveCount(0)
 })
 
 test('an organizer can hide, publish, cancel and reinstate', async ({ page }) => {

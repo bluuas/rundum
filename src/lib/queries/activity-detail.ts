@@ -60,6 +60,12 @@ export async function getActivityDetail(id: string): Promise<ActivityDetail | nu
 
   if (error || !data) return null
 
+  // RLS lets an owner read their own rows in any state, including 'deleted'.
+  // That is right for the database but wrong for this page: a deleted activity
+  // should be gone for everyone, its owner included. They still see their
+  // remaining activities on /me.
+  if (data.status === 'deleted') return null
+
   // meeting_point is a PostGIS geography and does not survive PostgREST as
   // usable coordinates, so read the already-snapped lat/lng through the RPC
   // that exposes them.

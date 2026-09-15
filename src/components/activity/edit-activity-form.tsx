@@ -8,6 +8,7 @@ import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
 import { ParticipantLimitField } from '@/components/activity/participant-limit-field'
+import { WhenFields } from '@/components/activity/when-fields'
 import {
   RADIUS_OPTIONS_M,
   formatPace,
@@ -18,6 +19,7 @@ import {
 } from '@/lib/geo'
 import { LEVELS, LEVEL_LABELS, SPORTS, getSport, type SportKey } from '@/lib/sports'
 import { activityInputSchema, combineDateAndTime } from '@/lib/validation/activity'
+import { toDateInputValue, toTimeInputValue } from '@/lib/format'
 import type { ActivityDetail } from '@/lib/queries/activity-detail'
 
 const AREA_CIRCLE_RADIUS_M = 250
@@ -36,8 +38,8 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
   const starts = useMemo(() => new Date(activity.startsAt), [activity.startsAt])
 
   const [sportKey, setSportKey] = useState<SportKey>(activity.sportKey as SportKey)
-  const [date, setDate] = useState(toDateInput(starts))
-  const [time, setTime] = useState(toTimeInput(starts))
+  const [date, setDate] = useState(toDateInputValue(starts))
+  const [time, setTime] = useState(toTimeInputValue(starts))
   const [center, setCenter] = useState<LatLng>({ lat: activity.lat, lng: activity.lng })
   const [locationLabel, setLocationLabel] = useState(activity.locationLabel)
   const [visibilityRadiusM, setVisibilityRadiusM] = useState(activity.visibilityRadiusM)
@@ -102,8 +104,11 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         setFieldErrors(result.fieldErrors ?? {})
         return
       }
+      // push() alone is enough: updateActivity already called revalidatePath,
+      // so the destination renders with fresh data. An extra refresh() here
+      // fetched the same route a second time and aborted the first stream,
+      // which is what logged "The destination stream closed early".
       router.push(`/activities/${activity.id}`)
-      router.refresh()
     })
   }
 
@@ -146,24 +151,14 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         />
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Date" htmlFor="date" error={fieldErrors.startsAt?.[0]}>
-          <TextInput
-            id="date"
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-          />
-        </Field>
-        <Field label="Start time" htmlFor="time">
-          <TextInput
-            id="time"
-            type="time"
-            value={time}
-            onChange={(event) => setTime(event.target.value)}
-          />
-        </Field>
-      </div>
+      <WhenFields
+        date={date}
+        time={time}
+        onDateChange={setDate}
+        onTimeChange={setTime}
+        dateError={fieldErrors.startsAt?.[0]}
+        layout="side-by-side"
+      />
 
       <div className="space-y-2">
         <p className="text-fg text-sm font-medium">Meeting area</p>
@@ -290,15 +285,4 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       </div>
     </div>
   )
-}
-
-/** Local date, not UTC: toISOString() would shift the day either side of midnight. */
-function toDateInput(date: Date): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-function toTimeInput(date: Date): string {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
