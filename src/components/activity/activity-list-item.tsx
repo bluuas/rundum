@@ -44,7 +44,7 @@ export function ActivityListItem({
   return (
     <Link
       href={localeHref(locale, `/activities/${activity.id}`)}
-      className="border-border bg-surface hover:border-border-strong rounded-card block border p-4 transition-colors"
+      className="hover:bg-surface-muted -mx-2 block px-2 py-4 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -63,7 +63,7 @@ export function ActivityListItem({
         <p className="text-fg-muted mt-1 text-sm">{facts.join(' · ')}</p>
       ) : null}
 
-      <div className="border-border mt-3 flex items-center justify-between gap-2 border-t pt-3 text-xs">
+      <div className="mt-3 flex items-center justify-between gap-2 text-xs">
         <span className="text-fg-muted font-medium">{joinedLabel}</span>
 
         {role === 'organizer' && activity.pendingCount > 0 && !archived ? (

@@ -173,7 +173,21 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
   (a 480px centred column that already clears the fixed bottom nav).
 - Tap targets are at least 44px. Design tokens are in `src/app/globals.css`;
   use semantic classes (`bg-surface`, `text-fg-muted`) rather than raw palette
-  colours, so dark mode keeps working.
+  colours, so dark mode keeps working. A colour literal in a component is a
+  bug — it survived the last repaint as `#0f766e` on the map circle, which is
+  why that now takes its colour from `--brand` through a class.
+- **Lines, not boxes.** Warm near-white paper, deep maroon accent. `--surface`
+  equals `--bg` on purpose: a feed entry is part of the page rather than an
+  object on it, so activity rows have no border, no fill and no radius, and the
+  hairline between them comes from `divide-y` on the list. Panels that really
+  are separate objects — organizer tools, the consent card, comments — keep
+  their border, which is what still makes them read.
+- **Sport badges are neutral.** One grey pill for every sport; the emoji and the
+  name carry it. Ten hues were the loudest thing on a monochrome screen and read
+  as decoration rather than information.
+- `--danger` is a brighter red than `--brand`, so "Cancel activity" does not
+  arrive in the same colour as "Request to join". With a single red accent the
+  two will always be close; keep them apart rather than letting them merge.
 
 ## Before pushing
 

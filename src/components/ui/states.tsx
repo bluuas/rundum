@@ -17,7 +17,7 @@ export function Skeleton({ className }: { className?: string }) {
 /** Card-shaped placeholder matching ActivityCard's footprint. */
 export function ActivityCardSkeleton() {
   return (
-    <div className="rounded-card border-border bg-surface border p-4">
+    <div className="py-4">
       <div className="flex items-center gap-2">
         <Skeleton className="h-6 w-20 rounded-full" />
         <Skeleton className="h-6 w-16 rounded-full" />
@@ -40,7 +40,7 @@ export function ActivityListSkeleton({
   label?: string
 }) {
   return (
-    <div className="space-y-3" aria-busy="true" aria-live="polite">
+    <div className="divide-border divide-y" aria-busy="true" aria-live="polite">
       <span className="sr-only">{label}</span>
       {Array.from({ length: count }, (_, i) => (
         <ActivityCardSkeleton key={i} />

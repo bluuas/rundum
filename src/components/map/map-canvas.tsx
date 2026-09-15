@@ -56,12 +56,13 @@ export default function MapCanvas({
       <Circle
         center={[center.lat, center.lng]}
         radius={areaRadiusM}
-        pathOptions={{
-          color: '#0f766e',
-          weight: 2,
-          fillColor: '#0f766e',
-          fillOpacity: 0.12,
-        }}
+        /*
+          Styled through a class rather than a colour literal, so the circle
+          follows the brand token — including when the viewer switches to dark
+          mode with the map already on screen. Leaflet writes colours as SVG
+          presentation attributes, which the stylesheet overrides.
+        */
+        pathOptions={{ className: 'area-circle', weight: 2, fillOpacity: 0.12 }}
       />
 
       {onCenterChange ? <CenterReporter onCenterChange={onCenterChange} /> : null}

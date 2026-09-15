@@ -35,6 +35,17 @@ export type Sport = {
   badgeClass: string
 }
 
+/**
+ * One neutral pill for every sport.
+ *
+ * Rundum used to give each sport its own hue. Against a monochrome palette ten
+ * hues were the loudest thing on the screen and read as decoration rather than
+ * as information, so the emoji and the name carry the sport instead. The token
+ * stays per-sport rather than being inlined, so a single sport could be given
+ * its own treatment later without touching every call site.
+ */
+const NEUTRAL_BADGE = 'bg-surface-muted text-fg-muted'
+
 export const SPORTS: readonly Sport[] = [
   {
     key: 'run',
@@ -42,7 +53,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🏃',
     supportsDistance: true,
     supportsPace: true,
-    badgeClass: 'bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'ride',
@@ -50,7 +61,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🚴',
     supportsDistance: true,
     supportsPace: true,
-    badgeClass: 'bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'walk',
@@ -58,7 +69,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🚶',
     supportsDistance: true,
     supportsPace: false,
-    badgeClass: 'bg-lime-100 text-lime-900 dark:bg-lime-950 dark:text-lime-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'hike',
@@ -66,8 +77,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🥾',
     supportsDistance: true,
     supportsPace: false,
-    badgeClass:
-      'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'workout',
@@ -75,7 +85,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🤸',
     supportsDistance: false,
     supportsPace: false,
-    badgeClass: 'bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'weight_training',
@@ -83,7 +93,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🏋️',
     supportsDistance: false,
     supportsPace: false,
-    badgeClass: 'bg-slate-200 text-slate-900 dark:bg-slate-800 dark:text-slate-100',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'swim',
@@ -91,7 +101,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🏊',
     supportsDistance: true,
     supportsPace: true,
-    badgeClass: 'bg-cyan-100 text-cyan-900 dark:bg-cyan-950 dark:text-cyan-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'yoga',
@@ -99,7 +109,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🧘',
     supportsDistance: false,
     supportsPace: false,
-    badgeClass: 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'tennis',
@@ -107,7 +117,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🎾',
     supportsDistance: false,
     supportsPace: false,
-    badgeClass: 'bg-yellow-100 text-yellow-900 dark:bg-yellow-950 dark:text-yellow-200',
+    badgeClass: NEUTRAL_BADGE,
   },
   {
     key: 'padel',
@@ -115,7 +125,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🥎',
     supportsDistance: false,
     supportsPace: false,
-    badgeClass: 'bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200',
+    badgeClass: NEUTRAL_BADGE,
   },
 ]
 

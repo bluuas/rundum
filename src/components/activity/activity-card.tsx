@@ -31,7 +31,13 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
   return (
     <Link
       href={localeHref(locale, `/activities/${activity.id}`)}
-      className="border-border bg-surface hover:border-border-strong rounded-card block border p-4 transition-colors"
+      /*
+        No border, no fill, no radius: an activity is part of the page rather
+        than an object on it, and the hairline between entries comes from the
+        list container. The negative margin lets the hover tint reach past the
+        text so a tap has something to land on.
+      */
+      className="hover:bg-surface-muted -mx-2 block px-2 py-4 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <SportBadge sportKey={activity.sport_key} />
@@ -55,7 +61,7 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
         <p className="text-fg-muted mt-2 text-sm">{facts.join(' · ')}</p>
       ) : null}
 
-      <div className="border-border mt-3 flex items-center justify-between gap-2 border-t pt-3">
+      <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden

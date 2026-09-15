@@ -94,7 +94,9 @@ function Section({
         <h2 className="text-fg text-base font-semibold">{title}</h2>
         <span className="text-fg-subtle text-xs">{activities.length}</span>
       </div>
-      <div className={muted ? 'space-y-3 opacity-70' : 'space-y-3'}>
+      <div
+        className={muted ? 'divide-border divide-y opacity-70' : 'divide-border divide-y'}
+      >
         {activities.map((activity) => (
           <ActivityListItem key={activity.id} activity={activity} role={role} />
         ))}

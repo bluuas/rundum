@@ -97,9 +97,15 @@ async function FeedResults({
         </p>
         <SortControl filters={filters} />
       </div>
-      {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
-      ))}
+      {/*
+        divide-y rather than a border on each card: the rule belongs between
+        two entries, and a border-bottom would leave one hanging under the last.
+      */}
+      <div className="divide-border divide-y">
+        {activities.map((activity) => (
+          <ActivityCard key={activity.id} activity={activity} />
+        ))}
+      </div>
     </div>
   )
 }
