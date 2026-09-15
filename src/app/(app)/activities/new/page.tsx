@@ -1,10 +1,13 @@
+import { CreateActivityForm } from '@/components/activity/create-activity-form'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
-import { EmptyState } from '@/components/ui/states'
+import { getCurrentUserId } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Create an activity' }
 
-export default function NewActivityPage() {
+export default async function NewActivityPage() {
+  const userId = await getCurrentUserId()
+
   return (
     <>
       <AppHeader
@@ -12,11 +15,7 @@ export default function NewActivityPage() {
         back={{ href: '/', label: 'Back to discover' }}
       />
       <PageBody>
-        <EmptyState
-          icon="✏️"
-          title="Create flow coming in phase 4"
-          description="Sport, when, where, details and review — five steps, one screen at a time."
-        />
+        <CreateActivityForm signedIn={userId !== null} />
       </PageBody>
     </>
   )
