@@ -265,6 +265,13 @@ export const en = {
 
   profile: {
     title: 'Profile',
+    editHeading: 'Your details',
+    displayName: 'Display name',
+    displayNameHint: 'How you appear on activities and comments.',
+    bio: 'About you',
+    bioHint: 'A sentence or two. Sports you do, pace, what you are looking for.',
+    saved: 'Saved.',
+    edit: 'Edit profile',
     notSignedInTitle: 'Not signed in',
     notSignedInBody:
       'Strava sign-in is coming. Until then, use the account switcher in the header.',
@@ -280,6 +287,28 @@ export const en = {
 
   strava: {
     connected: 'Strava-connected',
+    connect: 'Connect with Strava',
+    connectBody:
+      'Rundum uses Strava only to sign you in. It never reads your workouts, and nothing from your Strava profile is shown to anyone until you say so.',
+    connectionHeading: 'Strava connection',
+    connectedSince: 'Your account is connected to Strava.',
+    disconnect: 'Disconnect from Strava',
+    disconnectConfirm:
+      'Disconnect from Strava? Rundum revokes its access, deletes the stored tokens and removes your Strava profile picture. Your activities, comments and name stay.',
+    disconnectYes: 'Yes, disconnect',
+    keepConnected: 'Stay connected',
+    disconnecting: 'Disconnecting…',
+    notConfigured:
+      'Strava sign-in is not configured on this deployment. Use the development switcher instead.',
+    status: {
+      connected: 'Connected to Strava.',
+      denied: 'You cancelled the Strava sign-in. Nothing was connected.',
+      state: 'That sign-in link had expired or did not match. Please try again.',
+      exchange: 'Strava did not complete the sign-in. Please try again.',
+      config: 'Strava sign-in is not configured on this deployment.',
+      linked: 'That Strava account is already connected to another Rundum account.',
+      server: 'Something went wrong while connecting. Please try again.',
+    },
     connectedTitle: 'This account signed in with Strava',
     notConnected: 'Not connected to Strava',
     attribution:

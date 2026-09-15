@@ -12,7 +12,7 @@ others have planned within a radius you choose.
 > only as a sign-in provider, with the user's explicit consent, and never reads
 > or displays Strava activity data.
 
-**Status:** early prototype, under active development. Phases 1–6 of 10.
+**Status:** early prototype, under active development. Phases 1–7 of 10.
 
 ## What it does
 
@@ -97,23 +97,52 @@ npm run db:types    # regenerate src/lib/supabase/database.types.ts
 
 ### Development sign-in
 
-Signing in with Strava needs a registered Strava application, so local
-development uses mock authentication instead. Set `ALLOW_MOCK_AUTH=true` in
-`.env.local` and a user switcher appears in the header. The mock login route
+Set `ALLOW_MOCK_AUTH=true` in `.env.local` and a user switcher appears in the
+header, letting you sign in as any seeded demo user. The mock login route
 refuses to load when `NODE_ENV=production`, regardless of the flag.
+
+### Strava sign-in
+
+Creating a Strava application requires a **Strava subscription**, and every new
+application begins in **single-player mode** — only its own owner can
+authenticate until it has ten connected athletes and passes Strava's review. The
+sign-in flow therefore cannot be exercised against real Strava before launch.
+
+Run the local stand-in instead:
+
+```bash
+npm run dev:strava     # fake Strava OAuth endpoints on :4400
+```
+
+and point the app at it:
+
+```
+STRAVA_AUTH_BASE_URL=http://localhost:4400
+STRAVA_CLIENT_ID=fake-client-id
+STRAVA_CLIENT_SECRET=fake-client-secret
+```
+
+Only the hostname differs from production. The state check, the code-for-token
+exchange, server-side token storage, profile staging, the consent step and
+deauthorization are the same code in both cases, and `e2e/strava-oauth.spec.ts`
+runs against it. Going live is an environment change, not a code change.
+
+Leaving `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` blank simply hides the
+Strava button.
 
 ## Scripts
 
-| Command             | What it does                                             |
-| ------------------- | -------------------------------------------------------- |
-| `npm run dev`       | Start the dev server                                     |
-| `npm run build`     | Production build                                         |
-| `npm run check`     | Typecheck, lint and unit tests                           |
-| `npm test`          | Unit tests (Vitest)                                      |
-| `npm run test:e2e`  | Playwright tests on a phone viewport                     |
-| `npm run smoke`     | End-to-end HTTP checks against a running dev server      |
-| `npm run db:verify` | Checks RLS boundaries against the database, as anonymous |
-| `npm run format`    | Format with Prettier                                     |
+| Command              | What it does                                             |
+| -------------------- | -------------------------------------------------------- |
+| `npm run dev`        | Start the dev server                                     |
+| `npm run dev:strava` | Local stand-in for Strava's OAuth endpoints              |
+| `npm run build`      | Production build                                         |
+| `npm run check`      | Typecheck, lint and unit tests                           |
+| `npm test`           | Unit tests (Vitest)                                      |
+| `npm run test:e2e`   | Playwright tests on a phone viewport                     |
+| `npm run smoke`      | End-to-end HTTP checks against a running dev server      |
+| `npm run db:verify`  | Checks RLS boundaries against the database, as anonymous |
+| `npm run format`     | Format with Prettier                                     |
 
 `npm run db:verify` is worth running after any change to the schema or to a
 policy. It asserts, from outside the app with only the public anon key, that

@@ -1,7 +1,7 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { revalidateLocalized } from '@/lib/revalidate'
 import { snapToGrid } from '@/lib/geo'
 import { createClient } from '@/lib/supabase/server'
 import type { JoinRequestStatus } from '@/lib/supabase/rows'
@@ -107,8 +107,8 @@ export async function createActivity(
   // Analytics must never block the user's actual goal.
   if (eventError) console.error('activity_created event failed', eventError)
 
-  revalidatePath('/')
-  revalidatePath('/me')
+  revalidateLocalized('/')
+  revalidateLocalized('/me')
 
   return { ok: true, data: { id: activity.id } }
 }
@@ -194,9 +194,9 @@ export async function updateActivity(
 
   if (!data) return { ok: false, error: 'You can only edit activities you organize' }
 
-  revalidatePath('/')
-  revalidatePath('/me')
-  revalidatePath(`/activities/${activityId}`)
+  revalidateLocalized('/')
+  revalidateLocalized('/me')
+  revalidateLocalized(`/activities/${activityId}`)
 
   return { ok: true, data: { id: activityId } }
 }
@@ -242,14 +242,14 @@ export async function setActivityStatus(
 
   if (!data) return { ok: false, error: 'You can only change activities you organize' }
 
-  revalidatePath('/')
-  revalidatePath('/me')
+  revalidateLocalized('/')
+  revalidateLocalized('/me')
 
   // Revalidating the activity's own path would re-render the page the client is
   // about to leave, and that render gets aborted mid-stream — which is what
   // logged "The destination stream closed early". A deleted activity has no
   // page worth refreshing.
-  if (status !== 'deleted') revalidatePath(`/activities/${activityId}`)
+  if (status !== 'deleted') revalidateLocalized(`/activities/${activityId}`)
 
   return { ok: true, data: undefined }
 }
@@ -274,7 +274,7 @@ export async function addComment(input: unknown): Promise<ActionResult> {
     return { ok: false, error: 'Could not post your comment. Please try again.' }
   }
 
-  revalidatePath(`/activities/${parsed.data.activityId}`)
+  revalidateLocalized(`/activities/${parsed.data.activityId}`)
   return { ok: true, data: undefined }
 }
 
@@ -301,7 +301,7 @@ export async function deleteComment(
     return { ok: false, error: 'Could not delete the comment' }
   }
 
-  revalidatePath(`/activities/${activityId}`)
+  revalidateLocalized(`/activities/${activityId}`)
   return { ok: true, data: undefined }
 }
 
@@ -357,9 +357,9 @@ function toJoinError(error: { code?: string } | null): JoinErrorCode {
 
 /** Revalidates everywhere a join is visible: the activity, the feed and /me. */
 function revalidateJoin(activityId: string) {
-  revalidatePath(`/activities/${activityId}`)
-  revalidatePath('/me')
-  revalidatePath('/')
+  revalidateLocalized(`/activities/${activityId}`)
+  revalidateLocalized('/me')
+  revalidateLocalized('/')
 }
 
 export async function requestToJoin(

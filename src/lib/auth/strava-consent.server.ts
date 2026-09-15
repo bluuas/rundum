@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateLocalized } from '@/lib/revalidate'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -125,8 +125,8 @@ export async function acceptStravaProfile(): Promise<ConsentResult> {
 
   await admin.from('strava_profile_staging').delete().eq('user_id', user.id)
 
-  revalidatePath('/profile')
-  revalidatePath('/')
+  revalidateLocalized('/profile')
+  revalidateLocalized('/')
   return { ok: true }
 }
 
@@ -159,6 +159,6 @@ export async function declineStravaProfile(): Promise<ConsentResult> {
     return { ok: false, error: 'Could not save your choice' }
   }
 
-  revalidatePath('/profile')
+  revalidateLocalized('/profile')
   return { ok: true }
 }

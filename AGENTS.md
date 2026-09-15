@@ -58,10 +58,29 @@ stylistic.
   Strava-sourced profile fields are a one-time seed for a Rundum profile the
   user then owns and consents to show; they are never re-read and re-published.
 - **Never scrape, and never bulk-collect.** Only call Strava during sign-in.
-- **Disconnecting must delete.** Removing the Strava connection must delete the
-  `strava_tokens` row and clear Strava-derived fields.
+- **Disconnecting must delete.** Removing the connection calls Strava's
+  `/oauth/deauthorize` (revoking the grant is not the same as forgetting the
+  token), then deletes the `strava_tokens` and `strava_profile_staging` rows and
+  clears `strava_athlete_id`, `strava_connected` and `avatar_url` — the avatar
+  URL points at Strava's CDN. `display_name` is deliberately kept: at the
+  consent step it stopped being a mirror of Strava Data and became the user's
+  own profile name, the one other people know them by. They can change it in
+  the profile editor, which is what makes it theirs.
 - **Do not replicate Strava's own functionality.** Rundum plans future
   activities; it must not record, import or analyse past workouts.
+
+### Working on Strava sign-in
+
+Creating a Strava application requires a **Strava subscription**, and every new
+application starts in **single-player mode** — only its own owner can
+authenticate until it has ten connected athletes and passes review. So the flow
+cannot be developed or tested against real Strava before launch.
+
+Use the local stand-in instead: `npm run dev:strava` plus
+`STRAVA_AUTH_BASE_URL=http://localhost:4400`. Only the hostname changes — the
+state check, the code exchange, token storage, profile staging, consent and
+deauthorization are the same code. Do not add a "pretend to be connected"
+shortcut in the app; that would leave the real path untested.
 
 ## Languages
 
@@ -109,6 +128,16 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
   and `*.server.ts`.
 - Filter state lives in the URL (`searchParams`), not React state, so feed
   views are shareable and the back button behaves.
+- **Revalidate with `revalidateLocalized`, never `revalidatePath` directly.**
+  Every page lives under a locale segment, so `revalidatePath('/profile')`
+  matches no route — and fails silently, which is worse than erroring.
+- **A `'use server'` module may only export async functions.** Exporting a
+  schema or a constant from one is a runtime error that neither `tsc` nor
+  ESLint catches, and it breaks _every_ action in that module. Validation
+  schemas belong in `src/lib/validation/`.
+- **Do not run `npm run build` while `next dev` is running.** They share
+  `.next`, and the result is a dev server compiling against stale paths. Stop
+  the dev server first, or delete `.next` afterwards.
 
 ## UI
 

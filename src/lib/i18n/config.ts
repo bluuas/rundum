@@ -9,6 +9,9 @@
  * reads German first.
  */
 
+/** Remembers a visitor's explicit language choice across visits. */
+export const LOCALE_PREFERENCE_COOKIE = 'rundum_locale'
+
 export const LOCALES = ['de', 'en'] as const
 export type Locale = (typeof LOCALES)[number]
 

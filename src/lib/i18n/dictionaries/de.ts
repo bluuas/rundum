@@ -271,6 +271,13 @@ export const de: Dictionary = {
 
   profile: {
     title: 'Profil',
+    editHeading: 'Deine Angaben',
+    displayName: 'Anzeigename',
+    displayNameHint: 'So erscheinst du bei Aktivitäten und Kommentaren.',
+    bio: 'Über dich',
+    bioHint: 'Ein, zwei Sätze. Sportarten, Tempo, wonach du suchst.',
+    saved: 'Gespeichert.',
+    edit: 'Profil bearbeiten',
     notSignedInTitle: 'Nicht angemeldet',
     notSignedInBody:
       'Die Strava-Anmeldung kommt noch. Nutze bis dahin den Kontowechsler oben.',
@@ -286,6 +293,29 @@ export const de: Dictionary = {
 
   strava: {
     connected: 'Mit Strava verbunden',
+    connect: 'Mit Strava verbinden',
+    connectBody:
+      'Rundum nutzt Strava nur zur Anmeldung. Deine Trainings werden nie gelesen, und aus deinem Strava-Profil wird nichts angezeigt, bevor du zustimmst.',
+    connectionHeading: 'Strava-Verbindung',
+    connectedSince: 'Dein Konto ist mit Strava verbunden.',
+    disconnect: 'Verbindung zu Strava trennen',
+    disconnectConfirm:
+      'Verbindung wirklich trennen? Rundum widerruft den Zugriff, löscht die gespeicherten Tokens und entfernt dein Strava-Profilbild. Deine Aktivitäten, Kommentare und dein Name bleiben.',
+    disconnectYes: 'Ja, trennen',
+    keepConnected: 'Verbunden bleiben',
+    disconnecting: 'Wird getrennt …',
+    notConfigured:
+      'Die Strava-Anmeldung ist hier nicht konfiguriert. Nutze so lange den Entwicklungs-Umschalter.',
+    status: {
+      connected: 'Mit Strava verbunden.',
+      denied: 'Du hast die Strava-Anmeldung abgebrochen. Es wurde nichts verbunden.',
+      state:
+        'Dieser Anmeldelink war abgelaufen oder passte nicht. Bitte versuche es erneut.',
+      exchange: 'Strava hat die Anmeldung nicht abgeschlossen. Bitte versuche es erneut.',
+      config: 'Die Strava-Anmeldung ist hier nicht konfiguriert.',
+      linked: 'Dieses Strava-Konto ist bereits mit einem anderen Rundum-Konto verbunden.',
+      server: 'Beim Verbinden ist etwas schiefgelaufen. Bitte versuche es erneut.',
+    },
     connectedTitle: 'Dieses Konto hat sich mit Strava angemeldet',
     notConnected: 'Nicht mit Strava verbunden',
     attribution:

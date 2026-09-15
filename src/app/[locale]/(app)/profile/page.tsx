@@ -1,5 +1,10 @@
 import { StravaConnectedBadge } from '@/components/activity/badges'
 import { LanguageSwitcher } from '@/components/profile/language-switcher'
+import { ProfileEditor } from '@/components/profile/profile-editor'
+import {
+  StravaConnection,
+  StravaStatusNotice,
+} from '@/components/profile/strava-connection'
 import { SignOutButton } from '@/components/profile/sign-out-button'
 import { StravaProfileConsent } from '@/components/profile/strava-profile-consent'
 import { AppHeader } from '@/components/shell/app-header'
@@ -12,6 +17,7 @@ import { formatDate } from '@/lib/format'
 import { fill, getDictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getProfileSummary } from '@/lib/queries/my-activities'
+import { isStravaConfigured } from '@/lib/strava/config'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/profile'>) {
@@ -19,10 +25,18 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/profile'
   return { title: getDictionary(locale as Locale).profile.title }
 }
 
-export default async function ProfilePage({ params }: PageProps<'/[locale]/profile'>) {
+export default async function ProfilePage({
+  params,
+  searchParams,
+}: PageProps<'/[locale]/profile'>) {
   const { locale } = await params
+  // The OAuth callback reports its outcome here rather than on an error page:
+  // someone mid-sign-in wants to land somewhere they can try again from.
+  const { strava } = await searchParams
+  const stravaStatus = typeof strava === 'string' ? strava : null
   const t = getDictionary(locale as Locale)
 
+  const stravaConfigured = isStravaConfigured()
   const userId = await getCurrentUserId()
   const profile = userId ? await getProfileSummary(userId) : null
 
@@ -35,11 +49,13 @@ export default async function ProfilePage({ params }: PageProps<'/[locale]/profi
       <>
         <AppHeader locale={locale as Locale} title={t.profile.title} />
         <PageBody className="space-y-6">
+          {stravaStatus ? <StravaStatusNotice status={stravaStatus} /> : null}
           <EmptyState
             icon="👤"
             title={t.profile.notSignedInTitle}
             description={t.profile.notSignedInBody}
           />
+          <StravaConnection connected={false} configured={stravaConfigured} />
           <LanguageSwitcher />
           <StravaAttribution className="text-center" />
         </PageBody>
@@ -51,6 +67,7 @@ export default async function ProfilePage({ params }: PageProps<'/[locale]/profi
     <>
       <AppHeader locale={locale as Locale} title={t.profile.title} />
       <PageBody className="space-y-6">
+        {stravaStatus ? <StravaStatusNotice status={stravaStatus} /> : null}
         {stravaOffer ? <StravaProfileConsent offer={stravaOffer} /> : null}
 
         <div className="flex items-center gap-4">
@@ -103,6 +120,13 @@ export default async function ProfilePage({ params }: PageProps<'/[locale]/profi
           <h2 className="text-fg text-sm font-semibold">{t.profile.privacyHeading}</h2>
           <p className="text-fg-muted text-sm">{t.profile.privacyBody}</p>
         </section>
+
+        <ProfileEditor displayName={profile.displayName} bio={profile.bio} />
+
+        <StravaConnection
+          connected={profile.stravaConnected}
+          configured={stravaConfigured}
+        />
 
         <LanguageSwitcher />
 

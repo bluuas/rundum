@@ -16,10 +16,23 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'mobile', use: { ...devices['Pixel 7'] } }],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  /*
+   * Two servers: the app, and the local stand-in for Strava's OAuth endpoints.
+   * The Strava suite skips itself when STRAVA_AUTH_BASE_URL is unset, so a
+   * checkout without it still runs everything else.
+   */
+  webServer: [
+    {
+      command: 'npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: 'npm run dev:strava',
+      url: 'http://localhost:4400/oauth/authorize',
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+  ],
 })

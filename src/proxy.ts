@@ -1,9 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { DEFAULT_LOCALE, LOCALES, isLocale, matchLocale } from '@/lib/i18n/config'
-
-/** Remembers the visitor's language choice so a bare URL lands in it next time. */
-const LOCALE_COOKIE = 'rundum_locale'
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  LOCALE_PREFERENCE_COOKIE as LOCALE_COOKIE,
+  isLocale,
+  matchLocale,
+} from '@/lib/i18n/config'
 
 /**
  * Runs before every page request. Two jobs.

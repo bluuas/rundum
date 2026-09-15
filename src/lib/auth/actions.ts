@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { isLocale, type Locale } from '@/lib/i18n/config'
+import { LOCALE_PREFERENCE_COOKIE, isLocale, type Locale } from '@/lib/i18n/config'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -31,7 +31,7 @@ export async function setLocalePreference(locale: Locale) {
   if (!isLocale(locale)) return
 
   const store = await cookies()
-  store.set('rundum_locale', locale, {
+  store.set(LOCALE_PREFERENCE_COOKIE, locale, {
     path: '/',
     maxAge: 60 * 60 * 24 * 365,
     sameSite: 'lax',

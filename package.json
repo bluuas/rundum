@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:strava": "tsx scripts/fake-strava.mts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
