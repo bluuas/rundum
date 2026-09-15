@@ -182,6 +182,11 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
   hairline between them comes from `divide-y` on the list. Panels that really
   are separate objects — organizer tools, the consent card, comments — keep
   their border, which is what still makes them read.
+- **Fold with `<details>`, not state.** The sections on "My activities" are
+  native `<details>`/`<summary>`, so they fold before hydration and the page
+  stays a Server Component. The count stays in the header, because it is the
+  only thing left to read once a section is closed. Folding is not remembered
+  across navigations; nothing depends on it being remembered.
 - **Sport badges are neutral.** One grey pill for every sport; the emoji and the
   name carry it. Ten hues were the loudest thing on a monochrome screen and read
   as decoration rather than information.

@@ -14,6 +14,29 @@ test('My activities lists what you organize', async ({ page }) => {
   await page.waitForURL(/\/activities\/[0-9a-f-]{36}$/)
 })
 
+test('My activities sections fold, and Past starts folded', async ({ page }) => {
+  await signInAsDemoUser(page, 'Anouk B.')
+  await page.goto(path('/me'))
+
+  const item = page.getByRole('link').filter({ hasText: 'After-work 5k' }).first()
+  await expect(item).toBeVisible()
+
+  // The header is the whole control, so clicking the title folds the section.
+  await page.getByRole('heading', { name: 'Organizing' }).click()
+  await expect(item).toBeHidden()
+
+  await page.getByRole('heading', { name: 'Organizing' }).click()
+  await expect(item).toBeVisible()
+
+  // Past is the archive: it renders closed, so it never pushes the two
+  // sections you actually act on off the screen.
+  const past = page
+    .locator('details')
+    .filter({ has: page.getByRole('heading', { name: 'Past' }) })
+  await expect(past).toHaveCount(1)
+  await expect(past).not.toHaveAttribute('open', /.*/)
+})
+
 test('My activities prompts a signed-out visitor to sign in', async ({ page }) => {
   await page.goto(path('/me'))
   await expect(page.getByText('Sign in to see your activities')).toBeVisible()

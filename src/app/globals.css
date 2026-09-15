@@ -130,6 +130,12 @@
     outline-offset: 2px;
   }
 
+  /* Foldable sections draw their own chevron; older Safari still paints the
+     default triangle unless the webkit marker is removed too. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
   /* Inputs must be >=16px on iOS or Safari zooms the viewport on focus. */
   input,
   select,

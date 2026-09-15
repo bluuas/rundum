@@ -45,7 +45,9 @@ export default async function MyActivitiesPage({ params }: PageProps<'/[locale]/
   return (
     <>
       <AppHeader locale={locale as Locale} title={t.mine.title} />
-      <PageBody className="space-y-6">
+      {/* Tight: each section header carries its own padding, and folded
+          headers should read as a short list rather than drift apart. */}
+      <PageBody className="space-y-2">
         {!hasAnything ? (
           <EmptyState
             icon="📋"
@@ -62,8 +64,16 @@ export default async function MyActivitiesPage({ params }: PageProps<'/[locale]/
           title={t.mine.organizing}
           activities={organizingUpcoming}
           role="organizer"
+          defaultOpen
         />
-        <Section title={t.mine.joined} activities={joinedUpcoming} role="participant" />
+        <Section
+          title={t.mine.joined}
+          activities={joinedUpcoming}
+          role="participant"
+          defaultOpen
+        />
+        {/* Past starts folded: it is the archive, and it is the section that
+            grows without bound. */}
         <Section
           title={t.mine.past}
           activities={[...organizingPast, ...joinedPast]}
@@ -75,25 +85,46 @@ export default async function MyActivitiesPage({ params }: PageProps<'/[locale]/
   )
 }
 
+/**
+ * One foldable group of activities.
+ *
+ * A native `<details>`, so folding works before hydration and needs no client
+ * component. The count stays in the header because it is the only thing left
+ * to read once the section is closed.
+ */
 function Section({
   title,
   activities,
   role,
   muted,
+  defaultOpen,
 }: {
   title: string
   activities: MyActivity[]
   role: 'organizer' | 'participant'
   muted?: boolean
+  defaultOpen?: boolean
 }) {
   if (activities.length === 0) return null
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-baseline justify-between">
+    <details className="group" open={defaultOpen}>
+      <summary className="flex cursor-pointer list-none items-center gap-2 py-3 select-none">
+        <svg
+          aria-hidden
+          viewBox="0 0 16 16"
+          className="text-fg-subtle size-4 shrink-0 transition-transform group-open:rotate-90"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m6 3 5 5-5 5" />
+        </svg>
         <h2 className="text-fg text-base font-semibold">{title}</h2>
-        <span className="text-fg-subtle text-xs">{activities.length}</span>
-      </div>
+        <span className="text-fg-subtle ml-auto text-xs">{activities.length}</span>
+      </summary>
       <div
         className={muted ? 'divide-border divide-y opacity-70' : 'divide-border divide-y'}
       >
@@ -101,6 +132,6 @@ function Section({
           <ActivityListItem key={activity.id} activity={activity} role={role} />
         ))}
       </div>
-    </section>
+    </details>
   )
 }
