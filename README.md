@@ -79,13 +79,22 @@ refuses to load when `NODE_ENV=production`, regardless of the flag.
 
 ## Scripts
 
-| Command          | What it does                   |
-| ---------------- | ------------------------------ |
-| `npm run dev`    | Start the dev server           |
-| `npm run build`  | Production build               |
-| `npm run check`  | Typecheck, lint and unit tests |
-| `npm test`       | Unit tests (Vitest)            |
-| `npm run format` | Format with Prettier           |
+| Command             | What it does                                             |
+| ------------------- | -------------------------------------------------------- |
+| `npm run dev`       | Start the dev server                                     |
+| `npm run build`     | Production build                                         |
+| `npm run check`     | Typecheck, lint and unit tests                           |
+| `npm test`          | Unit tests (Vitest)                                      |
+| `npm run test:e2e`  | Playwright tests on a phone viewport                     |
+| `npm run smoke`     | End-to-end HTTP checks against a running dev server      |
+| `npm run db:verify` | Checks RLS boundaries against the database, as anonymous |
+| `npm run format`    | Format with Prettier                                     |
+
+`npm run db:verify` is worth running after any change to the schema or to a
+policy. It asserts, from outside the app with only the public anon key, that
+`strava_tokens` is unreachable, that hidden and archived activities stay
+invisible, that stored coordinates sit on the grid, and that both the searcher's
+and the organizer's radius are enforced.
 
 ## Contributing
 
