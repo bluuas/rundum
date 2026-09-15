@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { z } from 'zod'
-import { updateActivity } from '@/app/(app)/activities/actions'
+import { updateActivity } from '@/app/[locale]/(app)/activities/actions'
 import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
@@ -17,10 +17,13 @@ import {
   snapToGrid,
   type LatLng,
 } from '@/lib/geo'
-import { LEVELS, LEVEL_LABELS, SPORTS, getSport, type SportKey } from '@/lib/sports'
+import { LEVELS, SPORTS, getSport, type SportKey } from '@/lib/sports'
 import { activityInputSchema, combineDateAndTime } from '@/lib/validation/activity'
 import { toDateInputValue, toTimeInputValue } from '@/lib/format'
 import type { ActivityDetail } from '@/lib/queries/activity-detail'
+import { fill, plural } from '@/lib/i18n'
+import { localeHref } from '@/lib/i18n/config'
+import { useI18n } from '@/lib/i18n/provider'
 
 const AREA_CIRCLE_RADIUS_M = 250
 
@@ -33,6 +36,7 @@ const AREA_CIRCLE_RADIUS_M = 250
  */
 export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
   const router = useRouter()
+  const { locale, t } = useI18n()
   const [pending, startTransition] = useTransition()
 
   const starts = useMemo(() => new Date(activity.startsAt), [activity.startsAt])
@@ -93,7 +97,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
     const parsed = activityInputSchema.safeParse(buildInput())
     if (!parsed.success) {
       setFieldErrors(z.flattenError(parsed.error).fieldErrors as Record<string, string[]>)
-      setFormError('Please check the highlighted fields')
+      setFormError(t.create.checkFields)
       return
     }
 
@@ -108,13 +112,13 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       // so the destination renders with fresh data. An extra refresh() here
       // fetched the same route a second time and aborted the first stream,
       // which is what logged "The destination stream closed early".
-      router.push(`/activities/${activity.id}`)
+      router.push(localeHref(locale, `/activities/${activity.id}`))
     })
   }
 
   return (
     <div className="space-y-5">
-      <Field label="Sport" htmlFor="sport">
+      <Field label={t.create.steps.sport} htmlFor="sport">
         <SelectInput
           id="sport"
           value={sportKey}
@@ -122,13 +126,13 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         >
           {SPORTS.map((option) => (
             <option key={option.key} value={option.key}>
-              {option.label}
+              {t.sports[option.key]}
             </option>
           ))}
         </SelectInput>
       </Field>
 
-      <Field label="Title" htmlFor="title" error={fieldErrors.title?.[0]}>
+      <Field label={t.create.fieldTitle} htmlFor="title" error={fieldErrors.title?.[0]}>
         <TextInput
           id="title"
           value={title}
@@ -138,7 +142,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       </Field>
 
       <Field
-        label="Description"
+        label={t.create.fieldDescription}
         htmlFor="description"
         optional
         error={fieldErrors.description?.[0]}
@@ -161,10 +165,8 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       />
 
       <div className="space-y-2">
-        <p className="text-fg text-sm font-medium">Meeting area</p>
-        <p className="text-fg-muted text-xs">
-          Drag the map to move it. Rundum stores a rough area, never an exact address.
-        </p>
+        <p className="text-fg text-sm font-medium">{t.create.whereHeading}</p>
+        <p className="text-fg-muted text-xs">{t.create.whereBody}</p>
         <AreaMap
           center={center}
           areaRadiusM={AREA_CIRCLE_RADIUS_M}
@@ -175,7 +177,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       </div>
 
       <Field
-        label="Name this area"
+        label={t.create.fieldLocationLabel}
         htmlFor="locationLabel"
         error={fieldErrors.locationLabel?.[0]}
       >
@@ -187,7 +189,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         />
       </Field>
 
-      <Field label="Who can discover this" htmlFor="radius">
+      <Field label={t.create.fieldVisibility} htmlFor="radius">
         <SelectInput
           id="radius"
           value={String(visibilityRadiusM)}
@@ -195,7 +197,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         >
           {RADIUS_OPTIONS_M.map((meters) => (
             <option key={meters} value={meters}>
-              Within {formatRadius(meters)}
+              {fill(t.create.withinOption, { radius: formatRadius(meters) })}
             </option>
           ))}
         </SelectInput>
@@ -203,7 +205,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
 
       {sport.supportsDistance ? (
         <Field
-          label="Distance"
+          label={t.create.fieldDistance}
           htmlFor="distance"
           optional
           error={fieldErrors.distanceM?.[0]}
@@ -225,10 +227,10 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
 
       {sport.supportsPace ? (
         <Field
-          label="Pace"
+          label={t.create.fieldPace}
           htmlFor="pace"
           optional
-          hint="Minutes per kilometre, like 5:30."
+          hint={t.create.paceHint}
           error={fieldErrors.paceSecondsPerKm?.[0]}
         >
           <TextInput
@@ -239,16 +241,16 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         </Field>
       ) : null}
 
-      <Field label="Level" htmlFor="level" optional>
+      <Field label={t.create.fieldLevel} htmlFor="level" optional>
         <SelectInput
           id="level"
           value={level}
           onChange={(event) => setLevel(event.target.value)}
         >
-          <option value="">Not specified</option>
+          <option value="">{t.create.levelUnspecified}</option>
           {LEVELS.map((option) => (
             <option key={option} value={option}>
-              {LEVEL_LABELS[option]}
+              {t.levels[option]}
             </option>
           ))}
         </SelectInput>
@@ -259,7 +261,10 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         onChange={setMaxParticipants}
         hint={
           activity.participantCount > 0
-            ? `${activity.participantCount} ${activity.participantCount === 1 ? 'person has' : 'people have'} already joined.`
+            ? plural(activity.participantCount, {
+                one: t.create.alreadyJoinedOne,
+                other: t.create.alreadyJoinedOther,
+              })
             : undefined
         }
         error={fieldErrors.maxParticipants?.[0]}
@@ -274,13 +279,13 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       <div className="flex gap-2">
         <Button
           variant="secondary"
-          onClick={() => router.push(`/activities/${activity.id}`)}
+          onClick={() => router.push(localeHref(locale, `/activities/${activity.id}`))}
           disabled={pending}
         >
-          Cancel
+          {t.common.cancel}
         </Button>
         <Button fullWidth size="lg" onClick={submit} disabled={pending}>
-          {pending ? 'Saving…' : 'Save changes'}
+          {pending ? t.common.saving : t.common.save}
         </Button>
       </div>
     </div>

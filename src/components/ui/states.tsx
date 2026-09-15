@@ -32,10 +32,16 @@ export function ActivityCardSkeleton() {
   )
 }
 
-export function ActivityListSkeleton({ count = 4 }: { count?: number }) {
+export function ActivityListSkeleton({
+  count = 4,
+  label = 'Loading…',
+}: {
+  count?: number
+  label?: string
+}) {
   return (
     <div className="space-y-3" aria-busy="true" aria-live="polite">
-      <span className="sr-only">Loading activities…</span>
+      <span className="sr-only">{label}</span>
       {Array.from({ length: count }, (_, i) => (
         <ActivityCardSkeleton key={i} />
       ))}
@@ -73,12 +79,14 @@ export function EmptyState({
 }
 
 export function ErrorState({
-  title = 'Something went wrong',
-  description = 'We could not load this right now. Check your connection and try again.',
+  title,
+  description,
+  retryLabel = 'Try again',
   onRetry,
 }: {
-  title?: string
-  description?: string
+  title: string
+  description: string
+  retryLabel?: string
   onRetry?: () => void
 }) {
   return (
@@ -93,7 +101,7 @@ export function ErrorState({
       <p className="text-fg-muted mx-auto mt-2 max-w-xs text-sm">{description}</p>
       {onRetry ? (
         <Button variant="secondary" onClick={onRetry} className="mt-5">
-          Try again
+          {retryLabel}
         </Button>
       ) : null}
     </div>

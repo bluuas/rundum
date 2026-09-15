@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { createActivity } from '@/app/(app)/activities/actions'
+import { createActivity } from '@/app/[locale]/(app)/activities/actions'
 import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
@@ -17,10 +17,12 @@ import {
   snapToGrid,
   type LatLng,
 } from '@/lib/geo'
-import { LEVELS, LEVEL_LABELS, SPORTS, getSport, type SportKey } from '@/lib/sports'
+import { LEVELS, SPORTS, getSport, type Level, type SportKey } from '@/lib/sports'
 import { activityInputSchema, combineDateAndTime } from '@/lib/validation/activity'
 import { formatStartFull, toDateInputValue } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { fill } from '@/lib/i18n'
+import { useI18n } from '@/lib/i18n/provider'
 import { z } from 'zod'
 
 /** The circle drawn for a meeting area. Matches the 250 m storage grid. */
@@ -31,6 +33,7 @@ type Step = (typeof STEPS)[number]
 
 export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
   const router = useRouter()
+  const { locale, t } = useI18n()
   const [pending, startTransition] = useTransition()
 
   const [step, setStep] = useState(0)
@@ -105,7 +108,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
     if (!parsed.success) {
       const flat = z.flattenError(parsed.error)
       setFieldErrors(flat.fieldErrors as Record<string, string[]>)
-      setFormError('Please check the highlighted fields')
+      setFormError(t.create.checkFields)
       return
     }
 
@@ -123,11 +126,8 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
   if (!signedIn) {
     return (
       <div className="border-border bg-surface rounded-card border p-6 text-center">
-        <p className="text-fg font-semibold">Sign in to create an activity</p>
-        <p className="text-fg-muted mt-2 text-sm">
-          Use the account switcher in the header while Strava sign-in is still being
-          built.
-        </p>
+        <p className="text-fg font-semibold">{t.create.signInTitle}</p>
+        <p className="text-fg-muted mt-2 text-sm">{t.create.signInBody}</p>
       </div>
     )
   }
@@ -141,7 +141,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
       {currentStep === 'Sport' ? (
         <fieldset className="space-y-3">
           <legend className="text-fg text-base font-semibold">
-            What are you planning?
+            {t.create.sportHeading}
           </legend>
           <div className="grid grid-cols-2 gap-2">
             {SPORTS.map((option) => (
@@ -163,7 +163,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
                 <span aria-hidden className="text-lg">
                   {option.icon}
                 </span>
-                {option.label}
+                {t.sports[option.key]}
               </button>
             ))}
           </div>
@@ -172,7 +172,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
 
       {currentStep === 'When' ? (
         <div className="space-y-4">
-          <h2 className="text-fg text-base font-semibold">When is it?</h2>
+          <h2 className="text-fg text-base font-semibold">{t.create.whenHeading}</h2>
           <WhenFields
             date={date}
             time={time}
@@ -186,11 +186,8 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
       {currentStep === 'Where' ? (
         <div className="space-y-4">
           <div>
-            <h2 className="text-fg text-base font-semibold">Where do you meet?</h2>
-            <p className="text-fg-muted mt-1 text-sm">
-              Drag the map to set an approximate meeting area. Rundum stores a rough area,
-              never an exact address.
-            </p>
+            <h2 className="text-fg text-base font-semibold">{t.create.whereHeading}</h2>
+            <p className="text-fg-muted mt-1 text-sm">{t.create.whereBody}</p>
           </div>
 
           <AreaMap
@@ -202,24 +199,24 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
           />
 
           <Field
-            label="Name this area"
+            label={t.create.fieldLocationLabel}
             htmlFor="locationLabel"
-            hint='Something people will recognise, like "Hauptplatz Schwyz".'
+            hint={t.create.locationHint}
             error={fieldErrors.locationLabel?.[0]}
           >
             <TextInput
               id="locationLabel"
               value={locationLabel}
               maxLength={80}
-              placeholder="Hauptplatz Schwyz"
+              placeholder={t.create.locationPlaceholder}
               onChange={(event) => setLocationLabel(event.target.value)}
             />
           </Field>
 
           <Field
-            label="Who can discover this"
+            label={t.create.fieldVisibility}
             htmlFor="radius"
-            hint="People searching from further away than this will not see it."
+            hint={t.create.visibilityHint}
           >
             <SelectInput
               id="radius"
@@ -228,7 +225,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
             >
               {RADIUS_OPTIONS_M.map((meters) => (
                 <option key={meters} value={meters}>
-                  Within {formatRadius(meters)}
+                  {fill(t.create.withinOption, { radius: formatRadius(meters) })}
                 </option>
               ))}
             </SelectInput>
@@ -238,23 +235,27 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
 
       {currentStep === 'Details' ? (
         <div className="space-y-4">
-          <h2 className="text-fg text-base font-semibold">Tell people about it</h2>
+          <h2 className="text-fg text-base font-semibold">{t.create.detailsHeading}</h2>
 
-          <Field label="Title" htmlFor="title" error={fieldErrors.title?.[0]}>
+          <Field
+            label={t.create.fieldTitle}
+            htmlFor="title"
+            error={fieldErrors.title?.[0]}
+          >
             <TextInput
               id="title"
               value={title}
               maxLength={80}
-              placeholder="Easy morning loop around Ibach"
+              placeholder={t.create.titlePlaceholder}
               onChange={(event) => setTitle(event.target.value)}
             />
           </Field>
 
           <Field
-            label="Description"
+            label={t.create.fieldDescription}
             htmlFor="description"
             optional
-            hint="Pace, route, what to bring, where exactly to meet."
+            hint={t.create.descriptionHint}
             error={fieldErrors.description?.[0]}
           >
             <TextArea
@@ -268,7 +269,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
           {/* Distance and pace only exist for sports that have them. */}
           {sport?.supportsDistance ? (
             <Field
-              label="Distance"
+              label={t.create.fieldDistance}
               htmlFor="distance"
               optional
               error={fieldErrors.distanceM?.[0]}
@@ -290,10 +291,10 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
 
           {sport?.supportsPace ? (
             <Field
-              label="Pace"
+              label={t.create.fieldPace}
               htmlFor="pace"
               optional
-              hint="Minutes per kilometre, like 5:30."
+              hint={t.create.paceHint}
               error={fieldErrors.paceSecondsPerKm?.[0]}
             >
               <TextInput
@@ -305,16 +306,16 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
             </Field>
           ) : null}
 
-          <Field label="Level" htmlFor="level" optional>
+          <Field label={t.create.fieldLevel} htmlFor="level" optional>
             <SelectInput
               id="level"
               value={level}
               onChange={(event) => setLevel(event.target.value)}
             >
-              <option value="">Not specified</option>
+              <option value="">{t.create.levelUnspecified}</option>
               {LEVELS.map((option) => (
                 <option key={option} value={option}>
-                  {LEVEL_LABELS[option]}
+                  {t.levels[option]}
                 </option>
               ))}
             </SelectInput>
@@ -330,7 +331,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
 
       {currentStep === 'Review' ? (
         <div className="space-y-4">
-          <h2 className="text-fg text-base font-semibold">Ready to publish?</h2>
+          <h2 className="text-fg text-base font-semibold">{t.create.reviewHeading}</h2>
 
           <AreaMap
             center={snapped}
@@ -340,27 +341,45 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
           />
 
           <dl className="border-border bg-surface rounded-card divide-border divide-y border text-sm">
-            <Row label="Sport" value={sport?.label ?? '—'} />
-            <Row label="Title" value={title} />
             <Row
-              label="When"
-              value={date && time ? formatStartFull(combineDateAndTime(date, time)) : '—'}
+              label={t.create.reviewSport}
+              value={sportKey ? t.sports[sportKey] : '—'}
             />
-            <Row label="Where" value={`${locationLabel} (approximate area)`} />
+            <Row label={t.create.reviewTitle} value={title} />
             <Row
-              label="Discoverable"
-              value={`Within ${formatRadius(visibilityRadiusM)}`}
+              label={t.create.reviewWhen}
+              value={
+                date && time
+                  ? formatStartFull(combineDateAndTime(date, time), locale)
+                  : '—'
+              }
+            />
+            <Row
+              label={t.create.reviewWhere}
+              value={fill(t.create.reviewWhereValue, { label: locationLabel })}
+            />
+            <Row
+              label={t.create.reviewDiscoverable}
+              value={fill(t.create.withinOption, {
+                radius: formatRadius(visibilityRadiusM),
+              })}
             />
             {sport?.supportsDistance && distanceKm ? (
-              <Row label="Distance" value={`${distanceKm} km`} />
+              <Row label={t.create.reviewDistance} value={`${distanceKm} km`} />
             ) : null}
             {sport?.supportsPace && pace ? (
-              <Row label="Pace" value={`${pace} /km`} />
+              <Row label={t.create.reviewPace} value={`${pace} /km`} />
             ) : null}
-            {level ? <Row label="Level" value={LEVEL_LABELS[level as never]} /> : null}
+            {level ? (
+              <Row label={t.create.reviewLevel} value={t.levels[level as Level]} />
+            ) : null}
             <Row
-              label="Max participants"
-              value={maxParticipants === null ? 'No limit' : String(maxParticipants)}
+              label={t.create.reviewMax}
+              value={
+                maxParticipants === null
+                  ? t.create.reviewNoLimit
+                  : String(maxParticipants)
+              }
             />
           </dl>
 
@@ -371,7 +390,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
           ) : null}
 
           <Button fullWidth size="lg" onClick={submit} disabled={pending}>
-            {pending ? 'Publishing…' : 'Publish activity'}
+            {pending ? t.create.publishing : t.create.publish}
           </Button>
         </div>
       ) : null}
@@ -383,7 +402,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
             onClick={() => setStep((s) => s - 1)}
             disabled={pending}
           >
-            Back
+            {t.common.back}
           </Button>
         ) : null}
 
@@ -393,7 +412,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
             onClick={() => setStep((s) => s + 1)}
             disabled={!canAdvance(currentStep)}
           >
-            Continue
+            {t.common.continue}
           </Button>
         ) : null}
       </div>
@@ -402,13 +421,22 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
 }
 
 function Progress({ step }: { step: number }) {
+  const { t } = useI18n()
+  const labels = [
+    t.create.steps.sport,
+    t.create.steps.when,
+    t.create.steps.where,
+    t.create.steps.details,
+    t.create.steps.review,
+  ]
+
   return (
-    <ol className="flex items-center gap-1.5" aria-label="Progress">
-      {STEPS.map((label, index) => (
-        <li key={label} className="flex-1">
+    <ol className="flex items-center gap-1.5" aria-label={t.create.progress}>
+      {STEPS.map((key, index) => (
+        <li key={key} className="flex-1">
           <span className="sr-only">
-            {label}
-            {index === step ? ' (current)' : ''}
+            {labels[index]}
+            {index === step ? ` (${t.create.current})` : ''}
           </span>
           <div
             className={cn(

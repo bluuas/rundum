@@ -1,28 +1,42 @@
+'use client'
+
 import Link from 'next/link'
 import { SportBadge, StravaConnectedBadge } from '@/components/activity/badges'
-import { formatParticipants, formatStartShort, isFull } from '@/lib/format'
+import { formatStartShort, isFull } from '@/lib/format'
 import { formatActivityDistance, formatDistanceBucket, formatPace } from '@/lib/geo'
-import { LEVEL_LABELS, type Level } from '@/lib/sports'
+import { fill } from '@/lib/i18n'
+import { localeHref } from '@/lib/i18n/config'
+import { useI18n } from '@/lib/i18n/provider'
+import type { Level } from '@/lib/sports'
 import type { NearbyActivity } from '@/lib/supabase/rows'
 
 export function ActivityCard({ activity }: { activity: NearbyActivity }) {
+  const { locale, t } = useI18n()
   const full = isFull(activity.participant_count, activity.max_participants)
 
   const facts = [
     formatActivityDistance(activity.activity_distance_m),
     formatPace(activity.pace_seconds_per_km),
-    activity.level ? LEVEL_LABELS[activity.level as Level] : null,
+    activity.level ? t.levels[activity.level as Level] : null,
   ].filter(Boolean)
+
+  const joinedLabel =
+    activity.max_participants === null
+      ? fill(t.activity.joined, { count: activity.participant_count })
+      : fill(t.activity.joinedOf, {
+          count: activity.participant_count,
+          max: activity.max_participants,
+        })
 
   return (
     <Link
-      href={`/activities/${activity.id}`}
+      href={localeHref(locale, `/activities/${activity.id}`)}
       className="border-border bg-surface hover:border-border-strong rounded-card block border p-4 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <SportBadge sportKey={activity.sport_key} />
         <span className="text-fg-muted shrink-0 text-xs font-medium">
-          {formatStartShort(activity.starts_at)}
+          {formatStartShort(activity.starts_at, locale)}
         </span>
       </div>
 
@@ -32,8 +46,8 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
         {activity.location_label}
         {/* Bucketed, never exact — see formatDistanceBucket. */}
         <span className="text-fg-subtle">
-          {' '}
-          · {formatDistanceBucket(activity.distance_meters)}
+          {' · '}
+          {formatDistanceBucket(activity.distance_meters, locale)}
         </span>
       </p>
 
@@ -64,9 +78,7 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
               : 'text-fg-muted shrink-0 text-xs font-medium'
           }
         >
-          {full
-            ? 'Full'
-            : formatParticipants(activity.participant_count, activity.max_participants)}
+          {full ? t.activity.full : joinedLabel}
         </span>
       </div>
     </Link>

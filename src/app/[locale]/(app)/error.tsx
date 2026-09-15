@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { PageBody } from '@/components/shell/page-body'
 import { ErrorState } from '@/components/ui/states'
+import { useI18n } from '@/lib/i18n/provider'
+import { localeHref } from '@/lib/i18n/config'
 
 export default function AppError({
   error,
@@ -12,6 +14,8 @@ export default function AppError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const { locale, t } = useI18n()
+
   useEffect(() => {
     // Replace with the real reporter once analytics lands (phase 9).
     console.error(error)
@@ -26,13 +30,21 @@ export default function AppError({
       */}
       <header className="border-border bg-bg/90 pt-safe sticky top-0 z-30 border-b backdrop-blur">
         <div className="mx-auto flex h-14 max-w-[480px] items-center px-4">
-          <Link href="/" className="text-fg text-lg font-bold tracking-tight">
+          <Link
+            href={localeHref(locale, '/')}
+            className="text-fg text-lg font-bold tracking-tight"
+          >
             Rundum
           </Link>
         </div>
       </header>
       <PageBody>
-        <ErrorState onRetry={reset} />
+        <ErrorState
+          title={t.states.errorTitle}
+          description={t.states.errorBody}
+          retryLabel={t.common.tryAgain}
+          onRetry={reset}
+        />
       </PageBody>
     </>
   )

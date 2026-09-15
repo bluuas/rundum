@@ -1,0 +1,309 @@
+import type { Dictionary } from './en'
+
+/**
+ * German strings.
+ *
+ * Typed as `Dictionary`, so a missing or misspelled key fails the build rather
+ * than silently rendering English inside a German page.
+ *
+ * Tone: "du", not "Sie". Rundum is people arranging to go running together, and
+ * "Sie" would make that read like a booking system. Swiss German usage: "ss"
+ * throughout rather than "ß", which is not used in Switzerland.
+ */
+export const de: Dictionary = {
+  common: {
+    back: 'Zurück',
+    continue: 'Weiter',
+    save: 'Änderungen speichern',
+    cancel: 'Abbrechen',
+    delete: 'Löschen',
+    optional: 'optional',
+    saving: 'Wird gespeichert…',
+    working: 'Einen Moment…',
+    tryAgain: 'Erneut versuchen',
+    signIn: 'Anmelden',
+    signOut: 'Abmelden',
+    signingOut: 'Wird abgemeldet…',
+  },
+
+  nav: {
+    label: 'Hauptnavigation',
+    discover: 'Entdecken',
+    create: 'Erstellen',
+    mine: 'Meine',
+    profile: 'Profil',
+  },
+
+  states: {
+    loadingActivities: 'Aktivitäten werden geladen…',
+    errorTitle: 'Etwas ist schiefgelaufen',
+    errorBody:
+      'Das konnte gerade nicht geladen werden. Prüfe deine Verbindung und versuche es nochmals.',
+    notFoundTitle: 'Seite nicht gefunden',
+    notFoundBody:
+      'Diese Seite gibt es nicht, oder die Aktivität dahinter wurde entfernt.',
+    backToDiscover: 'Zurück zum Entdecken',
+  },
+
+  feed: {
+    title: 'In der Nähe von {city}',
+    subtitle: 'Kommende Aktivitäten im Umkreis von {radius}',
+    countOne: '{count} Aktivität',
+    countOther: '{count} Aktivitäten',
+    loadErrorTitle: 'Aktivitäten konnten nicht geladen werden',
+    loadErrorBody:
+      'Der Feed ist vorübergehend nicht verfügbar. Zieh nach unten zum Aktualisieren oder versuche es gleich nochmals.',
+    emptyTitle: 'Rund um {city} ist noch nichts geplant',
+    emptySportTitle: 'Noch kein {sport} rund um {city}',
+    emptyFiltered:
+      'Versuche einen grösseren Umkreis oder ein anderes Datum — oder plane als Erste oder Erster etwas.',
+    emptyUnfiltered:
+      'Setze als Erste oder Erster etwas auf die Karte. Das dauert etwa eine Minute.',
+    createCta: 'Aktivität erstellen',
+  },
+
+  filters: {
+    allSports: 'Alle Sportarten',
+    nSports: '{count} Sportarten',
+    clearSports: 'Sportarten zurücksetzen',
+    when: 'Wann',
+    within: 'Umkreis',
+    withinValue: 'Umkreis {radius}',
+    sort: 'Aktivitäten sortieren',
+    sortSoonest: 'Bald zuerst',
+    sortClosest: 'Nächste zuerst',
+    ranges: {
+      anytime: 'Jederzeit',
+      today: 'Heute',
+      tomorrow: 'Morgen',
+      week: 'Nächste 7 Tage',
+      weekend: 'Dieses Wochenende',
+    },
+  },
+
+  activity: {
+    joined: '{count} dabei',
+    joinedOf: '{count}/{max} dabei',
+    ofMax: '{count} von {max}',
+    noLimit: '{count} dabei · ohne Limit',
+    underOneKm: 'unter 1 km',
+    full: 'Ausgebucht',
+    organizer: 'Organisation',
+    awaitingReply: '{count} warten auf deine Antwort',
+    requestPending: 'Anfrage offen',
+    youAreIn: 'Du bist dabei',
+    cancelled: 'Abgesagt',
+    hidden: 'Ausgeblendet',
+    archived: 'Archiviert',
+  },
+
+  detail: {
+    cancelledNotice: 'Diese Aktivität wurde von der Organisation abgesagt.',
+    archivedNotice: 'Diese Aktivität hat bereits stattgefunden.',
+    distance: 'Distanz',
+    pace: 'Tempo',
+    level: 'Niveau',
+    where: 'Wo',
+    approximateNote:
+      'Ungefährer Treffpunkt. Den genauen Ort teilt die Organisation mit den Personen, die sie annimmt.',
+    discoverableWithin: 'Auffindbar im Umkreis von {radius}.',
+    organizerHeading: 'Organisation',
+    participants: 'Teilnehmende',
+    youOrganize: 'Du organisierst das. Anfragen annehmen kommt im nächsten Schritt.',
+    requestToJoin: 'Teilnahme anfragen',
+    noLongerOpen: 'Nicht mehr offen',
+    joinComingSoon: 'Teilnahmeanfragen kommen im nächsten Schritt.',
+  },
+
+  comments: {
+    heading: 'Kommentare',
+    empty: 'Noch keine Kommentare. Stell eine Frage oder sag, dass du kommst.',
+    placeholder: 'Stell eine Frage oder sag, dass du kommst',
+    writeLabel: 'Kommentar schreiben',
+    post: 'Kommentar senden',
+    posting: 'Wird gesendet…',
+    sending: 'Wird gesendet…',
+    signInPrompt: 'Melde dich an, um mitzureden.',
+    removeAsOrganizer: 'Als Organisation entfernen',
+    writeSomething: 'Schreibe zuerst etwas',
+  },
+
+  create: {
+    title: 'Aktivität erstellen',
+    steps: {
+      sport: 'Sportart',
+      when: 'Wann',
+      where: 'Wo',
+      details: 'Details',
+      review: 'Prüfen',
+    },
+    progress: 'Fortschritt',
+    current: 'aktuell',
+    sportHeading: 'Was planst du?',
+    whenHeading: 'Wann findet es statt?',
+    whereHeading: 'Wo trefft ihr euch?',
+    whereBody:
+      'Zieh die Karte, um einen ungefähren Treffpunkt zu setzen. Rundum speichert nur ein grobes Gebiet, nie eine genaue Adresse.',
+    detailsHeading: 'Erzähl den Leuten davon',
+    reviewHeading: 'Bereit zum Veröffentlichen?',
+    publish: 'Aktivität veröffentlichen',
+    publishing: 'Wird veröffentlicht…',
+    signInTitle: 'Melde dich an, um eine Aktivität zu erstellen',
+    signInBody:
+      'Nutze den Kontowechsler oben, solange die Strava-Anmeldung noch gebaut wird.',
+    fieldDate: 'Datum',
+    fieldTime: 'Startzeit',
+    timeHint: '24-Stunden-Format, zum Beispiel 18:30',
+    startsAt: 'Beginnt ',
+    alreadyPassed: 'Dieser Zeitpunkt ist bereits vorbei: ',
+    fieldTitle: 'Titel',
+    titlePlaceholder: 'Lockere Morgenrunde um Ibach',
+    fieldDescription: 'Beschreibung',
+    descriptionHint: 'Tempo, Route, was mitnehmen, wo genau ihr euch trefft.',
+    fieldLocationLabel: 'Gib dem Gebiet einen Namen',
+    locationHint: 'Etwas, das Leute erkennen, zum Beispiel «Hauptplatz Schwyz».',
+    locationPlaceholder: 'Hauptplatz Schwyz',
+    fieldVisibility: 'Wer das finden kann',
+    withinOption: 'Umkreis {radius}',
+    visibilityHint: 'Wer von weiter weg sucht, sieht die Aktivität nicht.',
+    fieldDistance: 'Distanz',
+    fieldPace: 'Tempo',
+    paceHint: 'Minuten pro Kilometer, zum Beispiel 5:30.',
+    fieldLevel: 'Niveau',
+    levelUnspecified: 'Keine Angabe',
+    fieldMax: 'Maximale Teilnehmendenzahl',
+    noLimitOption: 'Ohne Limit — alle können mitmachen',
+    alreadyJoinedOne: '{count} Person ist bereits dabei.',
+    alreadyJoinedOther: '{count} Personen sind bereits dabei.',
+    reviewSport: 'Sportart',
+    reviewTitle: 'Titel',
+    reviewWhen: 'Wann',
+    reviewWhere: 'Wo',
+    reviewWhereValue: '{label} (ungefähres Gebiet)',
+    reviewDiscoverable: 'Auffindbar',
+    reviewDistance: 'Distanz',
+    reviewPace: 'Tempo',
+    reviewLevel: 'Niveau',
+    reviewMax: 'Max. Teilnehmende',
+    reviewNoLimit: 'Ohne Limit',
+    checkFields: 'Bitte prüfe die markierten Felder',
+  },
+
+  edit: {
+    title: 'Aktivität bearbeiten',
+    backToActivity: 'Zurück zur Aktivität',
+  },
+
+  organizer: {
+    heading: 'Werkzeuge der Organisation',
+    edit: 'Details bearbeiten',
+    hide: 'Aus der Suche ausblenden',
+    hideNote:
+      'Ausblenden behält die Aktivität und ihre Kommentare, nimmt sie aber aus dem Feed, solange du daran arbeitest.',
+    publishAgain: 'Wieder veröffentlichen',
+    hiddenNote: 'Diese Aktivität ist ausgeblendet. Nur du siehst sie.',
+    cancelActivity: 'Aktivität absagen',
+    reinstate: 'Absage rückgängig machen',
+    deleteActivity: 'Aktivität löschen',
+    confirmCancel:
+      'Diese Aktivität absagen? Alle, die dabei sind, sehen sie als abgesagt.',
+    confirmCancelYes: 'Ja, absagen',
+    confirmDelete:
+      'Diese Aktivität löschen? Sie verschwindet für alle, samt ihren Kommentaren.',
+    confirmDeleteYes: 'Ja, löschen',
+    keepIt: 'Behalten',
+  },
+
+  mine: {
+    title: 'Meine Aktivitäten',
+    signInTitle: 'Melde dich an, um deine Aktivitäten zu sehen',
+    signInBody: 'Alles, was du organisierst oder besuchst, sammelt sich hier.',
+    emptyTitle: 'Hier ist noch nichts',
+    emptyBody:
+      'Aktivitäten, die du organisierst oder bei denen du dabei bist, erscheinen hier.',
+    emptyCta: 'Erstelle deine erste Aktivität',
+    organizing: 'Organisiert',
+    joined: 'Dabei',
+    past: 'Vergangen',
+  },
+
+  profile: {
+    title: 'Profil',
+    notSignedInTitle: 'Nicht angemeldet',
+    notSignedInBody:
+      'Die Strava-Anmeldung kommt noch. Nutze bis dahin den Kontowechsler oben.',
+    created: 'Erstellt',
+    joined: 'Dabei',
+    memberSince: 'Dabei seit {date}',
+    privacyHeading: 'Dein Standortschutz',
+    privacyBody:
+      'Rundum speichert weder dein Zuhause noch deinen genauen Standort. Treffpunkte, die du setzt, werden vor dem Speichern auf ein Gebiet von rund 250 m gerundet, und andere sehen immer nur eine ungefähre Distanz.',
+    myActivities: 'Meine Aktivitäten',
+    language: 'Sprache',
+  },
+
+  strava: {
+    connected: 'Mit Strava verbunden',
+    connectedTitle: 'Dieses Konto hat sich mit Strava angemeldet',
+    notConnected: 'Nicht mit Strava verbunden',
+    attribution:
+      'Compatible with Strava. Rundum ist ein unabhängiges Projekt und steht in keiner Verbindung zu Strava, wird von Strava weder unterstützt noch gesponsert.',
+    consentHeading: 'Deine Strava-Profildaten verwenden?',
+    consentBody:
+      'Du hast dich mit Strava angemeldet. Rundum kann diese Angaben für dein Profil übernehmen. Andere auf Rundum sehen sie bei Aktivitäten, die du organisierst, und bei deinen Kommentaren.',
+    consentName: 'Name',
+    consentPicture: 'Profilbild',
+    consentProvided: 'Vorhanden',
+    consentNotProvided: 'Nicht vorhanden',
+    consentNote:
+      'Es wird nichts übernommen, bevor du dich entscheidest. Lehnst du ab, bleibt dein Rundum-Profil getrennt und es wird nichts von Strava gezeigt. Bearbeiten kannst du diese Angaben in beiden Fällen.',
+    consentAccept: 'Angaben übernehmen',
+    consentDecline: 'Nein danke',
+  },
+
+  sports: {
+    run: 'Laufen',
+    ride: 'Velofahren',
+    walk: 'Spazieren',
+    hike: 'Wandern',
+    workout: 'Workout',
+    weight_training: 'Krafttraining',
+    swim: 'Schwimmen',
+    yoga: 'Yoga',
+    tennis: 'Tennis',
+    padel: 'Padel',
+  },
+
+  levels: {
+    beginner: 'Anfängerin oder Anfänger',
+    intermediate: 'Fortgeschritten',
+    advanced: 'Sehr fortgeschritten',
+    all_levels: 'Alle Niveaus',
+  },
+
+  time: {
+    today: 'Heute {time}',
+    tomorrow: 'Morgen {time}',
+    yesterday: 'Gestern {time}',
+    justNow: 'gerade eben',
+    minutesAgo: 'vor {count} Min.',
+    hoursAgo: 'vor {count} Std.',
+    daysAgo: 'vor {count} Tg.',
+    weekdayShort: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+    weekdayLong: [
+      'Sonntag',
+      'Montag',
+      'Dienstag',
+      'Mittwoch',
+      'Donnerstag',
+      'Freitag',
+      'Samstag',
+    ],
+  },
+
+  dev: {
+    signedOut: 'Abgemeldet',
+    heading: 'Entwicklungs-Anmeldung',
+    noAccounts: 'Keine Demo-Konten gefunden. Führe npm run db:seed aus.',
+  },
+}

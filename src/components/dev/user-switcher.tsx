@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/provider'
 
 export type DemoAccount = {
   id: string
@@ -24,6 +25,7 @@ export function UserSwitcher({
   currentName: string | null
 }) {
   const router = useRouter()
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -57,7 +59,7 @@ export function UserSwitcher({
         className="border-border-strong text-fg-muted hover:bg-surface-muted flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium"
       >
         <span className="bg-warning inline-block h-1.5 w-1.5 rounded-full" aria-hidden />
-        {currentName ?? 'Signed out'}
+        {currentName ?? t.dev.signedOut}
       </button>
 
       {open ? (
@@ -66,13 +68,11 @@ export function UserSwitcher({
           className="border-border bg-surface absolute right-0 z-50 mt-2 w-64 rounded-xl border p-1 shadow-lg"
         >
           <p className="text-fg-subtle px-3 py-2 text-[11px] tracking-wide uppercase">
-            Development sign-in
+            {t.dev.heading}
           </p>
 
           {accounts.length === 0 ? (
-            <p className="text-fg-muted px-3 pb-3 text-xs">
-              No demo accounts found. Run <code>npm run db:seed</code>.
-            </p>
+            <p className="text-fg-muted px-3 pb-3 text-xs">{t.dev.noAccounts}</p>
           ) : null}
 
           {accounts.map((account) => (
@@ -90,7 +90,7 @@ export function UserSwitcher({
               <span className="truncate">{account.displayName}</span>
               {account.stravaConnected ? (
                 <span className="text-fg-subtle shrink-0 text-[10px]">
-                  Strava-connected
+                  {t.strava.connected}
                 </span>
               ) : null}
             </button>
@@ -104,7 +104,7 @@ export function UserSwitcher({
               onClick={() => post('/api/auth/dev/logout')}
               className="text-fg-muted hover:bg-surface-muted mt-1 flex min-h-11 w-full items-center rounded-lg px-3 text-sm"
             >
-              Sign out
+              {t.common.signOut}
             </button>
           ) : null}
 

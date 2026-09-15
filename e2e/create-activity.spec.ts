@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { signInAsDemoUser } from './helpers'
+import { signInAsDemoUser, path } from './helpers'
 
 test('a signed-in user can create an activity and it appears in the feed', async ({
   page,
@@ -8,7 +8,7 @@ test('a signed-in user can create an activity and it appears in the feed', async
 
   const title = `Test run ${Date.now()}`
 
-  await page.goto('/activities/new')
+  await page.goto(path('/activities/new'))
 
   // Step 1 — sport. Choosing one advances automatically.
   await page.getByRole('button', { name: 'Running' }).click()
@@ -48,7 +48,7 @@ test('a signed-in user can create an activity and it appears in the feed', async
   await expect(page.getByText('Approximate meeting area')).toBeVisible()
 
   // And it is discoverable in the feed.
-  await page.goto('/?sports=run')
+  await page.goto(path('/?sports=run'))
   await expect(page.getByText(title)).toBeVisible()
 
   // Remove it again, so repeated runs do not fill the feed with test data.
@@ -60,7 +60,7 @@ test('a signed-in user can create an activity and it appears in the feed', async
 
 test('fields that do not apply to a sport are not offered', async ({ page }) => {
   await signInAsDemoUser(page)
-  await page.goto('/activities/new')
+  await page.goto(path('/activities/new'))
 
   // Yoga has neither distance nor pace.
   await page.getByRole('button', { name: 'Yoga' }).click()
@@ -77,6 +77,6 @@ test('fields that do not apply to a sport are not offered', async ({ page }) => 
 })
 
 test('a signed-out visitor is asked to sign in before creating', async ({ page }) => {
-  await page.goto('/activities/new')
+  await page.goto(path('/activities/new'))
   await expect(page.getByText('Sign in to create an activity')).toBeVisible()
 })

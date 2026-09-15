@@ -11,16 +11,20 @@ import { AreaMap } from '@/components/map/area-map'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
 import { Button } from '@/components/ui/button'
-import { formatParticipantLimit, formatStartFull, isArchived, isFull } from '@/lib/format'
+import { formatStartFull, isArchived, isFull } from '@/lib/format'
 import { formatActivityDistance, formatPace, formatRadius } from '@/lib/geo'
+import { fill, getDictionary } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n/config'
 import { getActivityDetail, getComments } from '@/lib/queries/activity-detail'
-import { LEVEL_LABELS, getSport, type Level } from '@/lib/sports'
+import { isSportKey, type Level } from '@/lib/sports'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
 /** Matches the 250 m storage grid, so the circle is honest about the precision. */
 const AREA_CIRCLE_RADIUS_M = 250
 
-export async function generateMetadata({ params }: PageProps<'/activities/[id]'>) {
+export async function generateMetadata({
+  params,
+}: PageProps<'/[locale]/activities/[id]'>) {
   const { id } = await params
   const activity = await getActivityDetail(id)
   return { title: activity?.title ?? 'Activity' }
@@ -28,8 +32,9 @@ export async function generateMetadata({ params }: PageProps<'/activities/[id]'>
 
 export default async function ActivityDetailPage({
   params,
-}: PageProps<'/activities/[id]'>) {
-  const { id } = await params
+}: PageProps<'/[locale]/activities/[id]'>) {
+  const { id, locale } = await params
+  const t = getDictionary(locale as Locale)
 
   const [activity, userId] = await Promise.all([
     getActivityDetail(id),
@@ -42,19 +47,24 @@ export default async function ActivityDetailPage({
 
   const comments = await getComments(id)
   const archived = isArchived(activity.startsAt)
-  const sport = getSport(activity.sportKey)
-  const isOwner = userId === activity.ownerId
   const full = isFull(activity.participantCount, activity.maxParticipants)
+  const isOwner = userId === activity.ownerId
 
-  const facts = [
-    formatActivityDistance(activity.distanceM),
-    formatPace(activity.paceSecondsPerKm),
-    activity.level ? LEVEL_LABELS[activity.level as Level] : null,
-  ].filter(Boolean)
+  const sportLabel = isSportKey(activity.sportKey)
+    ? t.sports[activity.sportKey]
+    : activity.sportKey
+
+  const distance = formatActivityDistance(activity.distanceM)
+  const pace = formatPace(activity.paceSecondsPerKm)
+  const hasFacts = Boolean(distance || pace || activity.level)
 
   return (
     <>
-      <AppHeader title={sport.label} back={{ href: '/', label: 'Back to discover' }} />
+      <AppHeader
+        locale={locale as Locale}
+        title={sportLabel}
+        back={{ href: '/', label: t.states.backToDiscover }}
+      />
       <PageBody className="space-y-6">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -67,7 +77,9 @@ export default async function ActivityDetailPage({
             {activity.title}
           </h1>
 
-          <p className="text-fg-muted text-sm">{formatStartFull(activity.startsAt)}</p>
+          <p className="text-fg-muted text-sm">
+            {formatStartFull(activity.startsAt, locale as Locale)}
+          </p>
         </div>
 
         {activity.status === 'cancelled' ? (
@@ -75,13 +87,13 @@ export default async function ActivityDetailPage({
             role="alert"
             className="bg-danger-soft text-danger rounded-card px-4 py-3 text-sm font-medium"
           >
-            This activity was cancelled by the organizer.
+            {t.detail.cancelledNotice}
           </p>
         ) : null}
 
         {archived && activity.status !== 'cancelled' ? (
           <p className="bg-surface-muted text-fg-muted rounded-card px-4 py-3 text-sm">
-            This activity has already taken place.
+            {t.detail.archivedNotice}
           </p>
         ) : null}
 
@@ -91,22 +103,18 @@ export default async function ActivityDetailPage({
           </p>
         ) : null}
 
-        {facts.length > 0 ? (
+        {hasFacts ? (
           <dl className="border-border bg-surface rounded-card divide-border divide-y border text-sm">
-            {formatActivityDistance(activity.distanceM) ? (
-              <Row label="Distance" value={formatActivityDistance(activity.distanceM)!} />
-            ) : null}
-            {formatPace(activity.paceSecondsPerKm) ? (
-              <Row label="Pace" value={formatPace(activity.paceSecondsPerKm)!} />
-            ) : null}
+            {distance ? <Row label={t.detail.distance} value={distance} /> : null}
+            {pace ? <Row label={t.detail.pace} value={pace} /> : null}
             {activity.level ? (
-              <Row label="Level" value={LEVEL_LABELS[activity.level as Level]} />
+              <Row label={t.detail.level} value={t.levels[activity.level as Level]} />
             ) : null}
           </dl>
         ) : null}
 
         <section className="space-y-2">
-          <h2 className="text-fg text-base font-semibold">Where</h2>
+          <h2 className="text-fg text-base font-semibold">{t.detail.where}</h2>
           <AreaMap
             center={{ lat: activity.lat, lng: activity.lng }}
             areaRadiusM={AREA_CIRCLE_RADIUS_M}
@@ -115,19 +123,18 @@ export default async function ActivityDetailPage({
             className="h-48"
           />
           <p className="text-fg text-sm font-medium">{activity.locationLabel}</p>
-          <p className="text-fg-subtle text-xs">
-            Approximate meeting area. The organizer shares the exact spot with people they
-            accept.
-          </p>
+          <p className="text-fg-subtle text-xs">{t.detail.approximateNote}</p>
           {isOwner ? (
             <p className="text-fg-subtle text-xs">
-              Discoverable within {formatRadius(activity.visibilityRadiusM)}.
+              {fill(t.detail.discoverableWithin, {
+                radius: formatRadius(activity.visibilityRadiusM),
+              })}
             </p>
           ) : null}
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-fg text-base font-semibold">Organizer</h2>
+          <h2 className="text-fg text-base font-semibold">{t.detail.organizerHeading}</h2>
           <div className="border-border bg-surface rounded-card flex items-center gap-3 border p-3">
             <span
               aria-hidden
@@ -149,30 +156,30 @@ export default async function ActivityDetailPage({
 
         <section className="space-y-2">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-fg text-base font-semibold">Participants</h2>
+            <h2 className="text-fg text-base font-semibold">{t.detail.participants}</h2>
             <p className="text-fg-muted text-sm">
-              {formatParticipantLimit(
-                activity.participantCount,
-                activity.maxParticipants,
-              )}
+              {activity.maxParticipants === null
+                ? fill(t.activity.noLimit, { count: activity.participantCount })
+                : fill(t.activity.ofMax, {
+                    count: activity.participantCount,
+                    max: activity.maxParticipants,
+                  })}
             </p>
           </div>
 
           {isOwner ? (
-            <p className="text-fg-muted text-sm">
-              You are organizing this. Approving requests arrives in the next step.
-            </p>
+            <p className="text-fg-muted text-sm">{t.detail.youOrganize}</p>
           ) : (
             <>
               <Button fullWidth size="lg" disabled>
                 {archived || activity.status === 'cancelled'
-                  ? 'No longer open'
+                  ? t.detail.noLongerOpen
                   : full
-                    ? 'Full'
-                    : 'Request to join'}
+                    ? t.activity.full
+                    : t.detail.requestToJoin}
               </Button>
               <p className="text-fg-subtle text-center text-xs">
-                Join requests arrive in the next step.
+                {t.detail.joinComingSoon}
               </p>
             </>
           )}

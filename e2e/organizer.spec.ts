@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { anon, signInAsDemoUser } from './helpers'
+import { anon, signInAsDemoUser, path } from './helpers'
 
 /** Creates an activity through the UI and returns its id, so each test is self-contained. */
 async function createActivity(page: import('@playwright/test').Page, title: string) {
-  await page.goto('/activities/new')
+  await page.goto(path('/activities/new'))
   await page.getByRole('button', { name: 'Running' }).click()
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
   await page.getByLabel('Date').fill(tomorrow)
@@ -44,9 +44,9 @@ test('an organizer can edit their activity', async ({ page }) => {
 
   // Deleted means gone for everyone, including the owner who still has read
   // access to their own rows at the database level.
-  await page.goto(`/activities/${id}`)
+  await page.goto(path(`/activities/${id}`))
   await expect(page.getByText('Page not found')).toBeVisible()
-  await page.goto('/me')
+  await page.goto(path('/me'))
   await expect(page.getByRole('link').filter({ hasText: title })).toHaveCount(0)
 })
 
@@ -117,11 +117,11 @@ test('someone else cannot reach the edit page or see organizer tools', async ({
 
   await signInAsDemoUser(page, others![0].display_name)
 
-  await page.goto(`/activities/${activity.id}`)
+  await page.goto(path(`/activities/${activity.id}`))
   await expect(page.getByText('Organizer tools')).toHaveCount(0)
 
   // The edit route 404s rather than admitting the activity exists but is not theirs.
-  await page.goto(`/activities/${activity.id}/edit`)
+  await page.goto(path(`/activities/${activity.id}/edit`))
   await expect(page.getByText('Page not found')).toBeVisible()
 })
 
@@ -129,7 +129,7 @@ test('an activity can be created with no participant limit', async ({ page }) =>
   await signInAsDemoUser(page)
   const title = `Unlimited ${Date.now()}`
 
-  await page.goto('/activities/new')
+  await page.goto(path('/activities/new'))
   await page.getByRole('button', { name: 'Running' }).click()
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
   await page.getByLabel('Date').fill(tomorrow)
@@ -154,7 +154,7 @@ test('an activity can be created with no participant limit', async ({ page }) =>
   // No denominator anywhere, and the join button never reads "Full".
   await expect(page.getByText('0 joined · no limit')).toBeVisible()
 
-  await page.goto('/?sports=run')
+  await page.goto(path('/?sports=run'))
   const card = page.getByRole('link').filter({ hasText: title })
   await expect(card).toContainText('0 joined')
   await expect(card).not.toContainText('/')

@@ -24,7 +24,7 @@ export async function signInAsDemoUser(page: Page, displayName?: string) {
   const profile = data?.[0]
   if (!profile) throw new Error('No demo profiles found. Run `npm run db:seed`.')
 
-  await page.goto('/')
+  await page.goto(path('/'))
   const response = await page.request.post('/api/auth/dev/login', {
     data: { userId: profile.id },
   })
@@ -32,4 +32,12 @@ export async function signInAsDemoUser(page: Page, displayName?: string) {
 
   await page.reload()
   return profile
+}
+
+/**
+ * Locale-prefixed path. Every page lives under /de or /en, so tests must say
+ * which language they are exercising rather than relying on a redirect.
+ */
+export function path(p: string, locale: 'de' | 'en' = 'en'): string {
+  return `/${locale}${p === '/' ? '' : p}`
 }

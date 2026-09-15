@@ -27,6 +27,11 @@ others have planned within a radius you choose.
 Launch city is **Schwyz, Switzerland**. The data model is multi-city from the
 start — every activity carries a `city_id`.
 
+Available in **German and English**, German by default. The language is part of
+the URL (`/de/...`, `/en/...`), so a link you share arrives in the language you
+sent it in. Dates and times are always Swiss — 24-hour, `DD.MM.YYYY` — in both
+languages; only the words around the numbers change.
+
 ## Strava API compliance
 
 Rundum is built against the [Strava API Agreement](https://www.strava.com/legal/api)

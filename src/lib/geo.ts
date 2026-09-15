@@ -11,6 +11,9 @@
  *      several readings cannot be trilaterated back to a precise point.
  */
 
+import { getDictionary } from '@/lib/i18n'
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config'
+
 export type LatLng = {
   lat: number
   lng: number
@@ -76,9 +79,14 @@ export function haversineMeters(a: LatLng, b: LatLng): number {
  * Under 1 km is collapsed entirely rather than reported, because at close range
  * an exact figure is the most revealing.
  */
-export function formatDistanceBucket(meters: number): string {
+export function formatDistanceBucket(
+  meters: number,
+  locale: Locale = DEFAULT_LOCALE,
+): string {
   if (!Number.isFinite(meters) || meters < 0) return ''
-  if (meters < 1_000) return 'under 1 km'
+  // The one part of this label that is words rather than numbers, so the one
+  // part that needs translating.
+  if (meters < 1_000) return getDictionary(locale).activity.underOneKm
   // toFixed rather than toLocaleString: Swiss decimals use a dot, and a
   // locale-dependent call here could render "2,5 km" on another runtime.
   if (meters < 10_000) return `~${(Math.round(meters / 100) / 10).toFixed(1)} km`

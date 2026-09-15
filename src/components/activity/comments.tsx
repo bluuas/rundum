@@ -2,11 +2,12 @@
 
 import { useRouter } from 'next/navigation'
 import { useOptimistic, useRef, useState, useTransition } from 'react'
-import { addComment, deleteComment } from '@/app/(app)/activities/actions'
+import { addComment, deleteComment } from '@/app/[locale]/(app)/activities/actions'
 import { StravaConnectedBadge } from '@/components/activity/badges'
 import { Button } from '@/components/ui/button'
 import { TextArea } from '@/components/ui/field'
 import { formatRelative } from '@/lib/format'
+import { useI18n } from '@/lib/i18n/provider'
 import type { CommentWithAuthor } from '@/lib/queries/activity-detail'
 
 export function Comments({
@@ -21,6 +22,7 @@ export function Comments({
   activityOwnerId: string
 }) {
   const router = useRouter()
+  const { locale, t } = useI18n()
   const formRef = useRef<HTMLFormElement>(null)
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -46,7 +48,7 @@ export function Comments({
         body: text,
         createdAt: new Date().toISOString(),
         authorId: currentUserId ?? '',
-        authorName: 'You',
+        authorName: t.activity.organizer,
         authorStravaConnected: false,
       })
 
@@ -75,7 +77,7 @@ export function Comments({
   return (
     <section aria-labelledby="comments-heading" className="space-y-4">
       <h2 id="comments-heading" className="text-fg text-base font-semibold">
-        Comments
+        {t.comments.heading}
         <span className="text-fg-subtle ml-1.5 font-normal">
           ({optimisticComments.length})
         </span>
@@ -83,7 +85,7 @@ export function Comments({
 
       {optimisticComments.length === 0 ? (
         <p className="text-fg-muted border-border rounded-card border border-dashed px-4 py-6 text-center text-sm">
-          No comments yet. Ask a question, or say you are coming.
+          {t.comments.empty}
         </p>
       ) : (
         <ul className="space-y-3">
@@ -108,7 +110,7 @@ export function Comments({
                       {comment.authorName}
                       {comment.authorId === activityOwnerId ? (
                         <span className="text-brand ml-1.5 text-[11px] font-semibold">
-                          Organizer
+                          {t.activity.organizer}
                         </span>
                       ) : null}
                     </p>
@@ -118,7 +120,9 @@ export function Comments({
                     dateTime={comment.createdAt}
                     className="text-fg-subtle shrink-0 text-xs"
                   >
-                    {isOptimistic ? 'Sending…' : formatRelative(comment.createdAt)}
+                    {isOptimistic
+                      ? t.comments.sending
+                      : formatRelative(comment.createdAt, locale)}
                   </time>
                 </div>
 
@@ -132,8 +136,8 @@ export function Comments({
                     className="text-fg-subtle hover:text-danger mt-2 min-h-11 text-xs underline"
                   >
                     {comment.authorId === currentUserId
-                      ? 'Delete'
-                      : 'Remove as organizer'}
+                      ? t.common.delete
+                      : t.comments.removeAsOrganizer}
                   </button>
                 ) : null}
               </li>
@@ -145,14 +149,14 @@ export function Comments({
       {currentUserId ? (
         <form ref={formRef} action={onSubmit} className="space-y-2">
           <label htmlFor="comment-body" className="sr-only">
-            Write a comment
+            {t.comments.writeLabel}
           </label>
           <TextArea
             id="comment-body"
             name="body"
             value={body}
             maxLength={1000}
-            placeholder="Ask a question, or say you are coming"
+            placeholder={t.comments.placeholder}
             onChange={(event) => setBody(event.target.value)}
           />
           {error ? (
@@ -161,11 +165,11 @@ export function Comments({
             </p>
           ) : null}
           <Button type="submit" disabled={pending || body.trim().length === 0}>
-            {pending ? 'Posting…' : 'Post comment'}
+            {pending ? t.comments.posting : t.comments.post}
           </Button>
         </form>
       ) : (
-        <p className="text-fg-muted text-sm">Sign in to join the conversation.</p>
+        <p className="text-fg-muted text-sm">{t.comments.signInPrompt}</p>
       )}
     </section>
   )

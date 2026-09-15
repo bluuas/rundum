@@ -1,3 +1,6 @@
+import { fill, getDictionary } from '@/lib/i18n'
+import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config'
+
 /**
  * Date and time formatting.
  *
@@ -5,25 +8,15 @@
  *   - 24-hour time, never AM/PM
  *   - numeric dates as DD.MM.YYYY, never MM/DD/YYYY or YYYY-MM-DD
  *
- * These are hand-rolled rather than delegated to Intl.DateTimeFormat, because
- * Intl output depends on the runtime's ICU data and on the locale tag being
- * interpreted as expected — which is exactly how an en-US "7:30 PM" slips in.
- * Formatting this small is not worth that risk, and it makes the rule testable.
+ * Numeric formats are hand-rolled rather than delegated to
+ * Intl.DateTimeFormat, because Intl output depends on the runtime's ICU data
+ * and on the locale tag being interpreted as expected — which is exactly how an
+ * en-US "7:30 PM" slips in. Formatting this small is not worth that risk, and
+ * it makes the rule testable.
  *
- * Weekday and month names stay English, since the interface is English. It is
- * the numeric conventions that are Swiss.
+ * Words — weekdays, "Today", "2h ago" — come from the dictionary, so they are
+ * translated while the numbers stay Swiss in every language.
  */
-
-const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const WEEKDAY_LONG = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-]
 
 function pad(value: number): string {
   return String(value).padStart(2, '0')
@@ -33,13 +26,13 @@ function toDate(value: string | Date): Date {
   return typeof value === 'string' ? new Date(value) : value
 }
 
-/** 24-hour time, "19:57". Never 7:57 PM. */
+/** 24-hour time, "19:57". Never 7:57 PM, in any locale. */
 export function formatTime(value: string | Date): string {
   const date = toDate(value)
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-/** Swiss numeric date, "15.09.2026". */
+/** Swiss numeric date, "15.09.2026". Identical in every locale. */
 export function formatDate(value: string | Date): string {
   const date = toDate(value)
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`
@@ -57,40 +50,53 @@ function daysApart(a: Date, b: Date): number {
 }
 
 /**
- * Short label for cards: "Today 18:30", "Tomorrow 07:00", "Sat 09:00",
- * "15.09.2026 09:00".
+ * Short label for cards: "Today 18:30", "Sat 09:00", "15.09.2026 09:00".
  *
  * Relative words only within a week — beyond that "in 23 days" is harder to act
  * on than a date.
  */
-export function formatStartShort(startsAt: string | Date, now = new Date()): string {
+export function formatStartShort(
+  startsAt: string | Date,
+  locale: Locale = DEFAULT_LOCALE,
+  now = new Date(),
+): string {
   const date = toDate(startsAt)
+  const t = getDictionary(locale).time
   const days = daysApart(date, now)
   const time = formatTime(date)
 
-  if (days === 0) return `Today ${time}`
-  if (days === 1) return `Tomorrow ${time}`
-  if (days === -1) return `Yesterday ${time}`
-  if (days > 1 && days < 7) return `${WEEKDAY_SHORT[date.getDay()]} ${time}`
+  if (days === 0) return fill(t.today, { time })
+  if (days === 1) return fill(t.tomorrow, { time })
+  if (days === -1) return fill(t.yesterday, { time })
+  if (days > 1 && days < 7) return `${t.weekdayShort[date.getDay()]} ${time}`
 
   return `${formatDate(date)} ${time}`
 }
 
 /** Full label for the detail page: "Tuesday, 15.09.2026, 19:57". */
-export function formatStartFull(startsAt: string | Date): string {
+export function formatStartFull(
+  startsAt: string | Date,
+  locale: Locale = DEFAULT_LOCALE,
+): string {
   const date = toDate(startsAt)
-  return `${WEEKDAY_LONG[date.getDay()]}, ${formatDate(date)}, ${formatTime(date)}`
+  const t = getDictionary(locale).time
+  return `${t.weekdayLong[date.getDay()]}, ${formatDate(date)}, ${formatTime(date)}`
 }
 
 /** Relative label for comments: "just now", "2h ago", then a Swiss date. */
-export function formatRelative(timestamp: string | Date, now = new Date()): string {
+export function formatRelative(
+  timestamp: string | Date,
+  locale: Locale = DEFAULT_LOCALE,
+  now = new Date(),
+): string {
   const date = toDate(timestamp)
+  const t = getDictionary(locale).time
   const seconds = Math.round((now.getTime() - date.getTime()) / 1000)
 
-  if (seconds < 60) return 'just now'
-  if (seconds < 3_600) return `${Math.floor(seconds / 60)}m ago`
-  if (seconds < 86_400) return `${Math.floor(seconds / 3_600)}h ago`
-  if (seconds < 604_800) return `${Math.floor(seconds / 86_400)}d ago`
+  if (seconds < 60) return t.justNow
+  if (seconds < 3_600) return fill(t.minutesAgo, { count: Math.floor(seconds / 60) })
+  if (seconds < 86_400) return fill(t.hoursAgo, { count: Math.floor(seconds / 3_600) })
+  if (seconds < 604_800) return fill(t.daysAgo, { count: Math.floor(seconds / 86_400) })
 
   return formatDate(date)
 }
@@ -110,21 +116,11 @@ export function toTimeInputValue(date: Date): string {
 }
 
 /**
- * Participant count for display.
+ * An activity with no participant limit is never full.
  *
- * `max` is null when the organizer set no limit, in which case there is no
- * denominator to show — "12 joined", not "12/∞ joined".
+ * The *labels* for participant counts live in the dictionaries, since they are
+ * translated; this is the one piece of the rule that is pure logic.
  */
-export function formatParticipants(count: number, max: number | null): string {
-  return max === null ? `${count} joined` : `${count}/${max} joined`
-}
-
-/** An activity with no limit is never full. */
 export function isFull(count: number, max: number | null): boolean {
   return max !== null && count >= max
-}
-
-/** Human label for the limit itself, used on detail and review screens. */
-export function formatParticipantLimit(count: number, max: number | null): string {
-  return max === null ? `${count} joined · no limit` : `${count} of ${max}`
 }

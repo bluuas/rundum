@@ -7,21 +7,29 @@ import { PageBody } from '@/components/shell/page-body'
 import { ActivityListSkeleton, EmptyState, ErrorState } from '@/components/ui/states'
 import { hasActiveFilters, parseFilters } from '@/lib/filters'
 import { formatRadius } from '@/lib/geo'
+import { fill, getDictionary, plural, type Dictionary } from '@/lib/i18n'
+import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getNearbyActivities } from '@/lib/queries/activities'
-import { SPORTS } from '@/lib/sports'
 
-export default async function FeedPage({ searchParams }: PageProps<'/'>) {
-  const params = await searchParams
-  const filters = parseFilters(params)
+/** Launch city. Comes from the `cities` table once more than one exists. */
+const CITY = 'Schwyz'
+
+export default async function FeedPage({ params, searchParams }: PageProps<'/[locale]'>) {
+  const { locale } = await params
+  const query = await searchParams
+  const filters = parseFilters(query)
+  const t = getDictionary(locale as Locale)
 
   return (
     <>
-      <AppHeader />
+      <AppHeader locale={locale as Locale} />
       <PageBody className="space-y-4">
         <div>
-          <h1 className="text-fg text-xl font-bold tracking-tight">Near Schwyz</h1>
+          <h1 className="text-fg text-xl font-bold tracking-tight">
+            {fill(t.feed.title, { city: CITY })}
+          </h1>
           <p className="text-fg-muted mt-0.5 text-sm">
-            Upcoming activities within {formatRadius(filters.radiusM)}
+            {fill(t.feed.subtitle, { radius: formatRadius(filters.radiusM) })}
           </p>
         </div>
 
@@ -31,48 +39,52 @@ export default async function FeedPage({ searchParams }: PageProps<'/'>) {
           Suspense keyed on the filters so changing one shows the skeleton
           again rather than freezing the previous results.
         */}
-        <Suspense key={JSON.stringify(params)} fallback={<ActivityListSkeleton />}>
-          <FeedResults filters={filters} />
+        <Suspense
+          key={JSON.stringify(query)}
+          fallback={<ActivityListSkeleton label={t.states.loadingActivities} />}
+        >
+          <FeedResults filters={filters} locale={locale as Locale} t={t} />
         </Suspense>
       </PageBody>
     </>
   )
 }
 
-async function FeedResults({ filters }: { filters: ReturnType<typeof parseFilters> }) {
+async function FeedResults({
+  filters,
+  locale,
+  t,
+}: {
+  filters: ReturnType<typeof parseFilters>
+  locale: Locale
+  t: Dictionary
+}) {
   const { activities, error } = await getNearbyActivities(filters)
 
   if (error) {
-    return (
-      <ErrorState
-        title="Could not load activities"
-        description="The feed is temporarily unavailable. Pull down to refresh, or try again shortly."
-      />
-    )
+    return <ErrorState title={t.feed.loadErrorTitle} description={t.feed.loadErrorBody} />
   }
 
   if (activities.length === 0) {
     // The empty state is a funnel, not a dead end: creating an activity is the
     // metric this product is judged on.
-    const sportLabel =
-      filters.sports.length === 1
-        ? SPORTS.find((sport) => sport.key === filters.sports[0])?.label.toLowerCase()
-        : null
+    const sportKey = filters.sports.length === 1 ? filters.sports[0] : null
 
     return (
       <EmptyState
         icon="🏔️"
         title={
-          sportLabel
-            ? `No ${sportLabel} near Schwyz yet`
-            : 'Nothing planned near Schwyz yet'
+          sportKey
+            ? fill(t.feed.emptySportTitle, { sport: t.sports[sportKey], city: CITY })
+            : fill(t.feed.emptyTitle, { city: CITY })
         }
         description={
-          hasActiveFilters(filters)
-            ? 'Try a wider radius or a different date — or be the first to plan one.'
-            : 'Be the first to put something on the map. It takes about a minute.'
+          hasActiveFilters(filters) ? t.feed.emptyFiltered : t.feed.emptyUnfiltered
         }
-        action={{ label: 'Create an activity', href: '/activities/new' }}
+        action={{
+          label: t.feed.createCta,
+          href: localeHref(locale, '/activities/new'),
+        }}
       />
     )
   }
@@ -81,7 +93,7 @@ async function FeedResults({ filters }: { filters: ReturnType<typeof parseFilter
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-fg-subtle text-xs" aria-live="polite">
-          {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+          {plural(activities.length, { one: t.feed.countOne, other: t.feed.countOther })}
         </p>
         <SortControl filters={filters} />
       </div>

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { anon } from './helpers'
+import { anon, path } from './helpers'
 
 /**
  * Rundum is mobile-first, so layout regressions at phone width are functional
@@ -18,7 +18,7 @@ test('no screen scrolls horizontally at 360px', async ({ page }) => {
   })
   const id = (data as Array<{ id: string }>)[0].id
 
-  for (const path of [
+  for (const route of [
     '/',
     '/?sports=run&radius=5000',
     '/activities/new',
@@ -26,7 +26,7 @@ test('no screen scrolls horizontally at 360px', async ({ page }) => {
     '/me',
     '/profile',
   ]) {
-    await page.goto(path)
+    await page.goto(path(route))
     await page.waitForLoadState('networkidle')
 
     const overflow = await page.evaluate(
@@ -34,14 +34,14 @@ test('no screen scrolls horizontally at 360px', async ({ page }) => {
     )
     expect(
       overflow,
-      `${path} overflows horizontally by ${overflow}px`,
+      `${route} overflows horizontally by ${overflow}px`,
     ).toBeLessThanOrEqual(1)
   }
 })
 
 test('primary tap targets are at least 44px tall', async ({ page }) => {
   await page.setViewportSize(NARROW)
-  await page.goto('/')
+  await page.goto(path('/'))
 
   const navLinks = page.getByRole('navigation', { name: 'Main' }).getByRole('link')
   const count = await navLinks.count()
@@ -55,7 +55,7 @@ test('primary tap targets are at least 44px tall', async ({ page }) => {
 
 test('the bottom nav stays reachable and marks the current tab', async ({ page }) => {
   await page.setViewportSize(NARROW)
-  await page.goto('/')
+  await page.goto(path('/'))
 
   const nav = page.getByRole('navigation', { name: 'Main' })
   await expect(nav.getByRole('link', { name: 'Discover' })).toHaveAttribute(

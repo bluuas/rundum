@@ -15,14 +15,6 @@ export type SearchParams = Record<string, string | string[] | undefined>
 export const DATE_RANGES = ['anytime', 'today', 'tomorrow', 'week', 'weekend'] as const
 export type DateRange = (typeof DATE_RANGES)[number]
 
-export const DATE_RANGE_LABELS: Record<DateRange, string> = {
-  anytime: 'Anytime',
-  today: 'Today',
-  tomorrow: 'Tomorrow',
-  week: 'Next 7 days',
-  weekend: 'This weekend',
-}
-
 function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value
 }

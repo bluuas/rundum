@@ -1,3 +1,7 @@
+'use client'
+
+import { useI18n } from '@/lib/i18n/provider'
+
 /**
  * Strava attribution.
  *
@@ -15,10 +19,9 @@
  * muted body text and "Rundum" is the page's wordmark.
  */
 export function StravaAttribution({ className }: { className?: string }) {
+  const { t } = useI18n()
+
   return (
-    <p className={`text-fg-subtle text-xs ${className ?? ''}`}>
-      Compatible with Strava. Rundum is an independent project and is not affiliated with,
-      endorsed by, or sponsored by Strava.
-    </p>
+    <p className={`text-fg-subtle text-xs ${className ?? ''}`}>{t.strava.attribution}</p>
   )
 }

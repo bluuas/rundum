@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { buildFilterQuery, type DateRange } from '@/lib/filters'
 import type { FeedFilters, FeedSort } from '@/lib/queries/activities'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/provider'
 
 /**
  * Sort, rendered inline with the result count rather than as a filter chip.
@@ -20,11 +21,12 @@ export function SortControl({
   className?: string
 }) {
   const router = useRouter()
+  const { t } = useI18n()
 
   return (
     <div className={cn('relative', className)}>
       <select
-        aria-label="Sort activities"
+        aria-label={t.filters.sort}
         value={filters.sort}
         onChange={(event) =>
           router.push(
@@ -40,8 +42,8 @@ export function SortControl({
           'text-fg-muted hover:text-fg cursor-pointer appearance-none bg-transparent py-3 pr-4 pl-0 text-xs font-medium',
         )}
       >
-        <option value="soonest">Soonest first</option>
-        <option value="closest">Closest first</option>
+        <option value="soonest">{t.filters.sortSoonest}</option>
+        <option value="closest">{t.filters.sortClosest}</option>
       </select>
       <span
         aria-hidden

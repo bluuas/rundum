@@ -66,6 +66,7 @@ export default function MapCanvas({
 
       {onCenterChange ? <CenterReporter onCenterChange={onCenterChange} /> : null}
       <RecenterOnChange center={center} interactive={interactive} />
+      <InvalidateSizeOnResize />
     </MapContainer>
   )
 }
@@ -106,6 +107,43 @@ function RecenterOnChange({
       map.setView([center.lat, center.lng], map.getZoom())
     }
   }, [center, interactive, map])
+
+  return null
+}
+
+/**
+ * Keeps Leaflet's idea of the container size in step with reality.
+ *
+ * Leaflet measures its container once, when the map initialises, and caches the
+ * result. If the container has not reached its final size at that moment — the
+ * map mounts inside a step that was just revealed, a webfont lands, the dynamic
+ * import's placeholder is swapped out — the map computes the wrong viewport and
+ * requests too few tiles. The symptom is a map that looks blank or half-drawn
+ * until you zoom, because zooming is one of the few things that forces Leaflet
+ * to re-measure.
+ *
+ * invalidateSize() is that re-measure. It runs once after the first paint, and
+ * then whenever the container actually changes size — which also covers the
+ * on-screen keyboard opening and closing on a phone.
+ */
+function InvalidateSizeOnResize() {
+  const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+
+    // After paint rather than immediately: on mount the element may still be
+    // mid-layout, and re-measuring then would cache the same wrong size again.
+    const frame = requestAnimationFrame(() => map.invalidateSize())
+
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(container)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [map])
 
   return null
 }

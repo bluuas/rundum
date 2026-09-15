@@ -1,16 +1,19 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { DevAuthBar } from '@/components/dev/dev-auth-bar'
+import { localeHref, type Locale } from '@/lib/i18n/config'
 
 /**
  * Sticky top bar. `title` replaces the wordmark on sub-pages so the user always
  * knows where they are without a breadcrumb.
  */
 export function AppHeader({
+  locale,
   title,
   action,
   back,
 }: {
+  locale: Locale
   title?: string
   action?: ReactNode
   back?: { href: string; label: string }
@@ -20,7 +23,7 @@ export function AppHeader({
       <div className="mx-auto flex h-14 max-w-[480px] items-center gap-2 px-4">
         {back ? (
           <Link
-            href={back.href}
+            href={localeHref(locale, back.href)}
             aria-label={back.label}
             className="text-fg-muted hover:bg-surface-muted -ml-2 flex h-11 w-11 items-center justify-center rounded-full"
           >
@@ -31,7 +34,10 @@ export function AppHeader({
         {title ? (
           <h1 className="text-fg truncate text-base font-semibold">{title}</h1>
         ) : (
-          <Link href="/" className="text-fg text-lg font-bold tracking-tight">
+          <Link
+            href={localeHref(locale, '/')}
+            className="text-fg text-lg font-bold tracking-tight"
+          >
             Rundum
           </Link>
         )}

@@ -1,5 +1,8 @@
+'use client'
+
+import { useI18n } from '@/lib/i18n/provider'
+import { getSport, isSportKey } from '@/lib/sports'
 import { cn } from '@/lib/utils'
-import { getSport } from '@/lib/sports'
 
 export function SportBadge({
   sportKey,
@@ -8,7 +11,10 @@ export function SportBadge({
   sportKey: string
   className?: string
 }) {
+  const { t } = useI18n()
   const sport = getSport(sportKey)
+  const label = isSportKey(sportKey) ? t.sports[sportKey] : sport.label
+
   return (
     <span
       className={cn(
@@ -18,7 +24,7 @@ export function SportBadge({
       )}
     >
       <span aria-hidden>{sport.icon}</span>
-      {sport.label}
+      {label}
     </span>
   )
 }
@@ -27,45 +33,56 @@ export function SportBadge({
  * Marks an account that signed in through Strava.
  *
  * The wording is "Strava-connected", never "verified": Rundum has not verified
- * anything about this person, and must not imply an endorsement by Strava.
+ * anything about this person, and must not imply an endorsement by Strava. The
+ * brand guidelines also require that the Strava name never appear more
+ * prominently than the application's own, which is why this is small, muted
+ * text next to a 18px "Rundum" wordmark.
  */
 export function StravaConnectedBadge({ className }: { className?: string }) {
+  const { t } = useI18n()
+
   return (
     <span
       className={cn(
         'text-fg-subtle inline-flex items-center gap-1 text-[11px] font-medium',
         className,
       )}
-      title="This account signed in with Strava"
+      title={t.strava.connectedTitle}
     >
       <span aria-hidden>🔗</span>
-      Strava-connected
+      {t.strava.connected}
     </span>
   )
 }
 
 export function StatusBadge({ status }: { status: string }) {
+  const { t } = useI18n()
+
   if (status === 'cancelled') {
     return (
       <span className="bg-danger-soft text-danger inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold">
-        Cancelled
+        {t.activity.cancelled}
       </span>
     )
   }
+
   if (status === 'hidden') {
     return (
       <span className="bg-surface-muted text-fg-muted inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold">
-        Hidden
+        {t.activity.hidden}
       </span>
     )
   }
+
   return null
 }
 
 export function ArchivedBadge() {
+  const { t } = useI18n()
+
   return (
     <span className="bg-surface-muted text-fg-muted inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold">
-      Archived
+      {t.activity.archived}
     </span>
   )
 }

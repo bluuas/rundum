@@ -63,6 +63,30 @@ stylistic.
 - **Do not replicate Strava's own functionality.** Rundum plans future
   activities; it must not record, import or analyse past workouts.
 
+## Languages
+
+German and English, German by default — Schwyz is German-speaking.
+
+- Locale lives in the **URL** (`/de/...`, `/en/...`), not a cookie, so a shared
+  link carries its language and each language is separately cacheable.
+  `proxy.ts` redirects an unprefixed path and 404s an unsupported one.
+- `src/lib/i18n/dictionaries/en.ts` defines the shape; `de.ts` is typed as
+  `Dictionary`, so a missing key is a build error, not an English string in a
+  German page. Note `en.ts` must **not** use `as const`, or no translation could
+  satisfy the type.
+- Dictionary values are plain strings, never functions: the dictionary crosses
+  the server/client boundary as a prop and must stay serializable. Use `fill()`
+  for `{placeholders}` and `plural()` for counts.
+- Server Components read `params.locale` and call `getDictionary`. Client
+  Components call `useI18n()`. `loading.tsx` and `not-found.tsx` receive no
+  params, so they must be Client Components that read context.
+- Every internal link goes through `localeHref(locale, path)`.
+- **Numbers stay Swiss in every language.** Only the words around them are
+  translated — see `src/lib/format.ts`.
+- The active dictionary is serialized into each page's HTML. Tests that match on
+  raw HTML must strip `<script>` blocks first, or they will match strings that
+  were never rendered.
+
 ## Architecture
 
 - Next.js 16 App Router. Note Next 16 renamed middleware to `proxy.ts`, and

@@ -1,7 +1,9 @@
 'use server'
 
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { isLocale, type Locale } from '@/lib/i18n/config'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -15,4 +17,23 @@ export async function signOut() {
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
   redirect('/')
+}
+
+/**
+ * Remembers the visitor's language choice.
+ *
+ * Server-side rather than `document.cookie`: writing to a browser global from a
+ * component is exactly the kind of external mutation the React compiler warns
+ * about, and a Server Action gets the cookie attributes right in one place.
+ * proxy.ts reads this when someone arrives at a URL with no locale prefix.
+ */
+export async function setLocalePreference(locale: Locale) {
+  if (!isLocale(locale)) return
+
+  const store = await cookies()
+  store.set('rundum_locale', locale, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: 'lax',
+  })
 }

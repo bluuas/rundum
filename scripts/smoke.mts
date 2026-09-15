@@ -21,6 +21,30 @@ function check(name: string, pass: boolean, detail = '') {
   if (!pass) failures++
 }
 
+/**
+ * Locale-prefixed path. Every page lives under /de or /en; a bare path
+ * redirects, so the checks below say which language they are exercising.
+ */
+function path(p: string, locale: 'de' | 'en' = 'en'): string {
+  // Split the query off first: "/?radius=5000" must become "/en?radius=5000",
+  // not "/en/?radius=5000", which Next would redirect.
+  const [route, query] = p.split('?')
+  const base = route === '/' ? '' : route
+  return `/${locale}${base}${query ? `?${query}` : ''}`
+}
+
+/**
+ * HTML with script blocks removed.
+ *
+ * The I18nProvider hands the whole dictionary to the client, so every page's
+ * RSC payload contains every string — including ones for screens that are not
+ * rendered. A substring check against raw HTML would match those and quietly
+ * assert nothing. Strip the scripts and only look at markup.
+ */
+function visibleHtml(html: string): string {
+  return html.replace(/<script[\s\S]*?<\/script>/g, '')
+}
+
 /** Minimal cookie jar: enough to carry a Supabase session between requests. */
 const jar = new Map<string, string>()
 
@@ -49,9 +73,20 @@ const anon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
+// --- Locale routing ---------------------------------------------------------
+const bare = await request('/')
+check(
+  'a bare path redirects to a locale',
+  bare.status === 307 && /\/(de|en)$/.test(bare.headers.get('location') ?? ''),
+  `status=${bare.status} location=${bare.headers.get('location')}`,
+)
+
+const german = visibleHtml(await (await request(path('/', 'de'))).text())
+check('German feed renders in German', german.includes('In der Nähe von Schwyz'))
+
 // --- Feed, signed out -------------------------------------------------------
-const feed = await request('/')
-const feedHtml = await feed.text()
+const feed = await request(path('/'))
+const feedHtml = visibleHtml(await feed.text())
 check('feed renders', feed.status === 200 && feedHtml.includes('Near Schwyz'))
 check(
   'feed shows seeded activities',
@@ -67,22 +102,24 @@ function countCards(html: string): number {
   return new Set(html.match(/\/activities\/[0-9a-f-]{36}/g) ?? []).size
 }
 
-const wide = countCards(await (await request('/?radius=50000')).text())
-const tight = countCards(await (await request('/?radius=5000')).text())
+const wide = countCards(await (await request(path('/?radius=50000'))).text())
+const tight = countCards(await (await request(path('/?radius=5000'))).text())
 check(
   'radius filter narrows the feed',
   wide > tight && tight > 0,
   `50km=${wide} 5km=${tight}`,
 )
 
-const runsOnly = await (await request('/?sports=run')).text()
+const runsOnly = await (await request(path('/?sports=run'))).text()
 check(
   'sport filter applies',
   countCards(runsOnly) > 0 && countCards(runsOnly) < wide,
   `run=${countCards(runsOnly)} all=${wide}`,
 )
 
-const emptyHtml = await (await request('/?sports=swim&when=today')).text()
+const emptyHtml = visibleHtml(
+  await (await request(path('/?sports=swim&when=today'))).text(),
+)
 check(
   'empty state appears and funnels to create',
   emptyHtml.includes('Create an activity'),
@@ -105,7 +142,7 @@ const login = await request('/api/auth/dev/login', {
 })
 check('mock login succeeds', login.status === 200, `status=${login.status}`)
 
-const signedInHtml = await (await request('/')).text()
+const signedInHtml = visibleHtml(await (await request(path('/'))).text())
 check('header shows the signed-in user', signedInHtml.includes(demoUser.display_name))
 
 // Impersonating a non-demo account must be refused.
@@ -117,7 +154,7 @@ const badLogin = await request('/api/auth/dev/login', {
 check('unknown account rejected', badLogin.status === 404, `status=${badLogin.status}`)
 
 // --- Create page ------------------------------------------------------------
-const createHtml = await (await request('/activities/new')).text()
+const createHtml = visibleHtml(await (await request(path('/activities/new'))).text())
 check('create page renders the form', createHtml.includes('What are you planning?'))
 check(
   'create page is not gated for a signed-in user',
@@ -132,8 +169,8 @@ const { data: nearby } = await anon.rpc('nearby_activities', {
 })
 const target = (nearby as Array<{ id: string; title: string }>)[0]
 
-const detail = await request(`/activities/${target.id}`)
-const detailHtml = await detail.text()
+const detail = await request(path(`/activities/${target.id}`))
+const detailHtml = visibleHtml(await detail.text())
 check('detail page renders', detail.status === 200 && detailHtml.includes(target.title))
 check(
   'detail page shows the approximate-location wording',
@@ -149,7 +186,11 @@ check(
 // change it after the response headers are sent. What matters is that the
 // not-found UI renders and the page is marked noindex, which is exactly what
 // Next.js does for a streamed notFound().
-const missing = await request('/activities/11111111-1111-1111-1111-111111111111')
+const missing = await request(path('/activities/11111111-1111-1111-1111-111111111111'))
+// Not stripped, unlike the other checks: a streamed notFound() flushes the
+// loading shell first and delivers the 404 content later in the same response,
+// so it lives in the streamed payload rather than the initial markup. The
+// Playwright suite asserts against the rendered DOM; this asserts it arrived.
 const missingHtml = await missing.text()
 check('unknown activity renders not-found UI', missingHtml.includes('Page not found'))
 check(

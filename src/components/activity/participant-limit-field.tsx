@@ -1,6 +1,7 @@
 'use client'
 
 import { Field, TextInput } from '@/components/ui/field'
+import { useI18n } from '@/lib/i18n/provider'
 
 /**
  * Participant limit, with an explicit "no limit" option.
@@ -22,9 +23,10 @@ export function ParticipantLimitField({
   error?: string
 }) {
   const unlimited = value === null
+  const { t } = useI18n()
 
   return (
-    <Field label="Maximum participants" htmlFor="max" hint={hint} error={error}>
+    <Field label={t.create.fieldMax} htmlFor="max" hint={hint} error={error}>
       <div className="space-y-2">
         {!unlimited ? (
           <TextInput
@@ -48,7 +50,7 @@ export function ParticipantLimitField({
             onChange={(event) => onChange(event.target.checked ? null : 10)}
             className="accent-brand h-5 w-5"
           />
-          No limit — anyone can join
+          {t.create.noLimitOption}
         </label>
       </div>
     </Field>

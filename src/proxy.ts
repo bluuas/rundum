@@ -1,18 +1,51 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { DEFAULT_LOCALE, LOCALES, isLocale, matchLocale } from '@/lib/i18n/config'
+
+/** Remembers the visitor's language choice so a bare URL lands in it next time. */
+const LOCALE_COOKIE = 'rundum_locale'
 
 /**
- * Refreshes the Supabase session cookie on every navigation.
+ * Runs before every page request. Two jobs.
  *
- * Server Components cannot write cookies, so without this a refreshed token
- * would be discarded and users would be logged out when their access token
- * expired. (Next 16 renamed middleware.ts to proxy.ts; the behaviour is the
- * same.)
+ * 1. Locale routing. Every page lives under /de or /en; a path without a locale
+ *    prefix is redirected to one, chosen from the visitor's saved preference,
+ *    then their Accept-Language header, then the default.
  *
- * This is not an authorization check. Every page and Server Action re-checks
- * the user itself, and RLS is the real boundary.
+ * 2. Supabase session refresh. Server Components cannot write cookies, so
+ *    without this a refreshed token would be discarded and users would be
+ *    logged out when their access token expired.
+ *
+ * Neither is an authorization check. Every page and Server Action re-checks the
+ * user itself, and RLS is the real boundary.
+ *
+ * (Next 16 renamed middleware.ts to proxy.ts; the behaviour is the same.)
  */
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  const hasLocale = LOCALES.some(
+    (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`),
+  )
+
+  if (!hasLocale) {
+    // A first segment that looks like a language tag but is not one we support
+    // (/fr, /it) is a genuine 404, not a path to be prefixed. Redirecting it to
+    // /de/fr would turn a clear "we do not have French" into a confusing URL.
+    if (/^\/[a-z]{2}(\/|$)/.test(pathname)) {
+      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 })
+    }
+
+    const saved = request.cookies.get(LOCALE_COOKIE)?.value
+    const locale = isLocale(saved)
+      ? saved
+      : matchLocale(request.headers.get('accept-language'))
+
+    const url = request.nextUrl.clone()
+    url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`
+    return NextResponse.redirect(url)
+  }
+
   let response = NextResponse.next({ request })
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -45,12 +78,14 @@ export async function proxy(request: NextRequest) {
   return response
 }
 
+export { LOCALE_COOKIE, DEFAULT_LOCALE }
+
 export const config = {
   matcher: [
     /*
-     * Everything except static assets and image files — those never need a
-     * session and refreshing on them would just add latency.
+     * Everything except API routes, static assets and image files. API routes
+     * are not localised, and static files never need a session.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

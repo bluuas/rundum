@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { anon, signInAsDemoUser } from './helpers'
+import { anon, signInAsDemoUser, path } from './helpers'
 
 async function firstActivityId() {
   const { data } = await anon.rpc('nearby_activities', {
@@ -17,7 +17,7 @@ test('a signed-in user can post and delete their own comment', async ({ page }) 
   const id = await firstActivityId()
   const body = `End-to-end comment ${Date.now()}`
 
-  await page.goto(`/activities/${id}`)
+  await page.goto(path(`/activities/${id}`))
 
   const box = page.getByPlaceholder('Ask a question, or say you are coming')
   await box.fill(body)
@@ -50,7 +50,7 @@ test('a signed-in user can post and delete their own comment', async ({ page }) 
 
 test('a signed-out visitor can read comments but not post', async ({ page }) => {
   const id = await firstActivityId()
-  await page.goto(`/activities/${id}`)
+  await page.goto(path(`/activities/${id}`))
 
   await expect(page.getByRole('heading', { name: /Comments/ })).toBeVisible()
   await expect(page.getByText('Sign in to join the conversation.')).toBeVisible()
@@ -83,7 +83,7 @@ test("the organizer can remove someone else's comment, but a bystander cannot", 
   const body = `Moderation test ${Date.now()}`
 
   await signInAsDemoUser(page, commenterName)
-  await page.goto(`/activities/${activity.id}`)
+  await page.goto(path(`/activities/${activity.id}`))
   await page.getByPlaceholder('Ask a question, or say you are coming').fill(body)
   await page.getByRole('button', { name: 'Post comment' }).click()
   await expect(page.locator('li').filter({ hasText: body })).toHaveCount(1)
@@ -97,14 +97,14 @@ test("the organizer can remove someone else's comment, but a bystander cannot", 
     .limit(1)
 
   await signInAsDemoUser(page, bystanders![0].display_name)
-  await page.goto(`/activities/${activity.id}`)
+  await page.goto(path(`/activities/${activity.id}`))
   const asBystander = page.locator('li').filter({ hasText: body })
   await expect(asBystander).toHaveCount(1)
   await expect(asBystander.getByRole('button')).toHaveCount(0)
 
   // The organizer can moderate it.
   await signInAsDemoUser(page, activity.owner_display_name)
-  await page.goto(`/activities/${activity.id}`)
+  await page.goto(path(`/activities/${activity.id}`))
   const asOwner = page.locator('li').filter({ hasText: body })
   await asOwner.getByRole('button', { name: 'Remove as organizer' }).click()
   await expect(page.locator('li').filter({ hasText: body })).toHaveCount(0)

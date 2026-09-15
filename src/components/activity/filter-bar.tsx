@@ -2,16 +2,13 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import {
-  DATE_RANGES,
-  DATE_RANGE_LABELS,
-  buildFilterQuery,
-  type DateRange,
-} from '@/lib/filters'
+import { DATE_RANGES, buildFilterQuery, type DateRange } from '@/lib/filters'
 import { RADIUS_OPTIONS_M, formatRadius } from '@/lib/geo'
 import { SPORTS, type SportKey } from '@/lib/sports'
 import type { FeedFilters } from '@/lib/queries/activities'
 import { cn } from '@/lib/utils'
+import { fill } from '@/lib/i18n'
+import { useI18n } from '@/lib/i18n/provider'
 
 type Filters = FeedFilters & { range: DateRange }
 
@@ -21,6 +18,7 @@ type Filters = FeedFilters & { range: DateRange }
  */
 export function FilterBar({ filters }: { filters: Filters }) {
   const router = useRouter()
+  const { t } = useI18n()
   const [sportsOpen, setSportsOpen] = useState(false)
 
   function apply(changes: Parameters<typeof buildFilterQuery>[1]) {
@@ -36,10 +34,10 @@ export function FilterBar({ filters }: { filters: Filters }) {
 
   const sportsLabel =
     filters.sports.length === 0
-      ? 'All sports'
+      ? t.filters.allSports
       : filters.sports.length === 1
-        ? SPORTS.find((sport) => sport.key === filters.sports[0])!.label
-        : `${filters.sports.length} sports`
+        ? t.sports[filters.sports[0]]
+        : fill(t.filters.nSports, { count: filters.sports.length })
 
   return (
     <div className="space-y-3">
@@ -53,23 +51,23 @@ export function FilterBar({ filters }: { filters: Filters }) {
         </Chip>
 
         <Select
-          label="When"
+          label={t.filters.when}
           value={filters.range}
           active={filters.range !== 'anytime'}
           options={DATE_RANGES.map((range) => ({
             value: range,
-            label: DATE_RANGE_LABELS[range],
+            label: t.filters.ranges[range],
           }))}
           onChange={(value) => apply({ range: value as DateRange })}
         />
 
         <Select
-          label="Within"
+          label={t.filters.within}
           value={String(filters.radiusM)}
           active={filters.radiusM !== 25_000}
           options={RADIUS_OPTIONS_M.map((meters) => ({
             value: String(meters),
-            label: `Within ${formatRadius(meters)}`,
+            label: fill(t.filters.withinValue, { radius: formatRadius(meters) }),
           }))}
           onChange={(value) => apply({ radiusM: Number(value) })}
         />
@@ -96,7 +94,7 @@ export function FilterBar({ filters }: { filters: Filters }) {
                   <span aria-hidden className="mr-1">
                     {sport.icon}
                   </span>
-                  {sport.label}
+                  {t.sports[sport.key]}
                 </button>
               )
             })}
@@ -108,7 +106,7 @@ export function FilterBar({ filters }: { filters: Filters }) {
               onClick={() => apply({ sports: [] })}
               className="text-fg-muted hover:text-fg mt-3 min-h-11 text-sm underline"
             >
-              Clear sports
+              {t.filters.clearSports}
             </button>
           ) : null}
         </div>

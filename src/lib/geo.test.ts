@@ -76,8 +76,15 @@ describe('haversineMeters', () => {
 
 describe('formatDistanceBucket', () => {
   it('refuses to be precise at close range', () => {
-    expect(formatDistanceBucket(120)).toBe('under 1 km')
-    expect(formatDistanceBucket(999)).toBe('under 1 km')
+    expect(formatDistanceBucket(120, 'en')).toBe('under 1 km')
+    expect(formatDistanceBucket(999, 'en')).toBe('under 1 km')
+  })
+
+  it('translates the close-range label but not the numbers', () => {
+    expect(formatDistanceBucket(120, 'de')).toBe('unter 1 km')
+    // Numeric buckets are identical in every language.
+    expect(formatDistanceBucket(2_540, 'de')).toBe('~2.5 km')
+    expect(formatDistanceBucket(14_400, 'de')).toBe('~14 km')
   })
 
   it('rounds to 100 m between 1 and 10 km', () => {

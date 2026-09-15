@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { anon, signInAsDemoUser } from './helpers'
+import { anon, signInAsDemoUser, path } from './helpers'
 
 /**
  * Two product rules that are easy to breach accidentally as screens are added:
@@ -19,18 +19,18 @@ test('no page ever renders AM/PM or a month-first date', async ({ page }) => {
   })
   const id = (data as Array<{ id: string }>)[0].id
 
-  for (const path of [...PAGES, `/activities/${id}`]) {
-    await page.goto(path)
+  for (const route of [...PAGES, `/activities/${id}`]) {
+    await page.goto(path(route))
     await page.waitForLoadState('networkidle')
     const text = await page.locator('body').innerText()
 
     // "19:57 PM" or "7:30 am" — a time followed by a meridiem marker.
-    expect(text, `${path} renders a 12-hour time`).not.toMatch(
+    expect(text, `${route} renders a 12-hour time`).not.toMatch(
       /\d:\d{2}\s*[ap]\.?m\.?\b/i,
     )
 
     // MM/DD/YYYY or DD/MM/YYYY: Swiss dates use dots, never slashes.
-    expect(text, `${path} renders a slash-separated date`).not.toMatch(
+    expect(text, `${route} renders a slash-separated date`).not.toMatch(
       /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/,
     )
   }
@@ -44,7 +44,7 @@ test('the detail page states the start time in Swiss format', async ({ page }) =
   })
   const id = (data as Array<{ id: string }>)[0].id
 
-  await page.goto(`/activities/${id}`)
+  await page.goto(path(`/activities/${id}`))
   // "Weekday, DD.MM.YYYY, HH:mm"
   await expect(page.getByText(/^\w+day, \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}$/)).toBeVisible()
 })
@@ -53,7 +53,7 @@ test('the create form prefills today and confirms the choice in Swiss format', a
   page,
 }) => {
   await signInAsDemoUser(page)
-  await page.goto('/activities/new')
+  await page.goto(path('/activities/new'))
   await page.getByRole('button', { name: 'Running' }).click()
 
   const today = new Date()
@@ -70,18 +70,18 @@ test('Strava is referenced only in permitted, non-endorsing wording', async ({
 }) => {
   await signInAsDemoUser(page, 'Mara K.')
 
-  for (const path of PAGES) {
-    await page.goto(path)
+  for (const route of PAGES) {
+    await page.goto(path(route))
     await page.waitForLoadState('networkidle')
     const text = await page.locator('body').innerText()
 
     // "Verified" would imply Rundum vouched for the person.
-    expect(text, `${path} uses the word "verified"`).not.toMatch(/\bverified\b/i)
+    expect(text, `${route} uses the word "verified"`).not.toMatch(/\bverified\b/i)
 
     // Nothing may suggest this is an official Strava product. Note that
     // "not affiliated with, endorsed by, or sponsored by Strava" is the
     // required disclaimer, so "by Strava" on its own is not a violation.
-    expect(text, `${path} claims to be an official Strava app`).not.toMatch(
+    expect(text, `${route} claims to be an official Strava app`).not.toMatch(
       /official Strava|\bStrava (?:app|application)\b/i,
     )
 
@@ -91,12 +91,12 @@ test('Strava is referenced only in permitted, non-endorsing wording', async ({
     for (const phrase of interop) {
       expect(
         ['Powered by Strava', 'Compatible with Strava', 'sponsored by Strava'],
-        `${path} uses unpermitted wording "${phrase}"`,
+        `${route} uses unpermitted wording "${phrase}"`,
       ).toContain(phrase)
     }
   }
 
-  await page.goto('/profile')
+  await page.goto(path('/profile'))
   await expect(page.getByText(/Compatible with Strava/)).toBeVisible()
   await expect(
     page.getByText(/not affiliated with, endorsed by, or sponsored by Strava/),
@@ -104,7 +104,7 @@ test('Strava is referenced only in permitted, non-endorsing wording', async ({
 })
 
 test('the Strava name is never more prominent than Rundum', async ({ page }) => {
-  await page.goto('/profile')
+  await page.goto(path('/profile'))
 
   const wordmarkSize = await page
     .getByRole('heading', { name: 'Profile' })

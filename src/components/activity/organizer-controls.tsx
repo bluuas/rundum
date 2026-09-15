@@ -3,8 +3,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { setActivityStatus, type OrganizerStatus } from '@/app/(app)/activities/actions'
+import {
+  setActivityStatus,
+  type OrganizerStatus,
+} from '@/app/[locale]/(app)/activities/actions'
 import { Button } from '@/components/ui/button'
+import { localeHref } from '@/lib/i18n/config'
+import { useI18n } from '@/lib/i18n/provider'
 import type { ActivityStatus } from '@/lib/supabase/rows'
 
 type Confirmable = 'cancelled' | 'deleted'
@@ -26,6 +31,7 @@ export function OrganizerControls({
   archived: boolean
 }) {
   const router = useRouter()
+  const { locale, t } = useI18n()
   const [pending, startTransition] = useTransition()
   const [confirming, setConfirming] = useState<Confirmable | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -41,21 +47,21 @@ export function OrganizerControls({
         return
       }
       // A deleted activity is no longer readable, so stay off its page.
-      if (next === 'deleted') router.push('/me')
+      if (next === 'deleted') router.push(localeHref(locale, '/me'))
       else router.refresh()
     })
   }
 
   return (
     <section className="border-border bg-surface rounded-card space-y-3 border p-4">
-      <h2 className="text-fg text-base font-semibold">Organizer tools</h2>
+      <h2 className="text-fg text-base font-semibold">{t.organizer.heading}</h2>
 
       {!archived ? (
         <Link
-          href={`/activities/${activityId}/edit`}
+          href={localeHref(locale, `/activities/${activityId}/edit`)}
           className="border-border-strong text-fg hover:bg-surface-muted rounded-card flex min-h-11 w-full items-center justify-center border text-sm font-medium"
         >
-          Edit details
+          {t.organizer.edit}
         </Link>
       ) : null}
 
@@ -67,31 +73,26 @@ export function OrganizerControls({
             disabled={pending}
             onClick={() => apply('hidden')}
           >
-            Hide from discovery
+            {t.organizer.hide}
           </Button>
-          <p className="text-fg-subtle text-xs">
-            Hiding keeps the activity and its comments, but takes it out of the feed while
-            you rework it.
-          </p>
+          <p className="text-fg-subtle text-xs">{t.organizer.hideNote}</p>
         </>
       ) : null}
 
       {status === 'hidden' ? (
         <>
           <Button fullWidth disabled={pending} onClick={() => apply('published')}>
-            Publish again
+            {t.organizer.publishAgain}
           </Button>
-          <p className="text-fg-subtle text-xs">
-            This activity is hidden. Only you can see it.
-          </p>
+          <p className="text-fg-subtle text-xs">{t.organizer.hiddenNote}</p>
         </>
       ) : null}
 
       {status !== 'cancelled' && !archived ? (
         confirming === 'cancelled' ? (
           <ConfirmRow
-            question="Cancel this activity? Everyone who joined will see it as cancelled."
-            confirmLabel="Yes, cancel it"
+            question={t.organizer.confirmCancel}
+            confirmLabel={t.organizer.confirmCancelYes}
             pending={pending}
             onConfirm={() => apply('cancelled')}
             onDismiss={() => setConfirming(null)}
@@ -103,21 +104,21 @@ export function OrganizerControls({
             disabled={pending}
             onClick={() => setConfirming('cancelled')}
           >
-            Cancel activity
+            {t.organizer.cancelActivity}
           </Button>
         )
       ) : null}
 
       {status === 'cancelled' && !archived ? (
         <Button fullWidth disabled={pending} onClick={() => apply('published')}>
-          Reinstate activity
+          {t.organizer.reinstate}
         </Button>
       ) : null}
 
       {confirming === 'deleted' ? (
         <ConfirmRow
-          question="Delete this activity? It disappears for everyone, including its comments."
-          confirmLabel="Yes, delete it"
+          question={t.organizer.confirmDelete}
+          confirmLabel={t.organizer.confirmDeleteYes}
           pending={pending}
           danger
           onConfirm={() => apply('deleted')}
@@ -131,7 +132,7 @@ export function OrganizerControls({
           onClick={() => setConfirming('deleted')}
           className="text-danger"
         >
-          Delete activity
+          {t.organizer.deleteActivity}
         </Button>
       )}
 
@@ -159,12 +160,14 @@ function ConfirmRow({
   onConfirm: () => void
   onDismiss: () => void
 }) {
+  const { t } = useI18n()
+
   return (
     <div className="border-border-strong bg-surface-muted rounded-card space-y-2 border p-3">
       <p className="text-fg text-sm">{question}</p>
       <div className="flex gap-2">
         <Button variant="secondary" onClick={onDismiss} disabled={pending}>
-          Keep it
+          {t.organizer.keepIt}
         </Button>
         <Button
           variant={danger ? 'danger' : 'primary'}
@@ -172,7 +175,7 @@ function ConfirmRow({
           onClick={onConfirm}
           disabled={pending}
         >
-          {pending ? 'Working…' : confirmLabel}
+          {pending ? t.common.working : confirmLabel}
         </Button>
       </div>
     </div>

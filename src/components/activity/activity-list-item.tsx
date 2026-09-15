@@ -1,9 +1,14 @@
+'use client'
+
 import Link from 'next/link'
 import { ArchivedBadge, SportBadge, StatusBadge } from '@/components/activity/badges'
-import { formatParticipants, formatStartShort, isArchived } from '@/lib/format'
+import { formatStartShort, isArchived } from '@/lib/format'
 import { formatActivityDistance, formatPace } from '@/lib/geo'
-import { LEVEL_LABELS, type Level } from '@/lib/sports'
+import { fill } from '@/lib/i18n'
+import { localeHref } from '@/lib/i18n/config'
+import { useI18n } from '@/lib/i18n/provider'
 import type { MyActivity } from '@/lib/queries/my-activities'
+import type { Level } from '@/lib/sports'
 
 /**
  * Card for "My activities".
@@ -19,17 +24,26 @@ export function ActivityListItem({
   activity: MyActivity
   role: 'organizer' | 'participant'
 }) {
+  const { locale, t } = useI18n()
   const archived = isArchived(activity.startsAt)
 
   const facts = [
     formatActivityDistance(activity.distanceM),
     formatPace(activity.paceSecondsPerKm),
-    activity.level ? LEVEL_LABELS[activity.level as Level] : null,
+    activity.level ? t.levels[activity.level as Level] : null,
   ].filter(Boolean)
+
+  const joinedLabel =
+    activity.maxParticipants === null
+      ? fill(t.activity.joined, { count: activity.participantCount })
+      : fill(t.activity.joinedOf, {
+          count: activity.participantCount,
+          max: activity.maxParticipants,
+        })
 
   return (
     <Link
-      href={`/activities/${activity.id}`}
+      href={localeHref(locale, `/activities/${activity.id}`)}
       className="border-border bg-surface hover:border-border-strong rounded-card block border p-4 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
@@ -39,7 +53,7 @@ export function ActivityListItem({
           {archived && activity.status === 'published' ? <ArchivedBadge /> : null}
         </div>
         <span className="text-fg-muted shrink-0 text-xs font-medium">
-          {formatStartShort(activity.startsAt)}
+          {formatStartShort(activity.startsAt, locale)}
         </span>
       </div>
 
@@ -50,25 +64,23 @@ export function ActivityListItem({
       ) : null}
 
       <div className="border-border mt-3 flex items-center justify-between gap-2 border-t pt-3 text-xs">
-        <span className="text-fg-muted font-medium">
-          {formatParticipants(activity.participantCount, activity.maxParticipants)}
-        </span>
+        <span className="text-fg-muted font-medium">{joinedLabel}</span>
 
         {role === 'organizer' && activity.pendingCount > 0 && !archived ? (
           <span className="bg-warning-soft text-warning rounded-full px-2 py-0.5 font-semibold">
-            {activity.pendingCount} awaiting your reply
+            {fill(t.activity.awaitingReply, { count: activity.pendingCount })}
           </span>
         ) : null}
 
         {role === 'participant' && activity.myRequestStatus === 'pending' ? (
           <span className="bg-warning-soft text-warning rounded-full px-2 py-0.5 font-semibold">
-            Request pending
+            {t.activity.requestPending}
           </span>
         ) : null}
 
         {role === 'participant' && activity.myRequestStatus === 'approved' ? (
           <span className="bg-success-soft text-success rounded-full px-2 py-0.5 font-semibold">
-            You are in
+            {t.activity.youAreIn}
           </span>
         ) : null}
       </div>

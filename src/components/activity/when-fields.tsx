@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Field, TextInput } from '@/components/ui/field'
 import { formatStartFull, toDateInputValue } from '@/lib/format'
 import { combineDateAndTime } from '@/lib/validation/activity'
+import { useI18n } from '@/lib/i18n/provider'
 
 /**
  * Date and time inputs, with a Swiss-format echo of what was chosen.
@@ -36,6 +37,7 @@ export function WhenFields({
 }) {
   const chosen = date && time ? combineDateAndTime(date, time) : null
   const valid = chosen !== null && !Number.isNaN(chosen.getTime())
+  const { locale, t } = useI18n()
 
   // The clock is read in event handlers, never during render: rendering must be
   // pure, and a render-time Date.now() would also differ between the server
@@ -45,12 +47,14 @@ export function WhenFields({
 
   function check(nextDate: string, nextTime: string) {
     const next = nextDate && nextTime ? combineDateAndTime(nextDate, nextTime) : null
-    setInPast(next !== null && !Number.isNaN(next.getTime()) && next.getTime() <= Date.now())
+    setInPast(
+      next !== null && !Number.isNaN(next.getTime()) && next.getTime() <= Date.now(),
+    )
   }
 
   const fields = (
     <>
-      <Field label="Date" htmlFor="date" error={dateError}>
+      <Field label={t.create.fieldDate} htmlFor="date" error={dateError}>
         <TextInput
           id="date"
           type="date"
@@ -62,7 +66,7 @@ export function WhenFields({
           }}
         />
       </Field>
-      <Field label="Start time" htmlFor="time" hint="24-hour, for example 18:30">
+      <Field label={t.create.fieldTime} htmlFor="time" hint={t.create.timeHint}>
         <TextInput
           id="time"
           type="time"
@@ -93,8 +97,8 @@ export function WhenFields({
           }
           role={inPast ? 'alert' : undefined}
         >
-          {inPast ? 'That time has already passed: ' : 'Starts '}
-          <span className="text-fg font-medium">{formatStartFull(chosen)}</span>
+          {inPast ? t.create.alreadyPassed : t.create.startsAt}
+          <span className="text-fg font-medium">{formatStartFull(chosen, locale)}</span>
         </p>
       ) : null}
     </div>

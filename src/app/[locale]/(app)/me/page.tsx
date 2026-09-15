@@ -2,23 +2,30 @@ import { ActivityListItem } from '@/components/activity/activity-list-item'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
 import { EmptyState } from '@/components/ui/states'
+import { getDictionary } from '@/lib/i18n'
+import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getMyActivities, type MyActivity } from '@/lib/queries/my-activities'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
-export const metadata = { title: 'My activities' }
+export async function generateMetadata({ params }: PageProps<'/[locale]/me'>) {
+  const { locale } = await params
+  return { title: getDictionary(locale as Locale).mine.title }
+}
 
-export default async function MyActivitiesPage() {
+export default async function MyActivitiesPage({ params }: PageProps<'/[locale]/me'>) {
+  const { locale } = await params
+  const t = getDictionary(locale as Locale)
   const userId = await getCurrentUserId()
 
   if (!userId) {
     return (
       <>
-        <AppHeader title="My activities" />
+        <AppHeader locale={locale as Locale} title={t.mine.title} />
         <PageBody>
           <EmptyState
             icon="👤"
-            title="Sign in to see your activities"
-            description="Everything you organize or join collects here."
+            title={t.mine.signInTitle}
+            description={t.mine.signInBody}
           />
         </PageBody>
       </>
@@ -37,21 +44,28 @@ export default async function MyActivitiesPage() {
 
   return (
     <>
-      <AppHeader title="My activities" />
+      <AppHeader locale={locale as Locale} title={t.mine.title} />
       <PageBody className="space-y-6">
         {!hasAnything ? (
           <EmptyState
             icon="📋"
-            title="Nothing here yet"
-            description="Activities you organize and ones you have joined will show up here."
-            action={{ label: 'Create your first activity', href: '/activities/new' }}
+            title={t.mine.emptyTitle}
+            description={t.mine.emptyBody}
+            action={{
+              label: t.mine.emptyCta,
+              href: localeHref(locale as Locale, '/activities/new'),
+            }}
           />
         ) : null}
 
-        <Section title="Organizing" activities={organizingUpcoming} role="organizer" />
-        <Section title="Joined" activities={joinedUpcoming} role="participant" />
         <Section
-          title="Past"
+          title={t.mine.organizing}
+          activities={organizingUpcoming}
+          role="organizer"
+        />
+        <Section title={t.mine.joined} activities={joinedUpcoming} role="participant" />
+        <Section
+          title={t.mine.past}
           activities={[...organizingPast, ...joinedPast]}
           role="organizer"
           muted

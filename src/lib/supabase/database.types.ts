@@ -309,6 +309,7 @@ export type Database = {
           id: string
           strava_athlete_id: number | null
           strava_connected: boolean
+          strava_profile_consent_at: string | null
           updated_at: string
         }
         Insert: {
@@ -320,6 +321,7 @@ export type Database = {
           id: string
           strava_athlete_id?: number | null
           strava_connected?: boolean
+          strava_profile_consent_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -331,6 +333,7 @@ export type Database = {
           id?: string
           strava_athlete_id?: number | null
           strava_connected?: boolean
+          strava_profile_consent_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -408,6 +411,27 @@ export type Database = {
           sort_order?: number
           supports_distance?: boolean
           supports_pace?: boolean
+        }
+        Relationships: []
+      }
+      strava_profile_staging: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          fetched_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          fetched_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          fetched_at?: string
+          user_id?: string
         }
         Relationships: []
       }
