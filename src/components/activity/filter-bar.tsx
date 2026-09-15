@@ -10,7 +10,7 @@ import {
 } from '@/lib/filters'
 import { RADIUS_OPTIONS_M, formatRadius } from '@/lib/geo'
 import { SPORTS, type SportKey } from '@/lib/sports'
-import type { FeedFilters, FeedSort } from '@/lib/queries/activities'
+import type { FeedFilters } from '@/lib/queries/activities'
 import { cn } from '@/lib/utils'
 
 type Filters = FeedFilters & { range: DateRange }
@@ -72,17 +72,6 @@ export function FilterBar({ filters }: { filters: Filters }) {
             label: `Within ${formatRadius(meters)}`,
           }))}
           onChange={(value) => apply({ radiusM: Number(value) })}
-        />
-
-        <Select
-          label="Sort"
-          value={filters.sort}
-          active={filters.sort !== 'soonest'}
-          options={[
-            { value: 'soonest', label: 'Soonest first' },
-            { value: 'closest', label: 'Closest first' },
-          ]}
-          onChange={(value) => apply({ sort: value as FeedSort })}
         />
       </div>
 

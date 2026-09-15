@@ -6,6 +6,7 @@ import {
   StravaConnectedBadge,
 } from '@/components/activity/badges'
 import { Comments } from '@/components/activity/comments'
+import { OrganizerControls } from '@/components/activity/organizer-controls'
 import { AreaMap } from '@/components/map/area-map'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
@@ -173,6 +174,14 @@ export default async function ActivityDetailPage({
             </>
           )}
         </section>
+
+        {isOwner ? (
+          <OrganizerControls
+            activityId={activity.id}
+            status={activity.status}
+            archived={archived}
+          />
+        ) : null}
 
         <Comments
           activityId={activity.id}

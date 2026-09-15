@@ -41,6 +41,7 @@ test('a signed-in user can create an activity and it appears in the feed', async
 
   // Lands on the new activity's detail page.
   await page.waitForURL(/\/activities\/[0-9a-f-]{36}$/)
+  const url = page.url()
   await expect(page.getByRole('heading', { name: title })).toBeVisible()
   await expect(page.getByText('8.0 km')).toBeVisible()
   await expect(page.getByText('5:30 /km')).toBeVisible()
@@ -49,6 +50,12 @@ test('a signed-in user can create an activity and it appears in the feed', async
   // And it is discoverable in the feed.
   await page.goto('/?sports=run')
   await expect(page.getByText(title)).toBeVisible()
+
+  // Remove it again, so repeated runs do not fill the feed with test data.
+  await page.goto(url)
+  await page.getByRole('button', { name: 'Delete activity' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.waitForURL('**/me')
 })
 
 test('fields that do not apply to a sport are not offered', async ({ page }) => {

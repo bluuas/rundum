@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { ActivityCard } from '@/components/activity/activity-card'
 import { FilterBar } from '@/components/activity/filter-bar'
+import { SortControl } from '@/components/activity/sort-control'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
 import { ActivityListSkeleton, EmptyState, ErrorState } from '@/components/ui/states'
@@ -78,9 +79,12 @@ async function FeedResults({ filters }: { filters: ReturnType<typeof parseFilter
 
   return (
     <div className="space-y-3">
-      <p className="text-fg-subtle text-xs" aria-live="polite">
-        {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-fg-subtle text-xs" aria-live="polite">
+          {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+        </p>
+        <SortControl filters={filters} />
+      </div>
       {activities.map((activity) => (
         <ActivityCard key={activity.id} activity={activity} />
       ))}
