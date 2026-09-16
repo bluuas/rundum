@@ -24,8 +24,85 @@ import {
  *
  * (Next 16 renamed middleware.ts to proxy.ts; the behaviour is the same.)
  */
+/**
+ * Headers every response carries.
+ *
+ * Set here rather than in `next.config.ts` so the CSP can carry a per-request
+ * nonce; the rest would work either way and are kept together for one place to
+ * look. `frame-ancestors` in the CSP is what actually stops framing in a
+ * modern browser — X-Frame-Options is there for the ones that predate it.
+ */
+function securityHeaders(nonce: string): Record<string, string> {
+  const isDev = process.env.NODE_ENV === 'development'
+
+  // The browser's Supabase client talks to the project directly, so its origin
+  // has to be reachable. Derived rather than hard-coded: local, demo and
+  // production are three different hosts.
+  let supabaseOrigin = ''
+  try {
+    supabaseOrigin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin
+  } catch {
+    supabaseOrigin = ''
+  }
+
+  const csp = [
+    `default-src 'self'`,
+    /*
+      Next's own bootstrap scripts are inline. They pick up this nonce
+      automatically — it reads the CSP off the request headers below — which is
+      what lets script-src stay strict instead of falling back to
+      'unsafe-inline'. `strict-dynamic` then covers the chunks those scripts
+      load. Development additionally needs 'unsafe-eval', which React uses to
+      rebuild server stack traces in the browser.
+    */
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}`,
+    /*
+      Styles cannot be nonced here: Leaflet positions every tile with a `style`
+      attribute, and there is no nonce for an attribute. The exposure is small —
+      an injected style can deface a page, not exfiltrate a session — and the
+      alternative is no map.
+    */
+    `style-src 'self' 'unsafe-inline'`,
+    // OpenStreetMap tiles, and Strava's CDN for an avatar the user consented
+    // to show. `data:` covers the inline SVG markers Leaflet builds.
+    // Both forms: a `*.` wildcard requires a subdomain label, so it does not
+    // cover the bare host the tile server actually serves from.
+    `img-src 'self' blob: data: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.cloudfront.net`,
+    `font-src 'self'`,
+    [`connect-src 'self'`, supabaseOrigin, isDev ? 'ws:' : ''].filter(Boolean).join(' '),
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    // Server Actions post back to this origin and nowhere else.
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ].join('; ')
+
+  return {
+    'Content-Security-Policy': csp,
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    // Send the full URL within Rundum, only the origin when leaving it: an
+    // activity id is not something to hand to a tile server.
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    /*
+      Geolocation stays available because the map offers "near me" — and is
+      snapped to the 250 m grid before it ever leaves the browser. Everything
+      else is off; nothing here takes a photo or a payment.
+    */
+    'Permissions-Policy': 'geolocation=(self), camera=(), microphone=(), payment=()',
+    ...(isDev
+      ? {}
+      : {
+          'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+        }),
+  }
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const nonce = crypto.randomUUID()
+  const headers = securityHeaders(nonce)
 
   const hasLocale = LOCALES.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`),
@@ -36,7 +113,11 @@ export async function proxy(request: NextRequest) {
     // (/fr, /it) is a genuine 404, not a path to be prefixed. Redirecting it to
     // /de/fr would turn a clear "we do not have French" into a confusing URL.
     if (/^\/[a-z]{2}(\/|$)/.test(pathname)) {
-      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 })
+      const notFound = NextResponse.rewrite(new URL('/not-found', request.url), {
+        status: 404,
+      })
+      for (const [key, value] of Object.entries(headers)) notFound.headers.set(key, value)
+      return notFound
     }
 
     const saved = request.cookies.get(LOCALE_COOKIE)?.value
@@ -46,10 +127,23 @@ export async function proxy(request: NextRequest) {
 
     const url = request.nextUrl.clone()
     url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`
-    return NextResponse.redirect(url)
+    const redirect = NextResponse.redirect(url)
+    for (const [key, value] of Object.entries(headers)) redirect.headers.set(key, value)
+    return redirect
   }
 
-  let response = NextResponse.next({ request })
+  // Next reads the nonce back off this request header and puts it on the
+  // scripts it injects, so nothing has to thread it through the tree.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('Content-Security-Policy', headers['Content-Security-Policy'])
+
+  const withHeaders = <T extends NextResponse>(response: T): T => {
+    for (const [key, value] of Object.entries(headers)) response.headers.set(key, value)
+    return response
+  }
+
+  let response = withHeaders(NextResponse.next({ request: { headers: requestHeaders } }))
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -67,7 +161,9 @@ export async function proxy(request: NextRequest) {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value)
         }
-        response = NextResponse.next({ request })
+        response = withHeaders(
+          NextResponse.next({ request: { headers: requestHeaders } }),
+        )
         for (const { name, value, options } of cookiesToSet) {
           response.cookies.set(name, value, options)
         }

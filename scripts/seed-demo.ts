@@ -531,6 +531,14 @@ async function main() {
 
   console.log(`  ${userIds.length} demo users ready`)
 
+  // Counters are part of the state being reset. Without this a test run that
+  // creates in bursts inherits the previous run's tally.
+  const { error: limitError } = await supabase
+    .from('rate_limits')
+    .delete()
+    .neq('bucket', '')
+  if (limitError) throw limitError
+
   // --- Activities ---------------------------------------------------------
   // Replace rather than append, so re-seeding does not pile up duplicates.
   const { error: clearError } = await supabase
@@ -616,12 +624,13 @@ async function main() {
   console.log(`  ${joinRows.length} join requests created`)
 
   // --- Analytics events ---------------------------------------------------
-  // The seed inserts activities directly rather than through the Server Action,
-  // so the activity_created events that action would have written do not exist.
-  // Without them /insights reads zero against thirty visible activities, which
-  // looks like a broken metric rather than an unseeded one.
+  // The activities above already have their activity_created events: a trigger
+  // writes them, which is what stops the primary metric being something a
+  // client can make up. They all carry this moment as their timestamp, so the
+  // daily chart would be one tall bar today and nothing before it.
   //
-  // Backdated across two weeks so the daily chart has a shape.
+  // So they are replaced with the same count, backdated across two weeks, to
+  // give the chart a shape worth looking at.
   await supabase
     .from('activity_events')
     .delete()

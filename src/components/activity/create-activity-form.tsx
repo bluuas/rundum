@@ -116,7 +116,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
     startTransition(async () => {
       const result = await createActivity(buildInput())
       if (!result.ok) {
-        setFormError(result.error)
+        setFormError(result.code === 'rateLimited' ? t.create.rateLimited : result.error)
         setFieldErrors(result.fieldErrors ?? {})
         return
       }

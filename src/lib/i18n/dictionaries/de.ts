@@ -185,6 +185,8 @@ export const de: Dictionary = {
     reviewLevel: 'Niveau',
     reviewMax: 'Max. Teilnehmende',
     reviewNoLimit: 'Ohne Limit',
+    rateLimited:
+      'Das sind viele Aktivitäten auf einmal. Versuch es etwas später nochmal.',
     checkFields: 'Bitte prüfe die markierten Felder',
   },
 
@@ -232,6 +234,7 @@ export const de: Dictionary = {
       alreadyDecided: 'Über diese Anfrage hast du bereits entschieden.',
       notOrganizer: 'Nur die organisierende Person kann das entscheiden.',
       nothingToWithdraw: 'Es gibt nichts zurückzuziehen.',
+      rateLimited: 'Das sind viele Anfragen. Versuch es etwas später nochmal.',
       unknown: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
     },
   },
@@ -393,6 +396,7 @@ export const de: Dictionary = {
       notFound: 'Das ist nicht mehr verfügbar.',
       ownContent: 'Eigene Inhalte kannst du nicht melden.',
       self: 'Du kannst dich nicht selbst blockieren.',
+      rateLimited: 'Das ist viel auf einmal. Versuch es etwas später nochmal.',
       unknown: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
     },
   },

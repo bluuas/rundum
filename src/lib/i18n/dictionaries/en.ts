@@ -183,6 +183,7 @@ export const en = {
     reviewLevel: 'Level',
     reviewMax: 'Max participants',
     reviewNoLimit: 'No limit',
+    rateLimited: 'That is a lot of activities in one go. Try again a little later.',
     checkFields: 'Please check the highlighted fields',
   },
 
@@ -230,6 +231,7 @@ export const en = {
       alreadyDecided: 'You already decided on this request.',
       notOrganizer: 'Only the organizer can decide this.',
       nothingToWithdraw: 'There is nothing to withdraw.',
+      rateLimited: 'That is a lot of requests. Try again a little later.',
       unknown: 'Something went wrong. Please try again.',
     },
   },
@@ -388,6 +390,7 @@ export const en = {
       notFound: 'That is no longer available.',
       ownContent: 'You cannot report your own content.',
       self: 'You cannot block yourself.',
+      rateLimited: 'That is a lot at once. Try again a little later.',
       unknown: 'Something went wrong. Please try again.',
     },
   },

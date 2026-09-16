@@ -2,10 +2,30 @@ export type Json =
   string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: '14.5'
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -349,6 +369,27 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          hits: number
+          subject: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          subject: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          subject?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
@@ -506,6 +547,10 @@ export type Database = {
           display_name: string
           user_id: string
         }[]
+      }
+      consume_rate_limit: {
+        Args: { p_bucket: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
       }
       decide_join_request: {
         Args: { p_approve: boolean; p_request_id: string }
@@ -733,6 +778,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       activity_level: ['beginner', 'intermediate', 'advanced', 'all_levels'],

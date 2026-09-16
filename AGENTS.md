@@ -156,6 +156,30 @@ and an account created through Strava is unreachable through it.
 A demo deployment must stay obviously a demo: the shared-accounts banner in
 `AppHeader`, `robots.txt` disallowing everything, and `noindex`.
 
+## Limits and headers
+
+- **The primary metric is written by a trigger, not by code.** An `after
+insert` trigger on `activities` writes the `activity_created` event, and no
+  policy lets a client insert one. A Server Action doing it faithfully is a
+  promise; a trigger is a guarantee, and it covers the seed and anything else
+  that inserts directly.
+- **Every mutating Server Action goes through `withinRateLimit`.** They are
+  public POST endpoints reachable with a session cookie and curl. The counter
+  is a fixed window in Postgres, keyed on `auth.uid()` **inside** the database
+  function — a limit you can sidestep by naming somebody else is not a limit.
+  A database error counts as allowed: refusing to let somebody create an
+  activity because a counter table blinked is the worse failure.
+  Limits are in `src/lib/rate-limit.ts`. If one fires for a real user, raise
+  it. `db:seed` clears the counters, so a test run starts from zero.
+- **Security headers live in `proxy.ts`, not `next.config.ts`**, because the
+  CSP carries a per-request nonce. Next picks that nonce up from the request
+  header by itself and puts it on its own inline scripts, so `script-src` can
+  stay strict. `style-src` cannot: Leaflet positions tiles with `style`
+  attributes and there is no nonce for an attribute.
+- A CSP host wildcard needs a label: `https://*.tile.openstreetmap.org` does
+  **not** match `https://tile.openstreetmap.org`. The map went blank and only
+  the console-error assertion in `create-activity.spec.ts` noticed.
+
 ## Languages
 
 German and English, German by default — Schwyz is German-speaking.

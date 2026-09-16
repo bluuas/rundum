@@ -89,18 +89,27 @@ test("the organizer can remove someone else's comment, but a bystander cannot", 
   await expect(page.locator('li').filter({ hasText: body })).toHaveCount(1)
 
   // A third party sees the comment but is offered no way to remove it.
+  // Ordered, because an unordered limit(1) returns whichever row Postgres
+  // reaches first — which changes as rows are updated, so the test would be
+  // asking about a different person from one run to the next.
   const { data: bystanders } = await anon
     .from('profiles')
     .select('display_name')
     .neq('id', activity.owner_id)
     .neq('display_name', commenterName)
+    .order('display_name')
     .limit(1)
 
   await signInAsDemoUser(page, bystanders![0].display_name)
   await page.goto(path(`/activities/${activity.id}`))
   const asBystander = page.locator('li').filter({ hasText: body })
   await expect(asBystander).toHaveCount(1)
-  await expect(asBystander.getByRole('button')).toHaveCount(0)
+  // No removal — not "no buttons". Reporting somebody else's comment is
+  // offered to everyone signed in, and is the point of the moderation work.
+  await expect(asBystander.getByRole('button', { name: /Remove|Delete/ })).toHaveCount(0)
+  await expect(
+    asBystander.getByRole('button', { name: 'Report this comment' }),
+  ).toHaveCount(1)
 
   // The organizer can moderate it.
   await signInAsDemoUser(page, activity.owner_display_name)

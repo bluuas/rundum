@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { revalidateLocalized } from '@/lib/revalidate'
 import { snapToGrid } from '@/lib/geo'
+import { withinRateLimit } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import type { JoinRequestStatus } from '@/lib/supabase/rows'
 import { activityInputSchema } from '@/lib/validation/activity'
@@ -19,7 +20,7 @@ export type ActionResult<T = undefined> =
        * does not show an English sentence. `error` stays populated as the
        * fallback for anything without a key.
        */
-      code?: 'belowApprovedCount'
+      code?: 'belowApprovedCount' | 'rateLimited'
       fieldErrors?: Record<string, string[]>
     }
 
@@ -49,6 +50,15 @@ export async function createActivity(
       ok: false,
       error: 'Please check the highlighted fields',
       fieldErrors: flat.fieldErrors as Record<string, string[]>,
+    }
+  }
+
+  // After validation, so somebody fixing a typo does not spend an attempt.
+  if (!(await withinRateLimit(supabase, 'createActivity'))) {
+    return {
+      ok: false,
+      error: 'That is a lot of activities. Try again a little later.',
+      code: 'rateLimited',
     }
   }
 
@@ -95,17 +105,11 @@ export async function createActivity(
     return { ok: false, error: 'Could not save the activity. Please try again.' }
   }
 
-  // The primary success metric. Recorded as its own row so the count is
-  // durable even if the activity is later cancelled or deleted.
-  const { error: eventError } = await supabase.from('activity_events').insert({
-    event_type: 'activity_created',
-    activity_id: activity.id,
-    user_id: user.id,
-    metadata: { sport_key: values.sportKey },
-  })
-
-  // Analytics must never block the user's actual goal.
-  if (eventError) console.error('activity_created event failed', eventError)
+  // The primary success metric is written by a trigger on the insert above,
+  // not here. An activity cannot then be created without being counted, and
+  // the count cannot be written without an activity to point at — which the
+  // Server Action doing it faithfully could not promise, and a client-facing
+  // insert policy certainly could not.
 
   revalidateLocalized('/')
   revalidateLocalized('/me')
@@ -263,6 +267,14 @@ export async function addComment(input: unknown): Promise<ActionResult> {
     return { ok: false, error: 'Write something first' }
   }
 
+  if (!(await withinRateLimit(supabase, 'comment'))) {
+    return {
+      ok: false,
+      error: 'That is a lot of comments. Try again a little later.',
+      code: 'rateLimited',
+    }
+  }
+
   const { error } = await supabase.from('comments').insert({
     activity_id: parsed.data.activityId,
     author_id: user.id,
@@ -320,6 +332,7 @@ export async function deleteComment(
  * SQLSTATEs, which map to a key the client translates.
  */
 export type JoinErrorCode =
+  | 'rateLimited'
   | 'signedOut'
   | 'notFound'
   | 'ownActivity'
@@ -373,6 +386,10 @@ export async function requestToJoin(
 
   const parsedMessage = joinMessageSchema.safeParse(message ?? '')
   if (!parsedMessage.success) return { ok: false, code: 'unknown' }
+
+  if (!(await withinRateLimit(supabase, 'joinRequest'))) {
+    return { ok: false, code: 'rateLimited' }
+  }
 
   const { data, error } = await supabase.rpc('request_to_join', {
     p_activity_id: activityId,

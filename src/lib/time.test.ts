@@ -77,13 +77,9 @@ describe('the city clock', () => {
     // Switzerland moves on the last Sunday of March and October.
     it('gets the hour either side of the spring change right', () => {
       // 01:30 CET, before the jump.
-      expect(instantAt(2026, 3, 29, 1, 30).toISOString()).toBe(
-        '2026-03-29T00:30:00.000Z',
-      )
+      expect(instantAt(2026, 3, 29, 1, 30).toISOString()).toBe('2026-03-29T00:30:00.000Z')
       // 03:30 CEST, after it. One clock hour later, but only 60 real minutes.
-      expect(instantAt(2026, 3, 29, 3, 30).toISOString()).toBe(
-        '2026-03-29T01:30:00.000Z',
-      )
+      expect(instantAt(2026, 3, 29, 3, 30).toISOString()).toBe('2026-03-29T01:30:00.000Z')
     })
 
     it('gets the hour either side of the autumn change right', () => {

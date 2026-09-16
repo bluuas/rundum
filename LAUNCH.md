@@ -66,10 +66,10 @@ Nothing below is optional for a public version.
       one person leaving currently deletes plans other people had joined.
       _5–8 h._
 
-- [ ] **Rate limiting.** There is none, anywhere. Every Server Action is a
-      public POST endpoint — creating activities, commenting, requesting a
-      place, reporting someone. Nothing here is catastrophic, but one bored
-      visitor can fill the database. _4–6 h._
+- [x] **Rate limiting.** Every mutating Server Action now goes through
+      `withinRateLimit`: a fixed window in Postgres keyed on `auth.uid()`
+      inside the database function. Limits are in `src/lib/rate-limit.ts`.
+      Anonymous traffic is still unmetered and belongs at the edge.
 
 - [x] **Split the demo and production databases.** Done differently than
       planned, because Supabase allows two projects per organization and one
@@ -83,8 +83,11 @@ Nothing below is optional for a public version.
       MapTiler or Stadia free tiers cover this; both need an account and a key.
       _2–4 h._
 
-- [ ] **Error monitoring and security headers.** No Sentry equivalent, and
-      `next.config.ts` sets no headers or CSP. _4–6 h._
+- [ ] **Error monitoring.** No Sentry equivalent. _2–3 h, and an account._
+
+- [x] **Security headers.** HSTS, nosniff, `Referrer-Policy`,
+      `Permissions-Policy`, `frame-ancestors 'none'` and a nonce-based CSP,
+      all set in `proxy.ts`.
 
 ## Needed soon after, not necessarily before
 
@@ -141,21 +144,20 @@ Ordered by what would actually bite.
    The remaining rule: **never run `db:seed` against production**, which
    `scripts/target.ts` now enforces rather than trusting.
 
-2. **The success metric is client-writable.** `activity_events_insert` lets any
-   authenticated user insert `activity_created` rows carrying their own
-   `user_id`. The one number the product is judged on can be inflated from a
-   browser console. It belongs in a `security definer` function, not in a
-   policy that trusts the client.
+2. ~~**The success metric is client-writable.**~~ Fixed: a trigger writes it
+   and no policy lets a client insert one.
 
-3. **No rate limiting.** As above. On a demo deployment,
-   `/api/auth/dev/login` is additionally an unauthenticated session minter.
+3. ~~**No rate limiting.**~~ Fixed for signed-in traffic. Still open: on a demo
+   deployment `/api/auth/dev/login` is an unauthenticated session minter, and
+   anonymous traffic generally is unmetered. That belongs at the edge — Vercel
+   WAF or similar — rather than in the database.
 
 4. **No account deletion.** A legal exposure as much as a missing feature.
 
-5. **No security headers or CSP.**
+5. ~~**No security headers or CSP.**~~ Fixed, in `proxy.ts`.
 
-6. **`profiles` is world-readable, including `is_admin`.** Anonymous visitors
-   can enumerate who the admins are. Cheap to restrict.
+6. ~~**`profiles` is world-readable, including `is_admin`.**~~ Fixed: the
+   table-wide grant is replaced by a column list that omits it.
 
 What is already right, and worth not regressing: Strava tokens live in a table
 no RLS policy grants access to, read only by the service-role client.

@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { revalidateLocalized } from '@/lib/revalidate'
+import { withinRateLimit } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { reportInputSchema } from '@/lib/validation/report'
 
@@ -19,7 +20,7 @@ import { reportInputSchema } from '@/lib/validation/report'
  */
 
 export type ModerationErrorCode =
-  'signedOut' | 'notFound' | 'ownContent' | 'self' | 'unknown'
+  'signedOut' | 'notFound' | 'ownContent' | 'self' | 'rateLimited' | 'unknown'
 
 const SQLSTATE_TO_CODE: Record<string, ModerationErrorCode> = {
   RU001: 'signedOut',
@@ -46,6 +47,12 @@ export async function submitReport(input: unknown): Promise<ModerationResult> {
   const parsed = reportInputSchema.safeParse(input)
   if (!parsed.success) return { ok: false, code: 'unknown' }
 
+  // A report is cheap to send and expensive to read. Ten a day is far past
+  // anyone reporting things they actually saw.
+  if (!(await withinRateLimit(supabase, 'report'))) {
+    return { ok: false, code: 'rateLimited' }
+  }
+
   const { error } = await supabase.rpc('submit_report', {
     p_target_type: parsed.data.targetType,
     p_target_id: parsed.data.targetId,
@@ -68,6 +75,10 @@ export async function blockUser(userId: string): Promise<ModerationResult> {
   if (!user) return { ok: false, code: 'signedOut' }
 
   if (!z.uuid().safeParse(userId).success) return { ok: false, code: 'notFound' }
+
+  if (!(await withinRateLimit(supabase, 'block'))) {
+    return { ok: false, code: 'rateLimited' }
+  }
 
   const { error } = await supabase.rpc('block_user', { p_blocked_id: userId })
   if (error) return { ok: false, code: toError(error) }

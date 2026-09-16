@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { revalidateLocalized } from '@/lib/revalidate'
 import { createClient } from '@/lib/supabase/server'
 import { profileInputSchema } from '@/lib/validation/profile'
+import { withinRateLimit } from '@/lib/rate-limit'
 
 /**
  * Editing your own profile.
@@ -37,6 +38,10 @@ export async function updateProfile(input: unknown): Promise<ProfileResult> {
       error: 'Please check the highlighted fields',
       fieldErrors: flat.fieldErrors as Record<string, string[]>,
     }
+  }
+
+  if (!(await withinRateLimit(supabase, 'profile'))) {
+    return { ok: false, error: 'That is a lot of edits. Try again a little later.' }
   }
 
   const { error } = await supabase

@@ -348,8 +348,64 @@ if (signIn.error || !signIn.data.user) {
     .maybeSingle()
   check('unblocking restores visibility', afterUnblock.data !== null)
 
+  // --- the metric, and who may write it ---------------------------------
+
+  const forgedEvent = await member.from('activity_events').insert({
+    event_type: 'activity_created',
+    user_id: signIn.data.user.id,
+    metadata: {},
+  })
+  check(
+    'the success metric cannot be written from a client',
+    forgedEvent.error !== null,
+    forgedEvent.error?.code,
+  )
+
+  // --- rate limiting ----------------------------------------------------
+
+  // A bucket nothing else uses, so this cannot consume a real allowance.
+  const bucket = `verify:${Date.now()}`
+  const hit = () =>
+    member.rpc('consume_rate_limit', {
+      p_bucket: bucket,
+      p_limit: 2,
+      p_window_seconds: 3_600,
+    })
+
+  const first = await hit()
+  const second = await hit()
+  const third = await hit()
+  check(
+    'a rate limit allows up to its limit and then stops',
+    first.data === true && second.data === true && third.data === false,
+    `${first.data}, ${second.data}, ${third.data}`,
+  )
+
+  const counters = await member.from('rate_limits').select('*')
+  check(
+    'the counters themselves are unreadable',
+    (counters.data ?? []).length === 0,
+    `rows=${counters.data?.length ?? 0}`,
+  )
+
   await member.auth.signOut()
 }
+
+// --- column-level exposure ----------------------------------------------
+
+const adminFlag = await anon.from('profiles').select('id, is_admin').limit(1)
+check(
+  'anonymous visitors cannot read who is an admin',
+  adminFlag.error !== null,
+  adminFlag.error?.code,
+)
+
+const publicProfile = await anon.from('profiles').select('id, display_name').limit(1)
+check(
+  'the rest of a profile is still public',
+  publicProfile.error === null && (publicProfile.data ?? []).length > 0,
+  publicProfile.error?.message,
+)
 
 console.log(`\n${failures === 0 ? 'All checks passed' : failures + ' CHECK(S) FAILED'}`)
 process.exit(failures === 0 ? 0 : 1)
