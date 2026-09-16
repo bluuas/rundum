@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { LEVELS, SPORT_KEYS, getSport } from '@/lib/sports'
+import { instantAt } from '@/lib/time'
 
 /**
  * The single source of truth for activity input.
@@ -105,7 +106,21 @@ export const activityInputSchema = z
 
 export type ActivityInput = z.infer<typeof activityInputSchema>
 
-/** Combines the form's separate date and time fields into one instant. */
+/**
+ * Combines the form's separate date and time fields into one instant.
+ *
+ * The numbers are read as the city's clock, not the browser's. `new
+ * Date('2026-07-15T18:30')` parses as local time, so an organizer setting up a
+ * run while travelling would have stored 18:30 in wherever they happened to
+ * be — and it would have looked right to them and wrong to everyone in Schwyz.
+ */
 export function combineDateAndTime(date: string, time: string): Date {
-  return new Date(`${date}T${time}`)
+  const [year, month, day] = date.split('-').map(Number)
+  const [hour, minute] = time.split(':').map(Number)
+
+  if (![year, month, day, hour, minute].every(Number.isFinite)) {
+    return new Date(Number.NaN)
+  }
+
+  return instantAt(year, month, day, hour, minute)
 }

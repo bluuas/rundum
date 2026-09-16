@@ -27,6 +27,15 @@ export default defineConfig({
       url: 'http://localhost:3000',
       reuseExistingServer: true,
       timeout: 120_000,
+      /*
+        The deployment runs in UTC, and every user-visible time is the city's
+        wall clock rather than the runtime's. Rendering here in a zone that is
+        not Switzerland is what makes these tests able to tell the difference.
+
+        Only applies when Playwright starts the server; a dev server you
+        already have running keeps whatever zone you started it in.
+      */
+      env: { TZ: 'UTC' },
     },
     {
       command: 'npm run dev:strava',

@@ -26,20 +26,20 @@ decision about sign-in.
 
 ## Open defect
 
-- [ ] **Times render in the runtime's timezone, not Switzerland's.** _3–5 h._
+- [x] **Times render in the runtime's timezone, not Switzerland's.** Fixed.
 
-`src/lib/format.ts` uses `date.getHours()`, so an activity at 18:30 in Schwyz
-renders as 16:30 when the process runs in UTC — which is what Vercel runs. It
-also changes between the server-rendered HTML and hydration, and shows a
-visitor abroad the time in _their_ zone, which is wrong for a local app: 18:30
-in Schwyz is 18:30 for everyone.
+It was on three surfaces, not one: display (`format.ts` read
+`date.getHours()`), the write path (`combineDateAndTime` parsed
+`'2026-07-15T18:30'` as the browser's local time, so an organizer scheduling
+while abroad stored the wrong instant), and the feed's date filters, where
+"today" meant the viewer's today. A fourth, one layer down: `metrics_daily`
+bucketed the primary metric by the database session's days, so an activity
+created at 00:30 in Schwyz counted on the day before.
 
-Invisible in development because the machine is already in Zurich, and
-invisible to the unit tests because they construct their dates in local time
-too, so they are self-consistent and cannot catch it. `cities.timezone` already
-exists and is already populated.
-
-Fix: pin the zone, and add a test that fails under `TZ=America/New_York`.
+All four now go through `src/lib/time.ts`, or through
+`at time zone 'Europe/Zurich'` in SQL. The unit suite runs under
+`TZ=America/New_York` and Playwright renders under `TZ=UTC`, which is what
+makes the fix testable at all.
 
 ## Hard gates
 

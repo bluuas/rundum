@@ -19,5 +19,16 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    /*
+      Deliberately not Switzerland, and deliberately not UTC either.
+
+      Every user-visible time is the city's wall clock, and the only way to
+      show that is to run where the runtime's clock disagrees with it. A suite
+      that runs in Europe/Zurich passes whether or not the code pins the zone —
+      which is exactly how `date.getHours()` survived until it reached a server
+      running UTC. New York is on the other side of both, and changes its
+      offset on different dates than Switzerland does.
+    */
+    env: { TZ: 'America/New_York' },
   },
 })

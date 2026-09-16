@@ -1,6 +1,7 @@
 import { DEFAULT_CITY_CENTER, DEFAULT_RADIUS_M, RADIUS_OPTIONS_M } from '@/lib/geo'
 import { isSportKey, type SportKey } from '@/lib/sports'
 import type { FeedFilters, FeedSort } from '@/lib/queries/activities'
+import { startOfDayPlus, wallClock } from '@/lib/time'
 
 /**
  * Feed filters live in the URL, not React state.
@@ -23,7 +24,13 @@ function isDateRange(value: unknown): value is DateRange {
   return typeof value === 'string' && (DATE_RANGES as readonly string[]).includes(value)
 }
 
-/** Resolves a named range to an interval, in the viewer's own timezone. */
+/**
+ * Resolves a named range to an interval, on the city's calendar.
+ *
+ * "Today" is today in Schwyz for everybody. A viewer an hour ahead asking for
+ * today's activities is asking about the same day the activities are on, not
+ * about the day it happens to be where they are standing.
+ */
 export function resolveDateRange(
   range: DateRange,
   now = new Date(),
@@ -31,34 +38,23 @@ export function resolveDateRange(
   from: Date | null
   to: Date | null
 } {
-  const startOfToday = new Date(now)
-  startOfToday.setHours(0, 0, 0, 0)
-
-  const endOf = (daysFromToday: number) => {
-    const date = new Date(startOfToday)
-    date.setDate(date.getDate() + daysFromToday + 1)
-    return date
-  }
+  const endOf = (daysFromToday: number) => startOfDayPlus(now, daysFromToday + 1)
 
   switch (range) {
     case 'today':
       return { from: null, to: endOf(0) }
-    case 'tomorrow': {
-      const from = new Date(startOfToday)
-      from.setDate(from.getDate() + 1)
-      return { from, to: endOf(1) }
-    }
+    case 'tomorrow':
+      return { from: startOfDayPlus(now, 1), to: endOf(1) }
     case 'week':
       return { from: null, to: endOf(6) }
     case 'weekend': {
       // Saturday 00:00 to Monday 00:00. During a weekend, that weekend.
-      const day = startOfToday.getDay() // 0 = Sunday
+      const day = wallClock(now).weekday // 0 = Sunday
       const daysUntilSaturday = day === 6 ? 0 : day === 0 ? -1 : 6 - day
-      const from = new Date(startOfToday)
-      from.setDate(from.getDate() + daysUntilSaturday)
-      const to = new Date(from)
-      to.setDate(to.getDate() + 2)
-      return { from, to }
+      return {
+        from: startOfDayPlus(now, daysUntilSaturday),
+        to: startOfDayPlus(now, daysUntilSaturday + 2),
+      }
     }
     case 'anytime':
     default:

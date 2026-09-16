@@ -1,5 +1,6 @@
 import { fill, getDictionary } from '@/lib/i18n'
 import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config'
+import { daysBetween, wallClock } from '@/lib/time'
 
 /**
  * Date and time formatting.
@@ -7,6 +8,7 @@ import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config'
  * Swiss conventions throughout, without exception:
  *   - 24-hour time, never AM/PM
  *   - numeric dates as DD.MM.YYYY, never MM/DD/YYYY or YYYY-MM-DD
+ *   - the city's clock, never the runtime's — see `src/lib/time.ts`
  *
  * Numeric formats are hand-rolled rather than delegated to
  * Intl.DateTimeFormat, because Intl output depends on the runtime's ICU data
@@ -26,27 +28,21 @@ function toDate(value: string | Date): Date {
   return typeof value === 'string' ? new Date(value) : value
 }
 
-/** 24-hour time, "19:57". Never 7:57 PM, in any locale. */
+/** 24-hour time, "19:57". Never 7:57 PM, in any locale or any server region. */
 export function formatTime(value: string | Date): string {
-  const date = toDate(value)
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const clock = wallClock(toDate(value))
+  return `${pad(clock.hour)}:${pad(clock.minute)}`
 }
 
 /** Swiss numeric date, "15.09.2026". Identical in every locale. */
 export function formatDate(value: string | Date): string {
-  const date = toDate(value)
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`
+  const clock = wallClock(toDate(value))
+  return `${pad(clock.day)}.${pad(clock.month)}.${clock.year}`
 }
 
 /** Swiss date and time together, "15.09.2026, 19:57". */
 export function formatDateTime(value: string | Date): string {
   return `${formatDate(value)}, ${formatTime(value)}`
-}
-
-function daysApart(a: Date, b: Date): number {
-  const startA = new Date(a).setHours(0, 0, 0, 0)
-  const startB = new Date(b).setHours(0, 0, 0, 0)
-  return Math.round((startA - startB) / 86_400_000)
 }
 
 /**
@@ -62,13 +58,13 @@ export function formatStartShort(
 ): string {
   const date = toDate(startsAt)
   const t = getDictionary(locale).time
-  const days = daysApart(date, now)
+  const days = daysBetween(date, now)
   const time = formatTime(date)
 
   if (days === 0) return fill(t.today, { time })
   if (days === 1) return fill(t.tomorrow, { time })
   if (days === -1) return fill(t.yesterday, { time })
-  if (days > 1 && days < 7) return `${t.weekdayShort[date.getDay()]} ${time}`
+  if (days > 1 && days < 7) return `${t.weekdayShort[wallClock(date).weekday]} ${time}`
 
   return `${formatDate(date)} ${time}`
 }
@@ -80,7 +76,7 @@ export function formatStartFull(
 ): string {
   const date = toDate(startsAt)
   const t = getDictionary(locale).time
-  return `${t.weekdayLong[date.getDay()]}, ${formatDate(date)}, ${formatTime(date)}`
+  return `${t.weekdayLong[wallClock(date).weekday]}, ${formatDate(date)}, ${formatTime(date)}`
 }
 
 /** Relative label for comments: "just now", "2h ago", then a Swiss date. */
@@ -105,14 +101,21 @@ export function isArchived(startsAt: string | Date, now = new Date()): boolean {
   return toDate(startsAt).getTime() < now.getTime()
 }
 
-/** Value for an <input type="date">, which is always ISO regardless of display. */
+/**
+ * Value for an <input type="date">, which is always ISO regardless of display.
+ *
+ * The city's date, not the browser's: the form is scheduling something that
+ * happens in Schwyz, so "today" means today there.
+ */
 export function toDateInputValue(date: Date): string {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  const clock = wallClock(date)
+  return `${clock.year}-${pad(clock.month)}-${pad(clock.day)}`
 }
 
 /** Value for an <input type="time">, which is always 24-hour regardless of display. */
 export function toTimeInputValue(date: Date): string {
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const clock = wallClock(date)
+  return `${pad(clock.hour)}:${pad(clock.minute)}`
 }
 
 /**

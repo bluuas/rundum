@@ -21,14 +21,29 @@ Schwyz, CH. Primary success metric: **number of activities created**.
 - **Never store or display an exact location.** Every coordinate passes through
   `snapToGrid` in `src/lib/geo.ts` before it reaches the database; feed
   distances are bucketed via `formatDistanceBucket`.
-- **Dates and times are always Swiss.** 24-hour clock, `DD.MM.YYYY`. Never
-  AM/PM, never month-first. Use the helpers in `src/lib/format.ts` and never
-  `toLocaleString`, `toLocaleDateString` or a bare `Intl.DateTimeFormat` for a
-  user-visible date — their output depends on the runtime's locale data, which
-  is exactly how an en-US "7:30 PM" gets in. Native `<input type="date">` and
-  `<input type="time">` render in the _browser's_ locale and cannot be
-  overridden, so always restate the chosen moment underneath with
-  `formatStartFull`.
+- **Dates and times are always Swiss — the zone as well as the format.**
+  24-hour clock, `DD.MM.YYYY`. Never AM/PM, never month-first. Use the helpers
+  in `src/lib/format.ts` and never `toLocaleString`, `toLocaleDateString` or a
+  bare `Intl.DateTimeFormat` for a user-visible date — their output depends on
+  the runtime's locale data, which is exactly how an en-US "7:30 PM" gets in.
+  Native `<input type="date">` and `<input type="time">` render in the
+  _browser's_ locale and cannot be overridden, so always restate the chosen
+  moment underneath with `formatStartFull`.
+
+  **Never `getHours`, `getDate`, `setHours` or `new Date('…T18:30')`.** Those
+  read and write the _runtime's_ zone: correct on a laptop in Zurich, two hours
+  out on a server in UTC, and wrong in a third way for a visitor abroad. An
+  activity at 18:30 in Schwyz is at 18:30 for everyone, so wall-clock values go
+  through `src/lib/time.ts` — reading (`wallClock`), writing (`instantAt`) and
+  day boundaries (`startOfDayPlus`, `daysBetween`) alike. In SQL the same rule
+  is `(created_at at time zone 'Europe/Zurich')::date`, never `::date` on its
+  own, which silently uses the session zone.
+
+  The unit suite runs under `TZ=America/New_York` and Playwright renders under
+  `TZ=UTC` for this reason. Do not "fix" a date test by changing those: a suite
+  that runs in Swiss time passes whether or not the code pins the zone, which
+  is how this survived to the point of nearly shipping.
+
 - **Ask before adding anything outside the MVP scope.**
 
 ## Measuring

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { activityInputSchema } from './activity'
+import { activityInputSchema, combineDateAndTime } from './activity'
 
 const base = {
   sportKey: 'run' as const,
@@ -50,5 +50,34 @@ describe('activityInputSchema', () => {
   it('allows distance and pace on running', () => {
     const run = { ...base, distanceM: 10_000, paceSecondsPerKm: 330 }
     expect(activityInputSchema.safeParse(run).success).toBe(true)
+  })
+})
+
+/**
+ * The write half of the timezone rule. Reading an instant back in the city's
+ * zone is no use if it was stored in the organizer's — and this is the harder
+ * half to notice, because it looks right to the person who entered it.
+ */
+describe('combineDateAndTime', () => {
+  it('reads the form as the city clock, not the browser clock', () => {
+    // 18:30 in Schwyz in July is 16:30 UTC. Under TZ=America/New_York, the old
+    // `new Date('2026-07-15T18:30')` would have produced 22:30 UTC.
+    expect(combineDateAndTime('2026-07-15', '18:30').toISOString()).toBe(
+      '2026-07-15T16:30:00.000Z',
+    )
+  })
+
+  it('follows the city into and out of summer time', () => {
+    expect(combineDateAndTime('2026-01-15', '18:30').toISOString()).toBe(
+      '2026-01-15T17:30:00.000Z',
+    )
+    expect(combineDateAndTime('2026-07-15', '18:30').toISOString()).toBe(
+      '2026-07-15T16:30:00.000Z',
+    )
+  })
+
+  it('is an invalid date when the fields are incomplete', () => {
+    expect(Number.isNaN(combineDateAndTime('', '18:30').getTime())).toBe(true)
+    expect(Number.isNaN(combineDateAndTime('2026-07-15', '').getTime())).toBe(true)
   })
 })
