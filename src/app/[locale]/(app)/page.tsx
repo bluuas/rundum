@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { ActivityCard } from '@/components/activity/activity-card'
 import { FilterBar } from '@/components/activity/filter-bar'
 import { SortControl } from '@/components/activity/sort-control'
+import { SwipeToJoin } from '@/components/activity/swipe-to-join'
 import { AppHeader } from '@/components/shell/app-header'
 import { PageBody } from '@/components/shell/page-body'
 import { ActivityListSkeleton, EmptyState, ErrorState } from '@/components/ui/states'
@@ -10,6 +11,7 @@ import { formatRadius } from '@/lib/geo'
 import { fill, getDictionary, plural, type Dictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getNearbyActivities } from '@/lib/queries/activities'
+import { getCurrentUserId } from '@/lib/supabase/server'
 
 /** Launch city. Comes from the `cities` table once more than one exists. */
 const CITY = 'Schwyz'
@@ -59,7 +61,10 @@ async function FeedResults({
   locale: Locale
   t: Dictionary
 }) {
-  const { activities, error } = await getNearbyActivities(filters)
+  const [{ activities, error }, viewerId] = await Promise.all([
+    getNearbyActivities(filters),
+    getCurrentUserId(),
+  ])
 
   if (error) {
     return <ErrorState title={t.feed.loadErrorTitle} description={t.feed.loadErrorBody} />
@@ -103,7 +108,16 @@ async function FeedResults({
       */}
       <div className="divide-border divide-y">
         {activities.map((activity) => (
-          <ActivityCard key={activity.id} activity={activity} />
+          <SwipeToJoin
+            key={activity.id}
+            activityId={activity.id}
+            // Offered only where it can succeed. Your own activity is not
+            // something to ask to join, and a signed-out swipe would be a
+            // gesture that always fails.
+            enabled={viewerId !== null && activity.owner_id !== viewerId}
+          >
+            <ActivityCard activity={activity} />
+          </SwipeToJoin>
         ))}
       </div>
     </div>

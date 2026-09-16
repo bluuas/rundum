@@ -34,10 +34,11 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
       /*
         No border, no fill, no radius: an activity is part of the page rather
         than an object on it, and the hairline between entries comes from the
-        list container. The negative margin lets the hover tint reach past the
-        text so a tap has something to land on.
+        list container. The tint reaches past the text because SwipeToJoin
+        widens the row by the same 8px the padding here takes back — it owns
+        the negative margin so it can also clip the swipe.
       */
-      className="hover:bg-surface-muted -mx-2 block px-2 py-4 transition-colors"
+      className="hover:bg-surface-muted block px-2 py-4 transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <SportBadge sportKey={activity.sport_key} />

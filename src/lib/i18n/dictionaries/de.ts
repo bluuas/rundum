@@ -63,15 +63,15 @@ export const de: Dictionary = {
   },
 
   filters: {
+    sports: 'Sportarten',
     allSports: 'Alle Sportarten',
     nSports: '{count} Sportarten',
     clearSports: 'Sportarten zurücksetzen',
     when: 'Wann',
     within: 'Umkreis',
-    withinValue: 'Umkreis {radius}',
     sort: 'Aktivitäten sortieren',
-    sortSoonest: 'Bald zuerst',
-    sortClosest: 'Nächste zuerst',
+    sortByDate: 'Datum',
+    sortByDistance: 'Distanz',
     ranges: {
       anytime: 'Jederzeit',
       today: 'Heute',

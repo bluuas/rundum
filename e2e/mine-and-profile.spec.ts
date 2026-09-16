@@ -1,16 +1,27 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { signInAsDemoUser, path } from './helpers'
+
+/**
+ * The seed places activities at times relative to when it ran, so naming one
+ * here would make the test fail once that activity ages into Past. These take
+ * whatever is in the section instead.
+ */
+function section(page: Page, name: string) {
+  return page
+    .locator('details')
+    .filter({ has: page.getByRole('heading', { name, exact: true }) })
+}
 
 test('My activities lists what you organize', async ({ page }) => {
   // Clara organizes several seeded activities.
   await signInAsDemoUser(page, 'Clara C.')
   await page.goto(path('/me'))
 
-  await expect(page.getByRole('heading', { name: 'Organizing' })).toBeVisible()
-  await expect(page.getByRole('link').filter({ hasText: 'After-work 5k' })).toBeVisible()
+  const organizing = section(page, 'Organizing')
+  await expect(organizing).toBeVisible()
 
   // Clicking through reaches the activity.
-  await page.getByRole('link').filter({ hasText: 'After-work 5k' }).first().click()
+  await organizing.getByRole('link').first().click()
   await page.waitForURL(/\/activities\/[0-9a-f-]{36}$/)
 })
 
@@ -18,7 +29,7 @@ test('My activities sections fold, and Past starts folded', async ({ page }) => 
   await signInAsDemoUser(page, 'Clara C.')
   await page.goto(path('/me'))
 
-  const item = page.getByRole('link').filter({ hasText: 'After-work 5k' }).first()
+  const item = section(page, 'Organizing').getByRole('link').first()
   await expect(item).toBeVisible()
 
   // The header is the whole control, so clicking the title folds the section.
@@ -30,9 +41,7 @@ test('My activities sections fold, and Past starts folded', async ({ page }) => 
 
   // Past is the archive: it renders closed, so it never pushes the two
   // sections you actually act on off the screen.
-  const past = page
-    .locator('details')
-    .filter({ has: page.getByRole('heading', { name: 'Past' }) })
+  const past = section(page, 'Past')
   await expect(past).toHaveCount(1)
   await expect(past).not.toHaveAttribute('open', /.*/)
 })

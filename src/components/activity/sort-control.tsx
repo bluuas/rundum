@@ -42,8 +42,8 @@ export function SortControl({
           'text-fg-muted hover:text-fg cursor-pointer appearance-none bg-transparent py-3 pr-4 pl-0 text-xs font-medium',
         )}
       >
-        <option value="soonest">{t.filters.sortSoonest}</option>
-        <option value="closest">{t.filters.sortClosest}</option>
+        <option value="soonest">{t.filters.sortByDate}</option>
+        <option value="closest">{t.filters.sortByDistance}</option>
       </select>
       <span
         aria-hidden

@@ -15,6 +15,10 @@ type Filters = FeedFilters & { range: DateRange }
 /**
  * Filter controls. Every change is a navigation, not local state, so the feed
  * stays a Server Component and the URL always describes what is on screen.
+ *
+ * Each control carries its own heading. Without one the values had to name
+ * their own dimension — "Within 25 km" — which made the row of chips read as a
+ * sentence fragment and left no room for the value itself.
  */
 export function FilterBar({ filters }: { filters: Filters }) {
   const router = useRouter()
@@ -41,73 +45,86 @@ export function FilterBar({ filters }: { filters: Filters }) {
 
   return (
     <div className="space-y-3">
-      {/* Horizontally scrollable chip row: many filters, one thumb-width screen. */}
-      <div className="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 pb-1 [&::-webkit-scrollbar]:hidden">
-        <Chip active={filters.sports.length > 0} onClick={() => setSportsOpen((v) => !v)}>
-          {sportsLabel}
-          <span aria-hidden className="ml-1 text-[10px]">
-            ▾
-          </span>
-        </Chip>
+      {/* Horizontally scrollable: three labelled controls, one thumb-width screen. */}
+      <div className="-mx-4 flex [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-1 [&::-webkit-scrollbar]:hidden">
+        <Field label={t.filters.sports}>
+          <Chip
+            active={filters.sports.length > 0}
+            expanded={sportsOpen}
+            onClick={() => setSportsOpen((v) => !v)}
+          >
+            {sportsLabel}
+            <span aria-hidden className="ml-1 text-[10px]">
+              ▾
+            </span>
+          </Chip>
+        </Field>
 
-        <Select
-          label={t.filters.when}
-          value={filters.range}
-          active={filters.range !== 'anytime'}
-          options={DATE_RANGES.map((range) => ({
-            value: range,
-            label: t.filters.ranges[range],
-          }))}
-          onChange={(value) => apply({ range: value as DateRange })}
-        />
+        <Field label={t.filters.when}>
+          <Select
+            label={t.filters.when}
+            value={filters.range}
+            active={filters.range !== 'anytime'}
+            options={DATE_RANGES.map((range) => ({
+              value: range,
+              label: t.filters.ranges[range],
+            }))}
+            onChange={(value) => apply({ range: value as DateRange })}
+          />
+        </Field>
 
-        <Select
-          label={t.filters.within}
-          value={String(filters.radiusM)}
-          active={filters.radiusM !== 25_000}
-          options={RADIUS_OPTIONS_M.map((meters) => ({
-            value: String(meters),
-            label: fill(t.filters.withinValue, { radius: formatRadius(meters) }),
-          }))}
-          onChange={(value) => apply({ radiusM: Number(value) })}
-        />
+        <Field label={t.filters.within}>
+          <Select
+            label={t.filters.within}
+            value={String(filters.radiusM)}
+            active={filters.radiusM !== 25_000}
+            // Just the distance: the heading above already says what it means.
+            options={RADIUS_OPTIONS_M.map((meters) => ({
+              value: String(meters),
+              label: formatRadius(meters),
+            }))}
+            onChange={(value) => apply({ radiusM: Number(value) })}
+          />
+        </Field>
       </div>
 
       {sportsOpen ? (
-        <div className="border-border bg-surface rounded-card border p-3">
-          <div className="flex flex-wrap gap-2">
+        <div className="border-border bg-surface rounded-card border">
+          {/*
+            One row per sport rather than a wrap of pills. Ten pills reflowed
+            into ragged lines that were hard to scan, and a checkbox says
+            "several of these" where a pill only says "this one is on".
+          */}
+          <ul className="divide-border divide-y">
             {SPORTS.map((sport) => {
               const selected = filters.sports.includes(sport.key)
               return (
-                <button
-                  key={sport.key}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => toggleSport(sport.key)}
-                  className={cn(
-                    'min-h-11 rounded-full border px-3 text-sm transition-colors',
-                    selected
-                      ? 'border-brand bg-brand text-brand-fg'
-                      : 'border-border-strong text-fg-muted hover:bg-surface-muted',
-                  )}
-                >
-                  <span aria-hidden className="mr-1">
-                    {sport.icon}
-                  </span>
-                  {t.sports[sport.key]}
-                </button>
+                <li key={sport.key}>
+                  <label className="hover:bg-surface-muted flex min-h-11 cursor-pointer items-center gap-3 px-3 py-2 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => toggleSport(sport.key)}
+                      className="accent-brand h-4 w-4 shrink-0"
+                    />
+                    <span aria-hidden>{sport.icon}</span>
+                    <span className="text-fg text-sm">{t.sports[sport.key]}</span>
+                  </label>
+                </li>
               )
             })}
-          </div>
+          </ul>
 
           {filters.sports.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => apply({ sports: [] })}
-              className="text-fg-muted hover:text-fg mt-3 min-h-11 text-sm underline"
-            >
-              {t.filters.clearSports}
-            </button>
+            <div className="border-border border-t px-3">
+              <button
+                type="button"
+                onClick={() => apply({ sports: [] })}
+                className="text-fg-muted hover:text-fg min-h-11 text-sm underline"
+              >
+                {t.filters.clearSports}
+              </button>
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -115,12 +132,26 @@ export function FilterBar({ filters }: { filters: Filters }) {
   )
 }
 
+/** A control with its heading above it. */
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex shrink-0 flex-col gap-1">
+      <span className="text-fg-subtle px-1 text-[11px] font-medium tracking-wide uppercase">
+        {label}
+      </span>
+      {children}
+    </div>
+  )
+}
+
 function Chip({
   active,
+  expanded,
   onClick,
   children,
 }: {
   active?: boolean
+  expanded?: boolean
   onClick?: () => void
   children: React.ReactNode
 }) {
@@ -128,6 +159,7 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
+      aria-expanded={expanded}
       className={cn(
         'min-h-11 shrink-0 rounded-full border px-3.5 text-sm font-medium whitespace-nowrap transition-colors',
         active
@@ -164,7 +196,7 @@ function Select({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className={cn(
-          'min-h-11 appearance-none rounded-full border py-0 pr-8 pl-3.5 text-sm font-medium transition-colors',
+          'min-h-11 w-full appearance-none rounded-full border py-0 pr-8 pl-3.5 text-sm font-medium transition-colors',
           active
             ? 'border-brand bg-brand-soft text-brand-soft-fg'
             : 'border-border-strong text-fg-muted bg-transparent',

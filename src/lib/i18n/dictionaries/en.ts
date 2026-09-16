@@ -59,15 +59,17 @@ export const en = {
   },
 
   filters: {
+    sports: 'Sports',
     allSports: 'All sports',
     nSports: '{count} sports',
     clearSports: 'Clear sports',
     when: 'When',
     within: 'Within',
-    withinValue: 'Within {radius}',
     sort: 'Sort activities',
-    sortSoonest: 'Soonest first',
-    sortClosest: 'Closest first',
+    // The control sits beside the result count and carries a chevron, so the
+    // bare noun is enough; "Soonest first" only repeated what the list shows.
+    sortByDate: 'Date',
+    sortByDistance: 'Distance',
     ranges: {
       anytime: 'Anytime',
       today: 'Today',

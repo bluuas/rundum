@@ -205,6 +205,18 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
 - **Sport badges are neutral.** One grey pill for every sport; the emoji and the
   name carry it. Ten hues were the loudest thing on a monochrome screen and read
   as decoration rather than information.
+- **A gesture is never the only way to do something.** Swiping a feed row to
+  the right requests a place, but the detail page keeps the button, which is
+  what keyboard and screen-reader users get. So the revealed panel is
+  `aria-hidden` and only the outcome is announced, and the gesture is offered
+  only where it can succeed — signed in, and not on your own activity.
+  Two things that cost an afternoon in `swipe-to-join.tsx`: a feed row is a
+  link, and dragging a link starts a native drag-and-drop that fires
+  `pointercancel` one move in unless `dragstart` is prevented; and the release
+  must read how far the row travelled from a ref, because the `offset` state
+  captured by the handler is a render behind on a fast swipe. In a Playwright
+  swipe, `scrollIntoViewIfNeeded()` before `boundingBox()` — otherwise the drag
+  lands on whatever is on screen and the test passes for the wrong reason.
 - `--danger` is a brighter red than `--brand`, so "Cancel activity" does not
   arrive in the same colour as "Request to join". With a single red accent the
   two will always be close; keep them apart rather than letting them merge.

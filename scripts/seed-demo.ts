@@ -561,6 +561,14 @@ async function main() {
     (existingList?.users ?? []).map((user) => [user.email ?? '', user.id]),
   )
 
+  // The key list and the cast must line up; a typo would otherwise surface as
+  // an activity with no organizer.
+  for (const key of DEMO_USER_KEYS) {
+    if (!DEMO_USERS.some((demo) => demo.key === key)) {
+      throw new Error(`No demo user for key "${key}"`)
+    }
+  }
+
   // A rename leaves the previous cast behind: same demo domain, no longer in
   // DEMO_USERS. They would keep their activities and keep showing up in the
   // feed next to their replacements, so they go. Scoped to the demo domain so
