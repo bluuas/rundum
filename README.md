@@ -237,6 +237,13 @@ project. Set the repository variable `RUN_E2E` to `true` and add
 the security boundaries with `db:verify`, and runs Playwright against the local
 Strava stand-in — never against Strava itself.
 
+## What is left before launch
+
+[LAUNCH.md](LAUNCH.md) is the standing checklist: the open defects, the hard
+gates (a second sign-in method, legal pages, account deletion, rate limiting),
+what each is roughly worth in hours, and the security items ranked by what
+would actually bite. Read it before planning work.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). The short version: never commit
