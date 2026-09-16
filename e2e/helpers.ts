@@ -1,8 +1,13 @@
 import type { Page } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { config } from 'dotenv'
+import { assertLocal, loadEnv } from '../scripts/target'
 
-config({ path: '.env.local', quiet: true })
+loadEnv()
+
+// The suite creates, edits, blocks and deletes freely, and reseeding is part
+// of running it. It must not be able to reach a deployment, however the
+// environment happens to be set.
+assertLocal(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', 'The Playwright suite')
 
 export const anon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

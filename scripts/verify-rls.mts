@@ -8,8 +8,10 @@
  *   npm run db:verify
  */
 import { createClient } from '@supabase/supabase-js'
-import { config } from 'dotenv'
-config({ path: '.env.local', quiet: true })
+import { DEMO_PASSWORD, DEMO_USERS } from './demo-cast'
+import { loadEnv } from './target'
+
+loadEnv()
 
 const anon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -170,8 +172,8 @@ const member = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 const signIn = await member.auth.signInWithPassword({
-  email: 'noah@demo.rundum.app',
-  password: 'rundum-demo-password',
+  email: DEMO_USERS[DEMO_USERS.length - 1].email,
+  password: DEMO_PASSWORD,
 })
 
 if (signIn.error || !signIn.data.user) {

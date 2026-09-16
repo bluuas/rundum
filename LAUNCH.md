@@ -71,8 +71,12 @@ Nothing below is optional for a public version.
       place, reporting someone. Nothing here is catastrophic, but one bored
       visitor can fill the database. _4–6 h._
 
-- [ ] **Split the demo and production databases.** See _Security_ below; this
-      is the single most important one. _2–3 h._
+- [x] **Split the demo and production databases.** Done differently than
+      planned, because Supabase allows two projects per organization and one
+      was already spoken for: development and every test now run on a local
+      Docker stack, the one hosted project is the demo, and production gets a
+      fresh project at launch. `scripts/target.ts` refuses to seed anything it
+      does not recognise.
 
 - [ ] **Map tiles on a licensed provider.** `tile.openstreetmap.org` is covered
       by the OSMF tile usage policy, which excludes production applications.
@@ -129,11 +133,13 @@ database daily.
 
 Ordered by what would actually bite.
 
-1. **Demo and production must not share a Supabase project.** `DEMO_PASSWORD`
-   is in a public repository and the anon key is public by design, so anyone
-   can authenticate as a demo account directly against Supabase, bypassing the
-   app. That is fine while it is only a demo — it is the point. It stops being
-   fine the moment one real person has an account in that project.
+1. ~~**Demo and production must not share a Supabase project.**~~ Addressed.
+   `DEMO_PASSWORD` is in a public repository and the anon key is public by
+   design, so anyone can authenticate as a demo account directly against
+   Supabase, bypassing the app. That is fine for a demo — it is the point — and
+   is now confined to one project that will never hold a real account.
+   The remaining rule: **never run `db:seed` against production**, which
+   `scripts/target.ts` now enforces rather than trusting.
 
 2. **The success metric is client-writable.** `activity_events_insert` lets any
    authenticated user insert `activity_created` rows carrying their own

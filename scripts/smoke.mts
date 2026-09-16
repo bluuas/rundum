@@ -9,9 +9,13 @@
  *   npm run smoke    # in another
  */
 import { createClient } from '@supabase/supabase-js'
-import { config } from 'dotenv'
+import { assertLocal, loadEnv } from './target'
 
-config({ path: '.env.local', quiet: true })
+loadEnv()
+
+// The smoke checks create and delete activities as they go, so they run
+// against the disposable stack and nothing else.
+assertLocal(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', 'The smoke checks')
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://localhost:3000'
 

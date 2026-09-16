@@ -1,16 +1,20 @@
 /**
  * Seeds demo users and activities around Schwyz.
  *
- * Uses the service-role key, so it must only ever run against a development
- * project. Idempotent: re-running updates the same demo accounts rather than
+ * Uses the service-role key, and creates accounts whose password is printed
+ * below, so `assertSeedable` decides what it is allowed to talk to: the local
+ * stack, or the published demo after an explicit confirmation. Nothing else.
+ * Idempotent: re-running updates the same demo accounts rather than
  * duplicating them.
  *
- *   npm run db:seed
+ *   npm run db:seed        # local
+ *   npm run db:seed:demo   # the published demo
  */
 import { createClient } from '@supabase/supabase-js'
-import { config as loadEnv } from 'dotenv'
+import { DEMO_PASSWORD, DEMO_USERS, DEMO_USER_KEYS, type DemoUserKey } from './demo-cast'
+import { assertSeedable, loadEnv } from './target'
 
-loadEnv({ path: '.env.local', quiet: true })
+loadEnv()
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -23,111 +27,11 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   process.exit(1)
 }
 
-if (SUPABASE_URL.includes('.supabase.co') && process.env.SEED_CONFIRM_REMOTE !== 'yes') {
-  console.warn(`\nAbout to seed demo data into ${SUPABASE_URL}`)
-  console.warn(
-    'This is a hosted project. Re-run with SEED_CONFIRM_REMOTE=yes to proceed.\n',
-  )
-  process.exit(1)
-}
+const target = assertSeedable(SUPABASE_URL)
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
-
-/** Shared password for demo accounts. Development only — never used in production. */
-const DEMO_PASSWORD = 'rundum-demo-password'
-
-/**
- * The demo cast, A-H so they are easy to tell apart in screenshots and tests.
- *
- * `key` is the identity: activities below name their organizer by key, and the
- * admin flag is set here. Nothing depends on the order of this array, so it can
- * be re-sorted or renamed without silently handing someone else's activities —
- * or admin rights — to a different person.
- */
-const DEMO_USER_KEYS = [
-  'anouk',
-  'basil',
-  'clara',
-  'dominic',
-  'esther',
-  'fabian',
-  'gabriel',
-  'hanna',
-] as const
-
-type DemoUserKey = (typeof DEMO_USER_KEYS)[number]
-
-type DemoUser = {
-  key: DemoUserKey
-  email: string
-  displayName: string
-  stravaConnected: boolean
-  bio: string
-  /** Can open /insights. Exactly one demo user has this. */
-  isAdmin?: boolean
-}
-
-const DEMO_USERS: DemoUser[] = [
-  {
-    key: 'anouk',
-    email: 'anouk@demo.rundum.app',
-    displayName: 'Anouk A.',
-    stravaConnected: true,
-    bio: 'Trail runner. Happiest above 1500 m.',
-    isAdmin: true,
-  },
-  {
-    key: 'basil',
-    email: 'basil@demo.rundum.app',
-    displayName: 'Basil B.',
-    stravaConnected: true,
-    bio: 'Road cyclist, coffee stops mandatory.',
-  },
-  {
-    key: 'clara',
-    email: 'clara@demo.rundum.app',
-    displayName: 'Clara C.',
-    stravaConnected: false,
-    bio: 'New in Schwyz, looking for a running group.',
-  },
-  {
-    key: 'dominic',
-    email: 'dominic@demo.rundum.app',
-    displayName: 'Dominic D.',
-    stravaConnected: true,
-    bio: 'Padel most evenings. Always need a fourth.',
-  },
-  {
-    key: 'esther',
-    email: 'esther@demo.rundum.app',
-    displayName: 'Esther E.',
-    stravaConnected: false,
-    bio: 'Yoga teacher. Slow mornings by the lake.',
-  },
-  {
-    key: 'fabian',
-    email: 'fabian@demo.rundum.app',
-    displayName: 'Fabian F.',
-    stravaConnected: true,
-    bio: 'Swimming, hiking, and anything in the Muotatal.',
-  },
-  {
-    key: 'gabriel',
-    email: 'gabriel@demo.rundum.app',
-    displayName: 'Gabriel G.',
-    stravaConnected: true,
-    bio: 'Weight training four times a week.',
-  },
-  {
-    key: 'hanna',
-    email: 'hanna@demo.rundum.app',
-    displayName: 'Hanna H.',
-    stravaConnected: false,
-    bio: 'Walks the Lauerzersee loop most Sundays.',
-  },
-]
 
 /** Meeting areas around Schwyz. Deliberately coarse; the DB snaps them anyway. */
 const PLACES = {
@@ -766,7 +670,9 @@ async function main() {
   if (commentError) throw commentError
   console.log(`  ${commentRows.length} comments created`)
 
-  console.log(`\nDone. Sign in as any demo user with the dev switcher, or with`)
+  console.log(
+    `\nDone (${target}). Sign in as any demo user with the dev switcher, or with`,
+  )
   const admin = DEMO_USERS.find((demo) => demo.isAdmin) ?? DEMO_USERS[0]
   console.log(`  ${admin.email} / ${DEMO_PASSWORD}\n`)
 }

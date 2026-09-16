@@ -107,6 +107,25 @@ state check, the code exchange, token storage, profile staging, consent and
 deauthorization are the same code. Do not add a "pretend to be connected"
 shortcut in the app; that would leave the real path untested.
 
+## Which database
+
+Three, and confusing them is the expensive mistake:
+
+- **local** — Docker, `npm run db:start`. Development and **every test**.
+  `.env.local` points here.
+- **demo** — the hosted `rundum-dummy` project, behind the published demo and
+  nothing else. Reached only through `.env.demo`.
+- **production** — hosted, created at launch. Nothing in this repo may seed it.
+
+Demo accounts share a password printed in this repository, so `db:seed` asks
+`scripts/target.ts` what it is talking to and refuses anything it does not
+recognise. The Playwright suite and the smoke checks refuse anything but local:
+they create, block and delete freely, and reseeding is part of running them.
+Do not weaken those guards to make a run convenient.
+
+A consequence worth keeping: the test suite can no longer disturb the demo, so
+a reseed no longer throws away what people trying it have made.
+
 ## Demo deployments
 
 `ALLOW_MOCK_AUTH` is disarmed when `NODE_ENV=production`, so that a stray env

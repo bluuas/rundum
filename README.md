@@ -99,17 +99,44 @@ update profiles set is_admin = true where id = '<user-id>';
 `is_admin` grants access to the metrics functions and nothing else. It is not a
 moderation role and does not bypass any policy.
 
-### Database
+### Databases
 
-Rundum uses a hosted Supabase project, managed from this repo:
+Three, and they are deliberately not interchangeable.
+
+|                | Where                      | Used for                         |
+| -------------- | -------------------------- | -------------------------------- |
+| **local**      | Docker, `npm run db:start` | development, and every test      |
+| **demo**       | hosted `rundum-dummy`      | the published demo, nothing else |
+| **production** | hosted, at launch          | real people                      |
+
+Development needs only the first:
+
+```bash
+npm run db:start    # Postgres, auth and Studio in Docker; applies migrations
+npm run db:seed     # demo users and activities around Schwyz
+npm run db:types    # regenerate src/lib/supabase/database.types.ts
+npm run db:reset    # wipe, re-apply every migration, start again
+npm run db:stop
+```
+
+`.env.local` points at the local stack. Studio is on
+<http://localhost:54323> and mail sent by auth is caught at
+<http://localhost:54324> rather than delivered.
+
+The published demo is a hosted project, reached through a second env file:
 
 ```bash
 npx supabase login
-npx supabase link --project-ref <your-project-ref>
-npm run db:push     # apply migrations in supabase/migrations
-npm run db:seed     # demo users and activities around Schwyz
-npm run db:types    # regenerate src/lib/supabase/database.types.ts
+npx supabase link --project-ref <ref>
+npm run db:push:remote                      # apply migrations to it
+RUNDUM_ENV_FILE=.env.demo npm run db:seed:demo
 ```
+
+**Demo accounts share a password printed in this repository**, so `db:seed`
+refuses any database it does not recognise as the local stack or the demo
+project — see `scripts/target.ts`. The Playwright suite and the smoke checks
+refuse anything but local outright: they create, block and delete freely, and
+reseeding is part of running them.
 
 ### Development sign-in
 
@@ -230,12 +257,11 @@ Two things to know before sending the link round:
 `.github/workflows/ci.yml` runs formatting, typecheck, lint, unit tests and a
 production build on every pull request.
 
-The database and browser tests are opt-in, because they need a real Supabase
-project. Set the repository variable `RUN_E2E` to `true` and add
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
-`SUPABASE_SERVICE_ROLE_KEY` as secrets. That job reseeds the demo data, checks
-the security boundaries with `db:verify`, and runs Playwright against the local
-Strava stand-in — never against Strava itself.
+The database and browser tests run on every pull request too, against a
+Supabase stack started in Docker on the runner. No secrets, no opt-in: a fork
+gets the same green tick, and no CI run can reach a deployment. That job seeds
+demo data, checks the security boundaries with `db:verify`, and runs Playwright
+against the local Strava stand-in — never against Strava itself.
 
 ## What is left before launch
 

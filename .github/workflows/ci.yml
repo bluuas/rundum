@@ -42,10 +42,8 @@ jobs:
   e2e:
     name: Browser and database tests
     runs-on: ubuntu-latest
-    # These need a real Supabase project, so they are opt-in: set the repository
-    # variable RUN_E2E to "true" and add the three secrets below. Without them
-    # the job is skipped rather than failing, so a fork's CI still goes green.
-    if: ${{ vars.RUN_E2E == 'true' }}
+    # No secrets and no opt-in: the whole database runs here in Docker, so a
+    # fork gets the same green tick, and a bad merge cannot reach a deployment.
     steps:
       - uses: actions/checkout@v4
 
@@ -57,34 +55,33 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
 
-      - name: Reset demo data
+      - name: Start the local Supabase stack
+        run: npx supabase start
+
+      - name: Point the app at it
+        run: |
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(npx supabase status -o env | grep '^API_URL=' | cut -d= -f2- | tr -d '\"')"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(npx supabase status -o env | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '\"')"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$(npx supabase status -o env | grep '^SERVICE_ROLE_KEY=' | cut -d= -f2- | tr -d '\"')"
+            echo "ALLOW_MOCK_AUTH=true"
+            # Against the local stand-in, never real Strava. Hitting Strava
+            # from CI would be exactly the kind of automated traffic the API
+            # terms forbid.
+            echo "STRAVA_AUTH_BASE_URL=http://localhost:4400"
+            echo "STRAVA_CLIENT_ID=fake-client-id"
+            echo "STRAVA_CLIENT_SECRET=fake-client-secret"
+            echo "STRAVA_REDIRECT_URI=http://localhost:3000/api/auth/strava/callback"
+          } > .env.local
+
+      - name: Seed demo data
         run: npm run db:seed
-        env:
-          SEED_CONFIRM_REMOTE: 'yes'
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Check the security boundaries
         run: npm run db:verify
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Playwright
         run: npm run test:e2e
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ALLOW_MOCK_AUTH: 'true'
-          # Against the local stand-in, never real Strava. Hitting Strava from
-          # CI would be exactly the kind of automated traffic the API terms
-          # forbid.
-          STRAVA_AUTH_BASE_URL: http://localhost:4400
-          STRAVA_CLIENT_ID: fake-client-id
-          STRAVA_CLIENT_SECRET: fake-client-secret
-          STRAVA_REDIRECT_URI: http://localhost:3000/api/auth/strava/callback
 
       - uses: actions/upload-artifact@v4
         if: failure()
