@@ -58,3 +58,51 @@ export async function signInAsDemoUser(page: Page, displayName?: string) {
 export function path(p: string, locale: 'de' | 'en' = 'en'): string {
   return `/${locale}${p === '/' ? '' : p}`
 }
+
+/**
+ * The local stack catches outgoing mail instead of sending it. Mailpit is what
+ * makes the sign-in-link flow testable end to end without a mail provider —
+ * the same reason development moved onto Docker.
+ */
+const MAILPIT = process.env.MAILPIT_URL ?? 'http://127.0.0.1:54324'
+
+/** The newest sign-in link Supabase mailed to an address. */
+export async function signInLinkFor(email: string, timeoutMs = 15_000): Promise<string> {
+  const deadline = Date.now() + timeoutMs
+
+  while (Date.now() < deadline) {
+    const search = await fetch(
+      `${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
+    )
+
+    if (search.ok) {
+      const { messages } = (await search.json()) as { messages?: { ID: string }[] }
+      const newest = messages?.[0]
+
+      if (newest) {
+        const detail = (await (
+          await fetch(`${MAILPIT}/api/v1/message/${newest.ID}`)
+        ).json()) as { Text?: string }
+        const link = /(https?:\/\/[^\s)]+\/auth\/v1\/verify[^\s)]*)/.exec(
+          detail.Text ?? '',
+        )
+        if (link) return link[1]
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+
+  throw new Error(`No sign-in link arrived for ${email}`)
+}
+
+/** Removes an account created by a test, and the mail that created it. */
+export async function deleteAccountByEmail(email: string): Promise<void> {
+  const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  const user = data?.users.find((candidate) => candidate.email === email)
+  if (user) await admin.auth.admin.deleteUser(user.id)
+
+  await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`, {
+    method: 'DELETE',
+  }).catch(() => undefined)
+}

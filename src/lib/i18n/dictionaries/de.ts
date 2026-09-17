@@ -309,6 +309,31 @@ export const de: Dictionary = {
     },
   },
 
+  auth: {
+    signInTitle: 'Anmelden',
+    signInIntro:
+      'Gib deine E-Mail-Adresse ein, wir schicken dir einen Link zum Anmelden. Du musst dir kein Passwort ausdenken oder merken.',
+    emailLabel: 'E-Mail-Adresse',
+    sendLink: 'Link schicken',
+    sending: 'Wird gesendet…',
+    sentTitle: 'Schau in dein Postfach',
+    sentBody:
+      'Wenn du ein Konto hast oder gleich eines bekommst, ist ein Link an {email} unterwegs. Er gilt eine Stunde und nur in diesem Browser.',
+    sentSpam: 'Nach einer Minute noch nichts da? Schau im Spam-Ordner nach.',
+    differentAddress: 'Andere Adresse verwenden',
+    stravaHeading: 'Schon auf Strava?',
+    stravaBody: 'Du kannst Strava später in deinem Profil mit deinem Konto verbinden.',
+    errorExpired: 'Dieser Link ist abgelaufen. Fordere unten einen neuen an.',
+    errorDenied: 'Dieser Link gilt nicht mehr. Fordere unten einen neuen an.',
+    errorMissing: 'Dieser Link war unvollständig. Fordere unten einen neuen an.',
+    errorExchange:
+      'Dieser Link wurde in einem anderen Browser geöffnet als dem, der ihn angefordert hat. Fordere hier einen neuen an und öffne ihn in diesem Browser.',
+    welcomeTitle: 'Wie sollen dich die anderen nennen?',
+    welcomeBody:
+      'Dieser Name steht bei den Aktivitäten, die du organisierst, und bei deinen Kommentaren. Deine E-Mail-Adresse sieht niemand.',
+    welcomeSkip: 'Später entscheiden',
+  },
+
   profile: {
     title: 'Profil',
     editHeading: 'Deine Angaben',
@@ -320,7 +345,7 @@ export const de: Dictionary = {
     edit: 'Profil bearbeiten',
     notSignedInTitle: 'Nicht angemeldet',
     notSignedInBody:
-      'Die Strava-Anmeldung kommt noch. Nutze bis dahin den Kontowechsler oben.',
+      'Melde dich an, um Aktivitäten zu organisieren, um einen Platz zu fragen und mitzureden.',
     created: 'Erstellt',
     joined: 'Dabei',
     memberSince: 'Dabei seit {date}',

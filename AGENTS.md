@@ -122,6 +122,53 @@ state check, the code exchange, token storage, profile staging, consent and
 deauthorization are the same code. Do not add a "pretend to be connected"
 shortcut in the app; that would leave the real path untested.
 
+## Signing in
+
+Two ways in, and they are not equals. **An emailed sign-in link is the front
+door**; Strava is a link-later offered beside it. That is forced by Strava's
+single-player mode — ten athletes cannot connect if they cannot get an account
+— so do not re-promote Strava to the primary path.
+
+- **Signing in and signing up are the same request.** `shouldCreateUser`
+  defaults to true and stays that way: the form must answer identically for an
+  address that has an account and one that does not, or it becomes a way to
+  find out who is a member. For the same reason the confirmation says a link
+  "is on its way" and never "welcome back", and a send failure is reported to
+  the log but never detailed to the caller.
+- **The link only works in the browser that asked for it.** `signInWithOtp`
+  runs in a Server Action so it can write the PKCE verifier cookie, and
+  `/api/auth/callback` exchanges the code against it. Moving that call into a
+  Server Component would appear to work and fail at the last step, because a
+  Server Component cannot write cookies. An `e2e` test opens a link in a second
+  browser context and asserts `error=exchange`; keep it, since sign-in links
+  live in inboxes and inboxes get forwarded.
+- **A new account is never named after its email address.** `handle_new_user`
+  generates `Athlete 4f2a` rather than falling back to the local part: that
+  fragment is private, and publishing it as the name on every activity is a
+  disclosure nobody agreed to. The same reasoning as the Strava consent card,
+  which stages the athlete's name rather than publishing it.
+- **`display_name_chosen` is maintained by a trigger, not by code.** Three
+  paths write a name — the profile editor, the Strava consent card and the
+  welcome step — and a flag each of them has to remember is a flag one of them
+  will forget. The column is deliberately outside the `select` grant on
+  `profiles`, so ask `needs_display_name()` rather than reading it; that also
+  keeps "has not set up their profile yet" from being public.
+- **`/welcome` is a step, not a gate.** "Decide later" leaves with the
+  placeholder, and nothing downstream refuses to work without a name. The
+  primary metric is activities created; a wall in front of somebody who has
+  just arrived is a strange place to spend it.
+- **Rate limiting here is Supabase's, not ours.** `withinRateLimit` keys on
+  `auth.uid()`, and there is nobody signed in yet. The ceilings are
+  `[auth.rate_limit]` in `supabase/config.toml` for local and the dashboard for
+  a deployment. The local `email_sent` is raised on purpose — that stack sends
+  to Mailpit on :54324, which is also what makes the whole flow testable
+  without a mail provider.
+- **`NEXT_PUBLIC_SITE_URL` is optional locally and required on a deployment.**
+  Unset, the callback URL is built from the request's host header, which is
+  attacker-controlled; what actually holds is Supabase refusing to redirect
+  outside the project's allow-list, so the allow-list and this variable have to
+  agree.
+
 ## Which database
 
 Three, and confusing them is the expensive mistake:

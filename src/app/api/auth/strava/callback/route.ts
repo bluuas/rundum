@@ -192,7 +192,7 @@ export async function GET(request: Request) {
     createdEmail ?? (await admin.auth.admin.getUserById(userId)).data.user?.email
 
   if (!email) {
-    console.error('Strava sign-in: user has no email to sign in with')
+    reportError('strava.signIn', new Error('User has no email to sign in with'))
     return failure(locale, 'server', request)
   }
 
@@ -202,7 +202,7 @@ export async function GET(request: Request) {
   })
 
   if (linkError || !link.properties?.hashed_token) {
-    console.error('Strava sign-in: could not issue a session', linkError?.message)
+    reportError('strava.issueSession', linkError)
     return failure(locale, 'server', request)
   }
 
@@ -212,7 +212,7 @@ export async function GET(request: Request) {
   })
 
   if (verifyError) {
-    console.error('Strava sign-in: session verification failed', verifyError.message)
+    reportError('strava.verifySession', verifyError)
     return failure(locale, 'server', request)
   }
 

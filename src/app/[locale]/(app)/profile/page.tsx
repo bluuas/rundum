@@ -61,7 +61,9 @@ export default async function ProfilePage({
             title={t.profile.notSignedInTitle}
             description={t.profile.notSignedInBody}
           />
-          <StravaConnection connected={false} configured={stravaConfigured} />
+          <ButtonLink href={localeHref(locale as Locale, '/signin')}>
+            {t.common.signIn}
+          </ButtonLink>
           <LanguageSwitcher />
           <StravaAttribution className="text-center" />
         </PageBody>

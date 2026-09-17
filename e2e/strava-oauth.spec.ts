@@ -67,7 +67,7 @@ test.describe(() => {
     test.slow()
     await cleanUp(900001)
 
-    await page.goto(path('/profile'))
+    await page.goto(path('/signin'))
     await authorize(page, '900001')
 
     await expect(page.getByRole('status')).toHaveText('Connected to Strava.')
@@ -148,7 +148,7 @@ test.describe(() => {
   }) => {
     await cleanUp(900002)
 
-    await page.goto(path('/profile'))
+    await page.goto(path('/signin'))
     await authorize(page, '900002')
 
     await page.getByRole('button', { name: 'No thanks' }).click()
@@ -190,7 +190,7 @@ test.describe(() => {
   test('cancelling at Strava connects nothing', async ({ page }) => {
     await cleanUp(900001)
 
-    await page.goto(path('/profile'))
+    await page.goto(path('/signin'))
     await page.getByRole('link', { name: 'Connect with Strava' }).click()
     await page.waitForURL(/localhost:4400\/oauth\/authorize/)
     await page.getByRole('button', { name: 'Cancel' }).click()
@@ -199,7 +199,9 @@ test.describe(() => {
     await expect(
       page.getByText('You cancelled the Strava sign-in. Nothing was connected.'),
     ).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Connect with Strava' })).toBeVisible()
+    // Signed out, so the way back is the sign-in page the connect button now
+    // lives on, not a second connect button on a profile that is not theirs.
+    await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible()
   })
 
   test('a callback with the wrong state is refused', async ({ page }) => {
@@ -220,7 +222,7 @@ test.describe(() => {
     await cleanUp(900001)
 
     // First account takes the athlete.
-    await page.goto(path('/profile'))
+    await page.goto(path('/signin'))
     await authorize(page, '900001')
     await expect(page.getByRole('status')).toHaveText('Connected to Strava.')
 

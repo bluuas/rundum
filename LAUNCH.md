@@ -10,8 +10,8 @@ thing and is already live-able — see [README](README.md#publishing-a-demo).
 
 ## Where it stands
 
-About 15,000 lines across `src`, `supabase`, `scripts` and `e2e`. 60 unit
-tests, 50 Playwright tests, 23 smoke checks, CI on every pull request.
+About 15,000 lines across `src`, `supabase`, `scripts` and `e2e`. 90 unit
+tests, 61 Playwright tests, 26 smoke checks, CI on every pull request.
 
 Working end to end: discovery with URL-held filters, the create flow, activity
 details and comments, join requests with organizer approval, reporting and
@@ -45,13 +45,41 @@ makes the fix testable at all.
 
 Nothing below is optional for a public version.
 
-- [ ] **A second sign-in method.** Strava limits every new application to
-      "single-player mode" — only its owner can authenticate until ten athletes
-      have connected and it passes review. Ten athletes cannot connect if they
-      cannot sign in, so Strava cannot be the front door. It has to be an
-      optional _link-later_ on an account created some other way; email magic
-      link via Supabase is the cheapest path. This also means the Strava
-      subscription is not an urgent purchase. _8–12 h._
+- [x] **A second sign-in method.** An emailed sign-in link, at `/signin`.
+      Signing in and signing up are the same request, so the form cannot be
+      used to find out who has an account. Strava moved to where it belongs: a
+      link-later, offered on the same page and on the profile. This also means
+      the Strava subscription is not an urgent purchase.
+
+A new account is given a generated placeholder name and asked to pick a real
+one at `/welcome`. It must not be the local part of the address: publishing a
+fragment of somebody's private email as the name on every activity they
+organize is a disclosure nobody agreed to. A trigger maintains
+`display_name_chosen`, so no code path can claim a name was picked when it was
+not. The step is not a gate — "Decide later" leaves with the placeholder, since
+a wall in front of somebody who has just arrived is a strange place to spend
+the primary metric.
+
+Two things are still needed before strangers use it, neither of them code:
+
+- [ ] **A sender for the mail.** The local stack catches everything in Mailpit,
+      which is what makes this testable, and a real deployment has to actually
+      send. That means a domain, DNS records and an SMTP provider configured in
+      the Supabase dashboard — the built-in sender is rate limited and not for
+      production. This is the same setup the notification channel below needs.
+      _3–5 h._
+
+- [ ] **`NEXT_PUBLIC_SITE_URL`, and the redirect allow-list to match.** Left
+      unset the app uses the host the request arrived on, which is right for
+      localhost and preview builds and wrong for a deployment where the host
+      header is somebody else's input. Whatever it is set to must also be in
+      Authentication → URL Configuration, or Supabase refuses the redirect.
+      _15 min._
+
+Known limit: Supabase email templates are not per-locale, so the sign-in mail
+is in one language while the app is in two. German-default everywhere else and
+an English email is a seam a first-time visitor sees. Fixing it properly needs
+a send hook; renaming the template to German is the cheap version.
 
 - [ ] **Privacy policy, imprint, terms.** Switzerland's revised DSG applies,
       and GDPR too for any EU visitor. Rundum handles location-adjacent data
@@ -141,6 +169,12 @@ needs a domain, DNS records and a sender.
 | Split demo and production databases             | 2–3       |
 | Icons, manifest, sitemap, OG images, about page | 8–14      |
 | **Known work**                                  | **58–92** |
+
+Ticked off since: the timezone fix, rate limiting, security headers, error
+monitoring, the database split, account deletion, in-app notifications and the
+second sign-in method. What is left is **35–60 hours**, and most of it is not
+code: legal text, a mail sender, a tile account, a moderation inbox, data
+export, a channel that reaches a phone, and the icons-and-manifest batch.
 
 Add the usual buffer for what surfaces on contact with reality — the timezone
 bug on this page was found by checking one file, and it was not on anybody's

@@ -100,6 +100,21 @@ check('feed shows Strava-connected wording', feedHtml.includes('Strava-connected
 check('feed never says "verified"', !/\bverified\b/i.test(feedHtml))
 check('signed-out header', feedHtml.includes('Signed out'))
 
+// --- The way in -------------------------------------------------------------
+// Since Strava keeps a new application to its owner, this page is the front
+// door: a visitor who cannot reach it cannot reach anything.
+const signIn = await request(path('/signin'))
+const signInHtml = visibleHtml(await signIn.text())
+check(
+  'sign-in page renders',
+  signIn.status === 200 && signInHtml.includes('Email address'),
+  `status=${signIn.status}`,
+)
+check(
+  'sign-in offers Strava as well, in the prescribed wording',
+  signInHtml.includes('Connect with Strava'),
+)
+
 // --- Filters ----------------------------------------------------------------
 /** Counts rendered activity cards by their detail links. */
 function countCards(html: string): number {

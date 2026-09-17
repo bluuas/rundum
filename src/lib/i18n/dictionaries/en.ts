@@ -304,6 +304,31 @@ export const en = {
     },
   },
 
+  auth: {
+    signInTitle: 'Sign in',
+    signInIntro:
+      'Enter your email address and we will send you a link that signs you in. There is no password to choose or forget.',
+    emailLabel: 'Email address',
+    sendLink: 'Send me a link',
+    sending: 'Sending…',
+    sentTitle: 'Check your inbox',
+    sentBody:
+      'If you have an account or are about to, a link is on its way to {email}. It works for one hour, and only in this browser.',
+    sentSpam: 'Nothing after a minute? Have a look in your spam folder.',
+    differentAddress: 'Use a different address',
+    stravaHeading: 'Already on Strava?',
+    stravaBody: 'You can connect Strava to your account afterwards, from your profile.',
+    errorExpired: 'That link has expired. Ask for a new one below.',
+    errorDenied: 'That link is no longer valid. Ask for a new one below.',
+    errorMissing: 'That link was incomplete. Ask for a new one below.',
+    errorExchange:
+      'That link was opened in a different browser from the one that asked for it. Ask for a new link here, then open it in this browser.',
+    welcomeTitle: 'What should people call you?',
+    welcomeBody:
+      'This is the name on the activities you organize and the comments you write. Your email address is never shown to anyone.',
+    welcomeSkip: 'Decide later',
+  },
+
   profile: {
     title: 'Profile',
     editHeading: 'Your details',
@@ -315,7 +340,7 @@ export const en = {
     edit: 'Edit profile',
     notSignedInTitle: 'Not signed in',
     notSignedInBody:
-      'Strava sign-in is coming. Until then, use the account switcher in the header.',
+      'Sign in to organize activities, ask for a place at one, and join the conversation.',
     created: 'Created',
     joined: 'Joined',
     memberSince: 'Member since {date}',

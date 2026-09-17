@@ -25,6 +25,8 @@ test('no screen scrolls horizontally at 360px', async ({ page }) => {
     `/activities/${id}`,
     '/me',
     '/profile',
+    // Signed out, so this is the sign-in page rather than a redirect.
+    '/signin',
   ]) {
     await page.goto(path(route))
     await page.waitForLoadState('networkidle')

@@ -384,6 +384,7 @@ export type Database = {
           city_id: string | null
           created_at: string
           display_name: string
+          display_name_chosen: boolean
           id: string
           is_admin: boolean
           strava_athlete_id: number | null
@@ -397,6 +398,7 @@ export type Database = {
           city_id?: string | null
           created_at?: string
           display_name: string
+          display_name_chosen?: boolean
           id: string
           is_admin?: boolean
           strava_athlete_id?: number | null
@@ -410,6 +412,7 @@ export type Database = {
           city_id?: string | null
           created_at?: string
           display_name?: string
+          display_name_chosen?: boolean
           id?: string
           is_admin?: boolean
           strava_athlete_id?: number | null
@@ -695,6 +698,7 @@ export type Database = {
           visibility_radius_m: number
         }[]
       }
+      needs_display_name: { Args: never; Returns: boolean }
       notify: {
         Args: {
           p_activity_id: string

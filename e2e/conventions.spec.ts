@@ -78,13 +78,7 @@ test('the create form prefills today and confirms the choice in Swiss format', a
 test('Strava is referenced only in permitted, non-endorsing wording', async ({
   page,
 }) => {
-  await signInAsDemoUser(page, 'Anouk A.')
-
-  for (const route of PAGES) {
-    await page.goto(path(route))
-    await page.waitForLoadState('networkidle')
-    const text = await page.locator('body').innerText()
-
+  function checkWording(text: string, route: string) {
     // "Verified" would imply Rundum vouched for the person.
     expect(text, `${route} uses the word "verified"`).not.toMatch(/\bverified\b/i)
 
@@ -95,15 +89,43 @@ test('Strava is referenced only in permitted, non-endorsing wording', async ({
       /official Strava|\bStrava (?:app|application)\b/i,
     )
 
-    // Only two interoperability phrases are permitted. Any other "<verb> by
-    // Strava" construction is a claim Strava has not granted.
+    /*
+     * Only two interoperability phrases are permitted. Any other "<verb> by
+     * Strava" construction is a claim Strava has not granted.
+     *
+     * "Connect with Strava" is on the list for a different reason: it is not a
+     * claim about Rundum at all, it is the exact label the brand guidelines
+     * require on the sign-in button. Changing it would be the violation.
+     */
     const interop = text.match(/\b\w+ (?:by|with) Strava\b/gi) ?? []
     for (const phrase of interop) {
       expect(
-        ['Powered by Strava', 'Compatible with Strava', 'sponsored by Strava'],
+        [
+          'Powered by Strava',
+          'Compatible with Strava',
+          'sponsored by Strava',
+          'Connect with Strava',
+        ],
         `${route} uses unpermitted wording "${phrase}"`,
       ).toContain(phrase)
     }
+  }
+
+  /*
+   * Signed out first, because the sign-in page is where a stranger meets the
+   * Strava name for the first time — and it redirects to the profile once
+   * there is a session, so it cannot be checked from inside the loop below.
+   */
+  await page.goto(path('/signin'))
+  await page.waitForLoadState('networkidle')
+  checkWording(await page.locator('body').innerText(), '/signin')
+
+  await signInAsDemoUser(page, 'Anouk A.')
+
+  for (const route of PAGES) {
+    await page.goto(path(route))
+    await page.waitForLoadState('networkidle')
+    checkWording(await page.locator('body').innerText(), route)
   }
 
   await page.goto(path('/profile'))

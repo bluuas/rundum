@@ -201,7 +201,10 @@ password_requirements = ""
 
 [auth.rate_limit]
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
-email_sent = 2
+# Local only, and deliberately high: this stack sends to Mailpit on :54324, not
+# to anybody's inbox, and the Playwright suite asks for several links in a run.
+# The ceiling that matters is the one in the hosted project's dashboard.
+email_sent = 100
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
