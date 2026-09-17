@@ -286,6 +286,24 @@ export const en = {
     deletedOwner: 'Deleted account',
   },
 
+  notifications: {
+    title: 'Notifications',
+    signInTitle: 'Sign in to see your notifications',
+    signInBody: 'Requests to join, decisions and cancellations collect here.',
+    emptyTitle: 'Nothing new',
+    emptyBody: 'When somebody asks to join, replies or cancels, you will see it here.',
+    removedActivity: 'a removed activity',
+    open: 'Notifications',
+    unread: '{count} unread',
+    kinds: {
+      join_requested: '{name} asked to join {title}.',
+      join_approved: 'You are in: {title}.',
+      join_declined: 'Your request to join {title} was declined.',
+      activity_cancelled: '{title} was cancelled.',
+      comment_posted: '{name} commented on {title}.',
+    },
+  },
+
   profile: {
     title: 'Profile',
     editHeading: 'Your details',

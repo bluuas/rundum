@@ -4,6 +4,7 @@ import { revalidateLocalized } from '@/lib/revalidate'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { deauthorize, refreshAccessToken } from '@/lib/strava/client'
+import { reportError } from '@/lib/observability'
 
 /**
  * Disconnecting from Strava.
@@ -77,7 +78,7 @@ export async function disconnectStrava(): Promise<DisconnectResult> {
     .eq('id', user.id)
 
   if (error) {
-    console.error('disconnectStrava failed', error)
+    reportError('disconnectStrava', error)
     return { ok: false, error: 'Could not disconnect. Please try again.' }
   }
 

@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/server'
 import { athleteDisplayName, exchangeCodeForToken } from '@/lib/strava/client'
 import { getStravaConfig } from '@/lib/strava/config'
 import { LOCALE_COOKIE, STATE_COOKIE, statesMatch } from '@/lib/strava/oauth-state'
+import { reportError } from '@/lib/observability'
 
 /**
  * Where Strava sends the user back.
@@ -131,7 +132,7 @@ export async function GET(request: Request) {
     })
 
     if (error || !created.user) {
-      console.error('Strava sign-in: could not create user', error?.message)
+      reportError('strava.createUser', error)
       return failure(locale, 'server', request)
     }
 
@@ -149,7 +150,7 @@ export async function GET(request: Request) {
   })
 
   if (tokenError) {
-    console.error('Strava sign-in: could not store tokens', tokenError.message)
+    reportError('strava.storeTokens', tokenError)
     return failure(locale, 'server', request)
   }
 

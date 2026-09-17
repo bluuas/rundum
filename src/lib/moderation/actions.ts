@@ -5,6 +5,7 @@ import { revalidateLocalized } from '@/lib/revalidate'
 import { withinRateLimit } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { reportInputSchema } from '@/lib/validation/report'
+import { reportError } from '@/lib/observability'
 
 /**
  * Reporting and blocking.
@@ -33,7 +34,7 @@ export type ModerationResult = { ok: true } | { ok: false; code: ModerationError
 
 function toError(error: { code?: string } | null): ModerationErrorCode {
   const mapped = error?.code ? SQLSTATE_TO_CODE[error.code] : undefined
-  if (!mapped) console.error('unmapped moderation error', error)
+  if (!mapped) reportError('unmapped moderation error', error)
   return mapped ?? 'unknown'
 }
 

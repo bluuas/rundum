@@ -86,7 +86,13 @@ Nothing below is optional for a public version.
       MapTiler or Stadia free tiers cover this; both need an account and a key.
       _2–4 h._
 
-- [ ] **Error monitoring.** No Sentry equivalent. _2–3 h, and an account._
+- [x] **Error monitoring — decided: the deployment's own log search**, no
+      vendor. `reportError` emits one structured JSON line per failure with a
+      stable scope, so failures are searchable rather than merely printed.
+
+      **Known gap:** client-side errors reach no server log, so a JavaScript
+          failure in somebody's browser is invisible unless they tell you. If that
+          starts costing more than it saves, Sentry is the answer.
 
 - [x] **Security headers.** HSTS, nosniff, `Referrer-Policy`,
       `Permissions-Policy`, `frame-ancestors 'none'` and a nonce-based CSP,
@@ -94,11 +100,21 @@ Nothing below is optional for a public version.
 
 ## Needed soon after, not necessarily before
 
-- [ ] **Notifications.** Today somebody asks to join and the organizer finds
-      out only if they happen to open the app. For a planning product this is
-      close to fatal for retention, and it is the largest single item on this
-      page. Start with three emails: request received, request decided,
-      activity cancelled. _10–16 h._
+- [x] **In-app notifications.** A bell in the header with an unread count, and
+      a page listing what happened: somebody asked to join, the organizer
+      decided, an activity was cancelled, somebody commented. Written by
+      database triggers, so nothing has to remember to send them.
+
+- [ ] **A channel that actually reaches people.** In-app notifications make the
+      telling visible; they do not make it arrive. Somebody who does not open
+      Rundum still turns up to a run that was cancelled this morning.
+
+      Two ways to close that, neither needing an email provider:
+          **Web Push** — VAPID keys you generate yourself, no third party at all,
+          works on Android and on iOS only once the app is added to the home
+          screen, which is a real caveat here. Or **email**, which reaches
+          everybody but needs a domain, DNS records and a sender.
+          _8–14 h either way._
 
 - [ ] **A moderation inbox.** `submit_report` works and rows land in `reports`,
       where no human ever sees them. Either build somewhere to read them or

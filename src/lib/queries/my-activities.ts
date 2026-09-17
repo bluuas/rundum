@@ -4,6 +4,7 @@ import type {
   ActivityStatus,
   JoinRequestStatus,
 } from '@/lib/supabase/rows'
+import { reportError } from '@/lib/observability'
 
 export type MyActivity = {
   id: string
@@ -79,7 +80,7 @@ export async function getMyActivities(userId: string): Promise<MyActivities> {
   ])
 
   if (owned.error) {
-    console.error('getMyActivities: owned query failed', owned.error)
+    reportError('getMyActivities.owned', owned.error)
     return EMPTY
   }
 

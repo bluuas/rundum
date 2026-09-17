@@ -319,6 +319,64 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          activity_id: string | null
+          activity_title: string | null
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          id: number
+          kind: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_id?: string | null
+          activity_title?: string | null
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          id?: never
+          kind: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_id?: string | null
+          activity_title?: string | null
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          id?: never
+          kind?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_activity_id_fkey'
+            columns: ['activity_id']
+            isOneToOne: false
+            referencedRelation: 'activities'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'notifications_actor_id_fkey'
+            columns: ['actor_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'notifications_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -570,6 +628,7 @@ export type Database = {
         Args: { p_a: string; p_b: string }
         Returns: boolean
       }
+      mark_notifications_read: { Args: never; Returns: undefined }
       metrics_by_sport: {
         Args: never
         Returns: {
@@ -636,6 +695,15 @@ export type Database = {
           visibility_radius_m: number
         }[]
       }
+      notify: {
+        Args: {
+          p_activity_id: string
+          p_actor_id: string
+          p_kind: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       prepare_account_deletion: { Args: never; Returns: string[] }
       request_to_join: {
         Args: { p_activity_id: string; p_message?: string }
@@ -655,6 +723,7 @@ export type Database = {
         Returns: undefined
       }
       unblock_user: { Args: { p_blocked_id: string }; Returns: undefined }
+      unread_notification_count: { Args: never; Returns: number }
       withdraw_join_request: {
         Args: { p_activity_id: string }
         Returns: undefined

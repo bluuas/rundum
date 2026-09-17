@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/database.types'
+import { reportError } from '@/lib/observability'
 
 /**
  * How often one account may do a thing.
@@ -54,7 +55,7 @@ export async function withinRateLimit(
   })
 
   if (error) {
-    console.error('rate limit check failed', bucket, error)
+    reportError('rateLimit', error, { bucket })
     return true
   }
 

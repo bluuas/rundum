@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { DevAuthBar } from '@/components/dev/dev-auth-bar'
+import { NotificationBell } from '@/components/shell/notification-bell'
 import { isDemoModeEnabled } from '@/lib/auth/dev'
 import { getDictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
@@ -9,7 +10,7 @@ import { localeHref, type Locale } from '@/lib/i18n/config'
  * Sticky top bar. `title` replaces the wordmark on sub-pages so the user always
  * knows where they are without a breadcrumb.
  */
-export function AppHeader({
+export async function AppHeader({
   locale,
   title,
   action,
@@ -45,6 +46,7 @@ export function AppHeader({
         )}
 
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBell locale={locale} />
           {/* Renders nothing unless mock auth or demo mode is enabled. */}
           <DevAuthBar />
           {action}

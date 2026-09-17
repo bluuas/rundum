@@ -291,6 +291,24 @@ export const de: Dictionary = {
     deletedOwner: 'Gelöschtes Konto',
   },
 
+  notifications: {
+    title: 'Mitteilungen',
+    signInTitle: 'Melde dich an, um deine Mitteilungen zu sehen',
+    signInBody: 'Teilnahme-Anfragen, Entscheidungen und Absagen sammeln sich hier.',
+    emptyTitle: 'Nichts Neues',
+    emptyBody: 'Wenn jemand mitmachen will, antwortet oder absagt, siehst du es hier.',
+    removedActivity: 'eine entfernte Aktivität',
+    open: 'Mitteilungen',
+    unread: '{count} ungelesen',
+    kinds: {
+      join_requested: '{name} möchte bei {title} mitmachen.',
+      join_approved: 'Du bist dabei: {title}.',
+      join_declined: 'Deine Anfrage für {title} wurde abgelehnt.',
+      activity_cancelled: '{title} wurde abgesagt.',
+      comment_posted: '{name} hat {title} kommentiert.',
+    },
+  },
+
   profile: {
     title: 'Profil',
     editHeading: 'Deine Angaben',

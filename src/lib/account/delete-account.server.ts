@@ -4,6 +4,7 @@ import { revalidateLocalized } from '@/lib/revalidate'
 import { deauthorize, refreshAccessToken } from '@/lib/strava/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { reportError } from '@/lib/observability'
 
 /**
  * Deleting an account.
@@ -40,7 +41,7 @@ export async function getDeletionSummary(): Promise<DeletionSummary | null> {
   const { data, error } = await supabase.rpc('account_deletion_summary')
 
   if (error) {
-    console.error('account_deletion_summary failed', error)
+    reportError('account_deletion_summary', error)
     return null
   }
 
@@ -66,7 +67,7 @@ export async function deleteAccount(): Promise<DeleteAccountResult> {
     'prepare_account_deletion',
   )
   if (prepareError) {
-    console.error('prepare_account_deletion failed', prepareError)
+    reportError('prepare_account_deletion', prepareError)
     return { ok: false, error: 'Could not delete your account. Please try again.' }
   }
 
@@ -90,7 +91,7 @@ export async function deleteAccount(): Promise<DeleteAccountResult> {
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id)
   if (deleteError) {
-    console.error('deleteUser failed', deleteError)
+    reportError('deleteUser', deleteError)
     return { ok: false, error: 'Could not delete your account. Please try again.' }
   }
 

@@ -5,6 +5,7 @@ import { revalidateLocalized } from '@/lib/revalidate'
 import { createClient } from '@/lib/supabase/server'
 import { profileInputSchema } from '@/lib/validation/profile'
 import { withinRateLimit } from '@/lib/rate-limit'
+import { reportError } from '@/lib/observability'
 
 /**
  * Editing your own profile.
@@ -50,7 +51,7 @@ export async function updateProfile(input: unknown): Promise<ProfileResult> {
     .eq('id', user.id)
 
   if (error) {
-    console.error('updateProfile failed', error)
+    reportError('updateProfile', error)
     return { ok: false, error: 'Could not save your profile. Please try again.' }
   }
 

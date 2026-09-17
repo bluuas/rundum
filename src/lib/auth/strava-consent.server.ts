@@ -3,6 +3,7 @@
 import { revalidateLocalized } from '@/lib/revalidate'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { reportError } from '@/lib/observability'
 
 /**
  * Consent to publish Strava-sourced profile details.
@@ -119,7 +120,7 @@ export async function acceptStravaProfile(): Promise<ConsentResult> {
     .eq('id', user.id)
 
   if (error) {
-    console.error('acceptStravaProfile failed', error)
+    reportError('acceptStravaProfile', error)
     return { ok: false, error: 'Could not update your profile' }
   }
 
@@ -155,7 +156,7 @@ export async function declineStravaProfile(): Promise<ConsentResult> {
     .eq('id', user.id)
 
   if (error) {
-    console.error('declineStravaProfile failed', error)
+    reportError('declineStravaProfile', error)
     return { ok: false, error: 'Could not save your choice' }
   }
 

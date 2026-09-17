@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { NearbyActivity } from '@/lib/supabase/rows'
 import { DEFAULT_CITY_CENTER, DEFAULT_RADIUS_M, snapToGrid } from '@/lib/geo'
 import type { SportKey } from '@/lib/sports'
+import { reportError } from '@/lib/observability'
 
 export type FeedSort = 'soonest' | 'closest'
 
@@ -54,7 +55,7 @@ export async function getNearbyActivities(
   })
 
   if (error) {
-    console.error('nearby_activities failed', error)
+    reportError('nearby_activities', error)
     return { activities: [], error: error.message }
   }
 

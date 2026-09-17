@@ -17,8 +17,15 @@ export default function AppError({
   const { locale, t } = useI18n()
 
   useEffect(() => {
-    // Replace with the real reporter once analytics lands (phase 9).
-    console.error(error)
+    /*
+      The browser console, and nowhere else. Rundum has no error-tracking
+      vendor, and a server log cannot see a failure that happened here — so
+      client-side errors are only ever seen by the person they happened to,
+      or by whoever they tell. That gap is recorded in LAUNCH.md; `digest`
+      at least ties this to the server log entry when the cause was on the
+      server.
+    */
+    console.error(error.digest ?? '', error)
   }, [error])
 
   return (

@@ -9,6 +9,7 @@ import type { JoinRequestStatus } from '@/lib/supabase/rows'
 import { activityInputSchema } from '@/lib/validation/activity'
 import { commentInputSchema } from '@/lib/validation/comment'
 import { joinMessageSchema } from '@/lib/validation/join'
+import { reportError } from '@/lib/observability'
 
 export type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -101,7 +102,7 @@ export async function createActivity(
     .single()
 
   if (error || !activity) {
-    console.error('createActivity failed', error)
+    reportError('createActivity', error)
     return { ok: false, error: 'Could not save the activity. Please try again.' }
   }
 
@@ -192,7 +193,7 @@ export async function updateActivity(
     .maybeSingle()
 
   if (error) {
-    console.error('updateActivity failed', error)
+    reportError('updateActivity', error)
     return { ok: false, error: 'Could not save your changes. Please try again.' }
   }
 
@@ -240,7 +241,7 @@ export async function setActivityStatus(
     .maybeSingle()
 
   if (error) {
-    console.error('setActivityStatus failed', error)
+    reportError('setActivityStatus', error)
     return { ok: false, error: 'Could not update the activity' }
   }
 
@@ -282,7 +283,7 @@ export async function addComment(input: unknown): Promise<ActionResult> {
   })
 
   if (error) {
-    console.error('addComment failed', error)
+    reportError('addComment', error)
     return { ok: false, error: 'Could not post your comment. Please try again.' }
   }
 
@@ -309,7 +310,7 @@ export async function deleteComment(
   const { error } = await supabase.rpc('delete_comment', { p_comment_id: commentId })
 
   if (error) {
-    console.error('deleteComment failed', error)
+    reportError('deleteComment', error)
     return { ok: false, error: 'Could not delete the comment' }
   }
 
@@ -364,7 +365,7 @@ export type JoinResult =
 
 function toJoinError(error: { code?: string } | null): JoinErrorCode {
   const mapped = error?.code ? SQLSTATE_TO_CODE[error.code] : undefined
-  if (!mapped) console.error('unmapped join error', error)
+  if (!mapped) reportError('unmapped join error', error)
   return mapped ?? 'unknown'
 }
 

@@ -175,6 +175,35 @@ activities other people had joined and were going to turn up to.
   will be cancelled" — rather than in warnings. The numbers come from
   `account_deletion_summary`.
 
+## Telling people things
+
+Notifications are **in-app only**, written by database triggers rather than by
+the Server Actions — the same argument as the metric: an action that forgets is
+a bug nobody sees, and the database already knows the moment happened.
+
+- `public.notify` applies the blocking rule once, centrally. Notifying somebody
+  about a person they blocked hands them exactly what blocking removes.
+- `kind` is a stable key, never translated text. The reader's language is
+  decided when it is rendered.
+- `activity_title` and `actor_name` are denormalised on purpose, so a
+  notification still reads correctly after the activity or the account is gone.
+- Opening the page marks everything read. There is no "mark all as read"
+  button, because there is nothing to action twice.
+
+**The limit, stated plainly:** this reaches nobody who is not already opening
+Rundum. It makes the telling visible; it does not make it arrive. A
+cancellation two hours before a run still needs a channel that reaches a phone.
+See LAUNCH.md.
+
+## Errors
+
+There is no error-tracking vendor: the deployment's own log search is the tool,
+so `reportError` in `src/lib/observability.ts` emits one JSON line per failure
+with a stable `scope`. Never `console.error(error)` on the server — a stack
+with nothing to filter on is not searchable. Client-side errors reach no log at
+all under this arrangement; that is the known cost, recorded in LAUNCH.md, and
+not something to paper over with a home-made reporting endpoint.
+
 ## Limits and headers
 
 - **The primary metric is written by a trigger, not by code.** An `after

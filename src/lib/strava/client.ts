@@ -4,6 +4,7 @@ import {
   STRAVA_TOKEN_URL,
   getStravaConfig,
 } from '@/lib/strava/config'
+import { reportError } from '@/lib/observability'
 
 /**
  * The only three calls Rundum ever makes to Strava.
@@ -61,7 +62,9 @@ export async function exchangeCodeForToken(
   if (!response.ok) {
     // The body can contain the code and other sensitive material, so log the
     // status only.
-    console.error('Strava token exchange failed', response.status)
+    reportError('strava.exchange', new Error('Token exchange failed'), {
+      status: response.status,
+    })
     return null
   }
 
@@ -82,7 +85,9 @@ export async function refreshAccessToken(
   })
 
   if (!response.ok) {
-    console.error('Strava token refresh failed', response.status)
+    reportError('strava.refresh', new Error('Token refresh failed'), {
+      status: response.status,
+    })
     return null
   }
 
@@ -103,7 +108,9 @@ export async function deauthorize(accessToken: string): Promise<boolean> {
   })
 
   if (!response.ok) {
-    console.error('Strava deauthorize failed', response.status)
+    reportError('strava.deauthorize', new Error('Deauthorize failed'), {
+      status: response.status,
+    })
     return false
   }
 
