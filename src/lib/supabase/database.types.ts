@@ -40,7 +40,7 @@ export type Database = {
           location_label: string
           max_participants: number | null
           meeting_point: unknown
-          owner_id: string
+          owner_id: string | null
           pace_seconds_per_km: number | null
           sport_key: string
           starts_at: string
@@ -59,7 +59,7 @@ export type Database = {
           location_label: string
           max_participants?: number | null
           meeting_point: unknown
-          owner_id: string
+          owner_id?: string | null
           pace_seconds_per_km?: number | null
           sport_key: string
           starts_at: string
@@ -78,7 +78,7 @@ export type Database = {
           location_label?: string
           max_participants?: number | null
           meeting_point?: unknown
-          owner_id?: string
+          owner_id?: string | null
           pace_seconds_per_km?: number | null
           sport_key?: string
           starts_at?: string
@@ -225,7 +225,7 @@ export type Database = {
       comments: {
         Row: {
           activity_id: string
-          author_id: string
+          author_id: string | null
           body: string
           created_at: string
           deleted_at: string | null
@@ -234,7 +234,7 @@ export type Database = {
         }
         Insert: {
           activity_id: string
-          author_id: string
+          author_id?: string | null
           body: string
           created_at?: string
           deleted_at?: string | null
@@ -243,7 +243,7 @@ export type Database = {
         }
         Update: {
           activity_id?: string
-          author_id?: string
+          author_id?: string | null
           body?: string
           created_at?: string
           deleted_at?: string | null
@@ -396,7 +396,7 @@ export type Database = {
           details: string | null
           id: string
           reason: string
-          reporter_id: string
+          reporter_id: string | null
           status: Database['public']['Enums']['report_status']
           target_id: string
           target_type: Database['public']['Enums']['report_target']
@@ -406,7 +406,7 @@ export type Database = {
           details?: string | null
           id?: string
           reason: string
-          reporter_id: string
+          reporter_id?: string | null
           status?: Database['public']['Enums']['report_status']
           target_id: string
           target_type: Database['public']['Enums']['report_target']
@@ -416,7 +416,7 @@ export type Database = {
           details?: string | null
           id?: string
           reason?: string
-          reporter_id?: string
+          reporter_id?: string | null
           status?: Database['public']['Enums']['report_status']
           target_id?: string
           target_type?: Database['public']['Enums']['report_target']
@@ -511,6 +511,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_deletion_summary: {
+        Args: never
+        Returns: {
+          affected_participants: number
+          comments_written: number
+          upcoming_activities: number
+        }[]
+      }
       activity_comment_count: {
         Args: { p_activity_id: string }
         Returns: number
@@ -628,6 +636,7 @@ export type Database = {
           visibility_radius_m: number
         }[]
       }
+      prepare_account_deletion: { Args: never; Returns: string[] }
       request_to_join: {
         Args: { p_activity_id: string; p_message?: string }
         Returns: Database['public']['Enums']['join_request_status']

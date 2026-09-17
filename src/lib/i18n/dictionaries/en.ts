@@ -267,6 +267,25 @@ export const en = {
     past: 'Past',
   },
 
+  account: {
+    deleteCta: 'Delete my account',
+    deleteHeading: 'Delete your account?',
+    deleteBody:
+      'Your profile, your comments and your place at any activity go for good. Activities you organized in the past stay, without your name on them. This cannot be undone.',
+    nothingToCancel:
+      'Nothing you organize is affected — you have no upcoming activities.',
+    willCancelOne: '{count} upcoming activity will be cancelled.',
+    willCancelOther: '{count} upcoming activities will be cancelled.',
+    willAffectOne: '{count} person who joined them will see the cancellation.',
+    willAffectOther: '{count} people who joined them will see the cancellation.',
+    willRemoveCommentOne: '{count} comment you wrote will be removed.',
+    willRemoveCommentOther: '{count} comments you wrote will be removed.',
+    keepAccount: 'Keep my account',
+    deleteConfirm: 'Yes, delete it',
+    deleting: 'Deleting…',
+    deletedOwner: 'Deleted account',
+  },
+
   profile: {
     title: 'Profile',
     editHeading: 'Your details',

@@ -1,5 +1,6 @@
 import { StravaConnectedBadge } from '@/components/activity/badges'
 import { LanguageSwitcher } from '@/components/profile/language-switcher'
+import { DeleteAccount } from '@/components/profile/delete-account'
 import { ProfileEditor } from '@/components/profile/profile-editor'
 import {
   StravaConnection,
@@ -20,6 +21,7 @@ import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getBlockedAccounts, getProfileSummary } from '@/lib/queries/my-activities'
 import { isStravaConfigured } from '@/lib/strava/config'
 import { getCurrentUserId } from '@/lib/supabase/server'
+import { getDeletionSummary } from '@/lib/account/delete-account.server'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/profile'>) {
   const { locale } = await params
@@ -146,6 +148,8 @@ export default async function ProfilePage({
           </ButtonLink>
           <SignOutButton />
         </div>
+
+        <DeleteAccount summary={await getDeletionSummary()} />
 
         <StravaAttribution />
       </PageBody>

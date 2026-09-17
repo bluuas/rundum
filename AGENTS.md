@@ -156,6 +156,25 @@ and an account created through Strava is unreachable through it.
 A demo deployment must stay obviously a demo: the shared-accounts banner in
 `AppHeader`, `robots.txt` disallowing everything, and `noindex`.
 
+## Leaving
+
+Deleting an account erases the person, not other people's records. GDPR Art. 17
+asks for the first; a cascade did the second, silently removing upcoming
+activities other people had joined and were going to turn up to.
+
+- `activities.owner_id`, `comments.author_id` and `reports.reporter_id` are
+  **nullable and `on delete set null`**. Any query touching them must handle
+  null, and the UI renders it as `t.account.deletedOwner` — never a hard-coded
+  "Unknown", because only the UI has a dictionary.
+- Upcoming activities are **cancelled**, not deleted, so the cancellation
+  reaches the people who joined. `prepare_account_deletion` returns their ids
+  precisely so those pages can be revalidated.
+- Comments become tombstones: the words go, the shape of the conversation
+  other people had does not.
+- The confirmation screen states the cost in numbers — "1 upcoming activity
+  will be cancelled" — rather than in warnings. The numbers come from
+  `account_deletion_summary`.
+
 ## Limits and headers
 
 - **The primary metric is written by a trigger, not by code.** An `after

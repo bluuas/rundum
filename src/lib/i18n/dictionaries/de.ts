@@ -272,6 +272,25 @@ export const de: Dictionary = {
     past: 'Vergangen',
   },
 
+  account: {
+    deleteCta: 'Konto löschen',
+    deleteHeading: 'Konto wirklich löschen?',
+    deleteBody:
+      'Dein Profil, deine Kommentare und deine Plätze bei Aktivitäten sind endgültig weg. Aktivitäten, die du früher organisiert hast, bleiben bestehen – ohne deinen Namen. Das lässt sich nicht rückgängig machen.',
+    nothingToCancel:
+      'Es ist nichts betroffen – du organisierst keine kommenden Aktivitäten.',
+    willCancelOne: '{count} kommende Aktivität wird abgesagt.',
+    willCancelOther: '{count} kommende Aktivitäten werden abgesagt.',
+    willAffectOne: '{count} Person, die dabei war, sieht die Absage.',
+    willAffectOther: '{count} Personen, die dabei waren, sehen die Absage.',
+    willRemoveCommentOne: '{count} Kommentar von dir wird entfernt.',
+    willRemoveCommentOther: '{count} Kommentare von dir werden entfernt.',
+    keepAccount: 'Konto behalten',
+    deleteConfirm: 'Ja, löschen',
+    deleting: 'Wird gelöscht…',
+    deletedOwner: 'Gelöschtes Konto',
+  },
+
   profile: {
     title: 'Profil',
     editHeading: 'Deine Angaben',

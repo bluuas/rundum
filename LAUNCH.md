@@ -60,11 +60,14 @@ Nothing below is optional for a public version.
       sport, with no age boundary stated anywhere today. _6–10 h, plus review
       by someone qualified._
 
-- [ ] **Account deletion and data export.** GDPR Art. 17 and 20, and the DSG
-      equivalent. There is no delete-account path at all today. Answer the
-      design question first: `activities.owner_id` cascades from `profiles`, so
-      one person leaving currently deletes plans other people had joined.
-      _5–8 h._
+- [x] **Account deletion.** Deleting detaches rather than destroys: upcoming
+      activities are cancelled so the people who joined see what happened, past
+      ones stay without a name on them, comments become tombstones, and the
+      confirmation states the cost in numbers first.
+
+- [ ] **Data export.** GDPR Art. 20. Not built. Less urgent than erasure —
+      there is little to export beyond a profile and a list of activities —
+      but it is the other half of the same right. _3–5 h._
 
 - [x] **Rate limiting.** Every mutating Server Action now goes through
       `withinRateLimit`: a fixed window in Postgres keyed on `auth.uid()`
@@ -152,7 +155,7 @@ Ordered by what would actually bite.
    anonymous traffic generally is unmetered. That belongs at the edge — Vercel
    WAF or similar — rather than in the database.
 
-4. **No account deletion.** A legal exposure as much as a missing feature.
+4. ~~**No account deletion.**~~ Built. Data _export_ is still missing.
 
 5. ~~**No security headers or CSP.**~~ Fixed, in `proxy.ts`.
 

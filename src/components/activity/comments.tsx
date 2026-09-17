@@ -20,7 +20,8 @@ export function Comments({
   activityId: string
   comments: CommentWithAuthor[]
   currentUserId: string | null
-  activityOwnerId: string
+  /** Null once the organizer has deleted their account: nobody moderates then. */
+  activityOwnerId: string | null
 }) {
   const router = useRouter()
   const { locale, t } = useI18n()
@@ -97,6 +98,7 @@ export function Comments({
             const canDelete =
               !isOptimistic &&
               currentUserId !== null &&
+              currentUserId !== null &&
               (comment.authorId === currentUserId || currentUserId === activityOwnerId)
 
             return (
@@ -108,7 +110,7 @@ export function Comments({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-fg text-sm font-medium">
-                      {comment.authorName}
+                      {comment.authorName ?? t.account.deletedOwner}
                       {comment.authorId === activityOwnerId ? (
                         <span className="text-brand ml-1.5 text-[11px] font-semibold">
                           {t.activity.organizer}

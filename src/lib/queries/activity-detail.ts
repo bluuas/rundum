@@ -8,7 +8,6 @@ import type {
 
 export type ActivityDetail = {
   id: string
-  ownerId: string
   sportKey: string
   title: string
   description: string | null
@@ -24,8 +23,11 @@ export type ActivityDetail = {
   maxParticipants: number | null
   status: ActivityStatus
   participantCount: number
+  /** Null once the organizer has deleted their account. */
+  ownerId: string | null
   owner: {
-    displayName: string
+    /** Null once the organizer has deleted their account. */
+    displayName: string | null
     avatarUrl: string | null
     stravaConnected: boolean
     bio: string | null
@@ -36,8 +38,8 @@ export type CommentWithAuthor = {
   id: string
   body: string
   createdAt: string
-  authorId: string
-  authorName: string
+  authorId: string | null
+  authorName: string | null
   authorStravaConnected: boolean
 }
 
@@ -79,12 +81,15 @@ export async function getActivityDetail(id: string): Promise<ActivityDetail | nu
   })
 
   const point = (coords ?? [])[0] as { lat: number; lng: number } | undefined
+  // Null when the organizer deleted their account: the activity outlives them,
+  // detached rather than removed, so the people who joined can still see what
+  // it was. The UI renders the missing name as "Deleted account".
   const owner = data.profiles as unknown as {
     display_name: string
     avatar_url: string | null
     strava_connected: boolean
     bio: string | null
-  }
+  } | null
 
   const { data: participantCount } = await supabase.rpc('activity_participant_count', {
     p_activity_id: id,
@@ -108,10 +113,10 @@ export async function getActivityDetail(id: string): Promise<ActivityDetail | nu
     status: data.status,
     participantCount: participantCount ?? 0,
     owner: {
-      displayName: owner.display_name,
-      avatarUrl: owner.avatar_url,
-      stravaConnected: owner.strava_connected,
-      bio: owner.bio,
+      displayName: owner?.display_name ?? null,
+      avatarUrl: owner?.avatar_url ?? null,
+      stravaConnected: owner?.strava_connected ?? false,
+      bio: owner?.bio ?? null,
     },
   }
 }
@@ -135,13 +140,15 @@ export async function getComments(activityId: string): Promise<CommentWithAuthor
     const author = row.profiles as unknown as {
       display_name: string
       strava_connected: boolean
-    }
+    } | null
     return {
       id: row.id,
       body: row.body,
       createdAt: row.created_at,
       authorId: row.author_id,
-      authorName: author?.display_name ?? 'Unknown',
+      // Null rather than a placeholder string: only the UI has a dictionary,
+      // and "Deleted account" has to arrive in the reader's language.
+      authorName: author?.display_name ?? null,
       authorStravaConnected: author?.strava_connected ?? false,
     }
   })

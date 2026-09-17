@@ -9,6 +9,18 @@ loadEnv()
 // environment happens to be set.
 assertLocal(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '', 'The Playwright suite')
 
+/**
+ * Service-role client, for the few tests that need to set up or inspect state
+ * no user could reach — creating a throwaway account, or checking what
+ * survived deleting one. `assertLocal` above is what makes this safe to have
+ * in a test helper at all.
+ */
+export const admin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } },
+)
+
 export const anon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

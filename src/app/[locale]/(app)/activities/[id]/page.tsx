@@ -55,7 +55,10 @@ export default async function ActivityDetailPage({
 
   const archived = isArchived(activity.startsAt)
   const full = isFull(activity.participantCount, activity.maxParticipants)
-  const isOwner = userId === activity.ownerId
+  // Both null would otherwise make a signed-out visitor the owner of an
+  // activity whose organizer has left.
+  const isOwner = userId !== null && userId === activity.ownerId
+  const ownerName = activity.owner.displayName ?? t.account.deletedOwner
 
   // The roster RPC and the join-request read both return nothing for a signed
   // out viewer, so they are safe to run unconditionally — but skipping them
@@ -159,12 +162,10 @@ export default async function ActivityDetailPage({
               aria-hidden
               className="bg-brand-soft text-brand-soft-fg flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold"
             >
-              {activity.owner.displayName.charAt(0)}
+              {ownerName.charAt(0)}
             </span>
             <div className="min-w-0">
-              <p className="text-fg truncate text-sm font-medium">
-                {activity.owner.displayName}
-              </p>
+              <p className="text-fg truncate text-sm font-medium">{ownerName}</p>
               {activity.owner.stravaConnected ? <StravaConnectedBadge /> : null}
               {activity.owner.bio ? (
                 <p className="text-fg-muted mt-1 text-xs">{activity.owner.bio}</p>
@@ -239,17 +240,20 @@ export default async function ActivityDetailPage({
                 targetId={activity.id}
                 label={t.moderation.reportActivity}
               />
-              <ReportPanel
-                targetType="user"
-                targetId={activity.ownerId}
-                label={fill(t.moderation.reportUser, {
-                  name: activity.owner.displayName,
-                })}
-              />
-              <BlockButton
-                userId={activity.ownerId}
-                displayName={activity.owner.displayName}
-              />
+              {/*
+                Nothing to report or block once the organizer has deleted
+                their account: there is no longer a person on the other end.
+              */}
+              {activity.ownerId ? (
+                <>
+                  <ReportPanel
+                    targetType="user"
+                    targetId={activity.ownerId}
+                    label={fill(t.moderation.reportUser, { name: ownerName })}
+                  />
+                  <BlockButton userId={activity.ownerId} displayName={ownerName} />
+                </>
+              ) : null}
             </div>
           </section>
         ) : null}
