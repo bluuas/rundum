@@ -90,9 +90,9 @@ Nothing below is optional for a public version.
       vendor. `reportError` emits one structured JSON line per failure with a
       stable scope, so failures are searchable rather than merely printed.
 
-      **Known gap:** client-side errors reach no server log, so a JavaScript
-              failure in somebody's browser is invisible unless they tell you. If that
-              starts costing more than it saves, Sentry is the answer.
+Known gap: client-side errors reach no server log, so a JavaScript failure in
+somebody's browser is invisible unless they tell you. If that starts costing
+more than it saves, Sentry is the answer.
 
 - [x] **Security headers.** HSTS, nosniff, `Referrer-Policy`,
       `Permissions-Policy`, `frame-ancestors 'none'` and a nonce-based CSP,
@@ -105,16 +105,17 @@ Nothing below is optional for a public version.
       decided, an activity was cancelled, somebody commented. Written by
       database triggers, so nothing has to remember to send them.
 
-- [ ] **A channel that actually reaches people.** In-app notifications make the
-      telling visible; they do not make it arrive. Somebody who does not open
-      Rundum still turns up to a run that was cancelled this morning.
+- [ ] **A channel that actually reaches people.** _8–14 h._
 
-      Two ways to close that, neither needing an email provider:
-              **Web Push** — VAPID keys you generate yourself, no third party at all,
-              works on Android and on iOS only once the app is added to the home
-              screen, which is a real caveat here. Or **email**, which reaches
-              everybody but needs a domain, DNS records and a sender.
-              _8–14 h either way._
+In-app notifications make the telling visible; they do not make it arrive.
+Somebody who does not open Rundum still turns up to a run that was cancelled
+this morning.
+
+Two ways to close that, neither needing an email provider. **Web Push** uses
+VAPID keys you generate yourself — no third party at all — and works on Android,
+but on iOS only once the app has been added to the home screen, which is a real
+caveat for a mobile-first app in Switzerland. **Email** reaches everybody, and
+needs a domain, DNS records and a sender.
 
 - [ ] **A moderation inbox.** `submit_report` works and rows land in `reports`,
       where no human ever sees them. Either build somewhere to read them or
