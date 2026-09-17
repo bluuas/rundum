@@ -156,6 +156,22 @@ and an account created through Strava is unreachable through it.
 A demo deployment must stay obviously a demo: the shared-accounts banner in
 `AppHeader`, `robots.txt` disallowing everything, and `noindex`.
 
+**Code and schema do not deploy together.** Pushing to `main` redeploys the
+demo; it does not migrate the demo's database. Every feature that adds a table
+therefore ships broken there until `npm run db:push:remote` runs, and it fails
+the quiet way: the query errors, `reportError` logs it, and the page renders
+its empty state. In-app notifications shipped exactly like this — an organizer
+with two requests sitting in the panel and an empty notification list, which
+looks like a bug in the trigger and is not. `npx supabase migration list
+--linked` is the check, and it is part of deploying, not of debugging.
+
+A migration that adds a table people were already generating rows for needs a
+backfill, because triggers only fire on what happens next. Keep it narrow and
+idempotent: only what is still waiting on somebody, with the original
+timestamps, guarded by `not exists` so it is a no-op everywhere the triggers
+already did the work. See
+`20260917110000_backfill_pending_join_notifications.sql`.
+
 ## Leaving
 
 Deleting an account erases the person, not other people's records. GDPR Art. 17
