@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { Button, ButtonLink } from '@/components/ui/button'
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/lib/utils'
 
 /**
@@ -50,7 +51,7 @@ export function ActivityListSkeleton({
 }
 
 export function EmptyState({
-  icon = '🧭',
+  icon = <Icon name="compass" />,
   title,
   description,
   action,
@@ -94,8 +95,8 @@ export function ErrorState({
       role="alert"
       className="rounded-card border-border bg-danger-soft border px-6 py-10 text-center"
     >
-      <div className="text-3xl" aria-hidden>
-        ⚠️
+      <div className="text-danger text-3xl" aria-hidden>
+        <Icon name="warning" />
       </div>
       <h2 className="text-fg mt-3 text-base font-semibold">{title}</h2>
       <p className="text-fg-muted mx-auto mt-2 max-w-xs text-sm">{description}</p>

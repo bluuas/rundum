@@ -8,6 +8,7 @@ import { SPORTS, type SportKey } from '@/lib/sports'
 import type { FeedFilters } from '@/lib/queries/activities'
 import { cn } from '@/lib/utils'
 import { fill } from '@/lib/i18n'
+import { Icon } from '@/components/ui/icon'
 import { useI18n } from '@/lib/i18n/provider'
 
 type Filters = FeedFilters & { range: DateRange }
@@ -107,7 +108,7 @@ export function FilterBar({ filters }: { filters: Filters }) {
                       onChange={() => toggleSport(sport.key)}
                       className="accent-brand h-4 w-4 shrink-0"
                     />
-                    <span aria-hidden>{sport.icon}</span>
+                    <Icon name={sport.icon} className="text-fg-muted text-base" />
                     <span className="text-fg text-sm">{t.sports[sport.key]}</span>
                   </label>
                 </li>

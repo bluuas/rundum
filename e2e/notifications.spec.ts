@@ -81,10 +81,13 @@ test('the badge counts what is unread, and opening the page clears it', async ({
   await page.waitForURL(/\/notifications$/)
   await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible()
 
-  // Read on open: coming back, the badge is gone.
+  // Read on open: coming back, the badge is gone. Asserted as "carries no
+  // number" rather than by matching the glyph, which is how this test broke
+  // when the bell stopped being an emoji and became a drawn icon.
   await page.goto(path('/'))
   await expect(bell).toBeVisible()
-  await expect(bell).toHaveText(/^\s*🔔\s*$/)
+  await expect(bell.locator('svg')).toHaveCount(1)
+  await expect(bell).not.toHaveText(/\d/)
 })
 
 test('a signed-out visitor gets no bell', async ({ page }) => {

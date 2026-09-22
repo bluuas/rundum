@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getDictionary } from '@/lib/i18n'
 import { DEFAULT_LOCALE, localeHref } from '@/lib/i18n/config'
 import './globals.css'
+import { Icon } from '@/components/ui/icon'
 
 /**
  * Root 404, for URLs that match no route at all — including an unsupported
@@ -18,7 +19,7 @@ export default function RootNotFound() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col items-center justify-center px-6 text-center">
       <div className="text-4xl" aria-hidden>
-        🗺️
+        <Icon name="map-trifold" />
       </div>
       <h1 className="text-fg mt-4 text-xl font-bold tracking-tight">
         {t.states.notFoundTitle}

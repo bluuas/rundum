@@ -6,6 +6,7 @@ import { getDictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getMyActivities, type MyActivity } from '@/lib/queries/my-activities'
 import { getCurrentUserId } from '@/lib/supabase/server'
+import { Icon } from '@/components/ui/icon'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/me'>) {
   const { locale } = await params
@@ -23,7 +24,7 @@ export default async function MyActivitiesPage({ params }: PageProps<'/[locale]/
         <AppHeader locale={locale as Locale} title={t.mine.title} />
         <PageBody>
           <EmptyState
-            icon="👤"
+            icon={<Icon name="user-circle" />}
             title={t.mine.signInTitle}
             description={t.mine.signInBody}
           />
@@ -50,7 +51,7 @@ export default async function MyActivitiesPage({ params }: PageProps<'/[locale]/
       <PageBody className="space-y-2">
         {!hasAnything ? (
           <EmptyState
-            icon="📋"
+            icon={<Icon name="list-checks" />}
             title={t.mine.emptyTitle}
             description={t.mine.emptyBody}
             action={{

@@ -22,6 +22,7 @@ import { getBlockedAccounts, getProfileSummary } from '@/lib/queries/my-activiti
 import { isStravaConfigured } from '@/lib/strava/config'
 import { getCurrentUserId } from '@/lib/supabase/server'
 import { getDeletionSummary } from '@/lib/account/delete-account.server'
+import { Icon } from '@/components/ui/icon'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/profile'>) {
   const { locale } = await params
@@ -57,7 +58,7 @@ export default async function ProfilePage({
         <PageBody className="space-y-6">
           {stravaStatus ? <StravaStatusNotice status={stravaStatus} /> : null}
           <EmptyState
-            icon="👤"
+            icon={<Icon name="user-circle" />}
             title={t.profile.notSignedInTitle}
             description={t.profile.notSignedInBody}
           />

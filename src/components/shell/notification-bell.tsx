@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Icon } from '@/components/ui/icon'
 import { getDictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getUnreadNotificationCount } from '@/lib/queries/notifications'
@@ -24,9 +25,7 @@ export async function NotificationBell({ locale }: { locale: Locale }) {
       aria-label={t.notifications.open}
       className="text-fg-muted hover:bg-surface-muted relative flex h-11 w-11 items-center justify-center rounded-full"
     >
-      <span aria-hidden className="text-lg">
-        🔔
-      </span>
+      <Icon name="bell" className="text-xl" />
       {unread > 0 ? (
         <span className="bg-brand text-brand-fg absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold">
           {unread > 9 ? '9+' : unread}

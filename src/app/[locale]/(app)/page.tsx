@@ -12,6 +12,7 @@ import { fill, getDictionary, plural, type Dictionary } from '@/lib/i18n'
 import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getNearbyActivities } from '@/lib/queries/activities'
 import { getCurrentUserId } from '@/lib/supabase/server'
+import { Icon } from '@/components/ui/icon'
 
 /** Launch city. Comes from the `cities` table once more than one exists. */
 const CITY = 'Schwyz'
@@ -77,7 +78,7 @@ async function FeedResults({
 
     return (
       <EmptyState
-        icon="🏔️"
+        icon={<Icon name="mountains" />}
         title={
           sportKey
             ? fill(t.feed.emptySportTitle, { sport: t.sports[sportKey], city: CITY })

@@ -19,6 +19,34 @@ test('robots.txt is served from the root, not redirected into a locale', async (
   expect(await response.text()).toContain('User-Agent')
 })
 
+test('sports are drawn, not spelled with emoji', async ({ page }) => {
+  /*
+   * An emoji is drawn by the reader's operating system, so the weight-training
+   * figure was a different person on an iPhone, an Android and a Windows
+   * laptop — and arrived in colour on a screen that is otherwise paper and one
+   * maroon accent. These are the marks that used to be there.
+   */
+  const RETIRED = [
+    '\u{1F3C3}',
+    '\u{1F6B4}',
+    '\u{1F3CB}',
+    '\u{1F9D8}',
+    '\u{1F3BE}',
+    '\u{1F9ED}',
+  ]
+
+  await page.goto(path('/?radius=50000'))
+  await page.waitForLoadState('networkidle')
+
+  const badge = page.locator('main').getByText('Running').first()
+  await expect(badge.locator('svg')).toHaveCount(1)
+
+  const body = await page.locator('body').innerText()
+  for (const emoji of RETIRED) {
+    expect(body, `an emoji is still rendered: ${emoji}`).not.toContain(emoji)
+  }
+})
+
 test('no page ever renders AM/PM or a month-first date', async ({ page }) => {
   await signInAsDemoUser(page, 'Clara C.')
 

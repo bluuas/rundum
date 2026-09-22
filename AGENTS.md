@@ -400,9 +400,24 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
   across the October clock change. `startsAt` in `seed-demo.ts` uses
   `instantAt`, pushes anything non-negative that has already passed to the next
   day, and slides `onWeekday` titles onto the day they name.
-- **Sport badges are neutral.** One grey pill for every sport; the emoji and the
+- **Sport badges are neutral.** One grey pill for every sport; the icon and the
   name carry it. Ten hues were the loudest thing on a monochrome screen and read
   as decoration rather than information.
+- **Icons are drawn, not typed.** No emoji in the UI. An emoji is rendered by
+  the reader's operating system, so the weight-training figure was a different
+  person on an iPhone, an Android and a Windows laptop, and it arrived in
+  colour on a screen that is otherwise paper and one maroon accent. Twenty
+  Phosphor glyphs are inlined as path data in `src/lib/icons.ts` and rendered
+  by `<Icon name="…" />`, which takes `currentColor` so dark mode and the
+  accent follow without a second asset. `icons.ts` is data only, so `sports.ts`
+  can name an icon without dragging a component into the module the validation
+  schemas import. Copied rather than installed, which is why the MIT notice
+  sits in that file and in `THIRD-PARTY-NOTICES.md` — an npm package carries
+  its own licence, a copied file does not.
+  Every sport gets its own glyph: Lucide was the other candidate and has no
+  running figure and no racquet sport, so running and walking would both have
+  been footprints and tennis and padel both a dot. `icons.test.ts` holds that
+  line.
 - **A gesture is never the only way to do something.** Swiping a feed row to
   the right requests a place, but the detail page keeps the button, which is
   what keyboard and screen-reader users get. So the revealed panel is

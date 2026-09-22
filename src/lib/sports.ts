@@ -9,6 +9,8 @@
  * session has no pace, a padel match has no distance.
  */
 
+import type { IconName } from '@/lib/icons'
+
 export const SPORT_KEYS = [
   'run',
   'ride',
@@ -42,8 +44,8 @@ export type PaceUnit = 'min_per_km' | 'km_per_h' | 'min_per_100m'
 export type Sport = {
   key: SportKey
   label: string
-  /** Emoji stands in for an icon set; swap for SVGs without touching callers. */
-  icon: string
+  /** Names an entry in `ICON_PATHS`; render it with `<Icon name={...} />`. */
+  icon: IconName
   supportsDistance: boolean
   supportsPace: boolean
   /** Only meaningful when `supportsPace`. */
@@ -67,7 +69,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'run',
     label: 'Running',
-    icon: '🏃',
+    icon: 'person-simple-run',
     supportsDistance: true,
     supportsPace: true,
     paceUnit: 'min_per_km',
@@ -76,7 +78,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'ride',
     label: 'Cycling',
-    icon: '🚴',
+    icon: 'person-simple-bike',
     supportsDistance: true,
     supportsPace: true,
     paceUnit: 'km_per_h',
@@ -85,7 +87,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'walk',
     label: 'Walking',
-    icon: '🚶',
+    icon: 'person-simple-walk',
     supportsDistance: true,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -94,7 +96,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'hike',
     label: 'Hiking',
-    icon: '🥾',
+    icon: 'person-simple-hike',
     supportsDistance: true,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -103,7 +105,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'workout',
     label: 'Workout',
-    icon: '🤸',
+    icon: 'person-arms-spread',
     supportsDistance: false,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -112,7 +114,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'weight_training',
     label: 'Weight Training',
-    icon: '🏋️',
+    icon: 'barbell',
     supportsDistance: false,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -121,7 +123,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'swim',
     label: 'Swimming',
-    icon: '🏊',
+    icon: 'person-simple-swim',
     supportsDistance: true,
     supportsPace: true,
     paceUnit: 'min_per_100m',
@@ -130,7 +132,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'yoga',
     label: 'Yoga',
-    icon: '🧘',
+    icon: 'person-simple-tai-chi',
     supportsDistance: false,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -139,7 +141,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'tennis',
     label: 'Tennis',
-    icon: '🎾',
+    icon: 'tennis-ball',
     supportsDistance: false,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -148,7 +150,7 @@ export const SPORTS: readonly Sport[] = [
   {
     key: 'padel',
     label: 'Padel',
-    icon: '🥎',
+    icon: 'racquet',
     supportsDistance: false,
     supportsPace: false,
     paceUnit: 'min_per_km',
@@ -168,7 +170,7 @@ export function getSport(key: string): Sport {
     SPORT_BY_KEY.get(key as SportKey) ?? {
       key: key as SportKey,
       label: key,
-      icon: '•',
+      icon: 'circle',
       supportsDistance: false,
       supportsPace: false,
       paceUnit: 'min_per_km',

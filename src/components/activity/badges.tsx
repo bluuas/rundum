@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@/components/ui/icon'
 import { useI18n } from '@/lib/i18n/provider'
 import { getSport, isSportKey } from '@/lib/sports'
 import { cn } from '@/lib/utils'
@@ -23,7 +24,7 @@ export function SportBadge({
         className,
       )}
     >
-      <span aria-hidden>{sport.icon}</span>
+      <Icon name={sport.icon} className="text-[13px]" />
       {label}
     </span>
   )
@@ -49,7 +50,8 @@ export function StravaConnectedBadge({ className }: { className?: string }) {
       )}
       title={t.strava.connectedTitle}
     >
-      <span aria-hidden>🔗</span>
+      {/* A plain chain link, never anything Strava-shaped. */}
+      <Icon name="link-simple" />
       {t.strava.connected}
     </span>
   )

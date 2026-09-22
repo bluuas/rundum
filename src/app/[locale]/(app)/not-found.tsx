@@ -5,6 +5,7 @@ import { PageBody } from '@/components/shell/page-body'
 import { EmptyState } from '@/components/ui/states'
 import { localeHref } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/provider'
+import { Icon } from '@/components/ui/icon'
 
 /**
  * Not-found for anything under a locale: an activity that was deleted, hidden,
@@ -38,7 +39,7 @@ export default function NotFound() {
       </header>
       <PageBody>
         <EmptyState
-          icon="🗺️"
+          icon={<Icon name="map-trifold" />}
           title={t.states.notFoundTitle}
           description={t.states.notFoundBody}
           action={{ label: t.states.backToDiscover, href: localeHref(locale, '/') }}

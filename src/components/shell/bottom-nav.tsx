@@ -2,16 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Icon } from '@/components/ui/icon'
+import type { IconName } from '@/lib/icons'
 import { useI18n } from '@/lib/i18n/provider'
 import { localeHref, stripLocale } from '@/lib/i18n/config'
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { path: '/', key: 'discover', icon: '🧭' },
-  { path: '/activities/new', key: 'create', icon: '➕' },
-  { path: '/me', key: 'mine', icon: '📋' },
-  { path: '/profile', key: 'profile', icon: '👤' },
-] as const
+  { path: '/', key: 'discover', icon: 'compass' },
+  { path: '/activities/new', key: 'create', icon: 'plus-circle' },
+  { path: '/me', key: 'mine', icon: 'list-checks' },
+  { path: '/profile', key: 'profile', icon: 'user-circle' },
+] as const satisfies readonly { path: string; key: string; icon: IconName }[]
 
 function isActive(pathname: string, path: string) {
   // Compare without the locale prefix, so /de/me and /en/me both match "/me".
@@ -41,9 +43,7 @@ export function BottomNav() {
                   active ? 'text-brand' : 'text-fg-subtle hover:text-fg-muted',
                 )}
               >
-                <span aria-hidden className="text-lg leading-none">
-                  {tab.icon}
-                </span>
+                <Icon name={tab.icon} className="text-xl" />
                 {t.nav[tab.key]}
               </Link>
             </li>

@@ -8,6 +8,7 @@ import { localeHref, type Locale } from '@/lib/i18n/config'
 import { getNotifications, type Notification } from '@/lib/queries/notifications'
 import { markNotificationsRead } from '@/lib/queries/notifications.server'
 import { getCurrentUserId } from '@/lib/supabase/server'
+import { Icon } from '@/components/ui/icon'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/notifications'>) {
   const { locale } = await params
@@ -37,7 +38,7 @@ export default async function NotificationsPage({
         <AppHeader locale={locale as Locale} title={t.notifications.title} />
         <PageBody>
           <EmptyState
-            icon="🔔"
+            icon={<Icon name="bell" />}
             title={t.notifications.signInTitle}
             description={t.notifications.signInBody}
           />
@@ -57,7 +58,7 @@ export default async function NotificationsPage({
       <PageBody>
         {notifications.length === 0 ? (
           <EmptyState
-            icon="🔔"
+            icon={<Icon name="bell" />}
             title={t.notifications.emptyTitle}
             description={t.notifications.emptyBody}
           />

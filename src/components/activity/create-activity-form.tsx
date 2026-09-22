@@ -19,6 +19,7 @@ import {
   snapToGrid,
   type LatLng,
 } from '@/lib/geo'
+import { Icon } from '@/components/ui/icon'
 import { LEVELS, SPORTS, getSport, type Level, type SportKey } from '@/lib/sports'
 import { activityInputSchema, combineDateAndTime } from '@/lib/validation/activity'
 import { formatStartFull, toDateInputValue } from '@/lib/format'
@@ -172,9 +173,7 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
                     : 'border-border-strong text-fg hover:bg-surface-muted',
                 )}
               >
-                <span aria-hidden className="text-lg">
-                  {option.icon}
-                </span>
+                <Icon name={option.icon} className="text-fg-muted text-xl" />
                 {t.sports[option.key]}
               </button>
             ))}
