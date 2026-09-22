@@ -212,6 +212,17 @@ with two requests sitting in the panel and an empty notification list, which
 looks like a bug in the trigger and is not. `npx supabase migration list
 --linked` is the check, and it is part of deploying, not of debugging.
 
+**A demo goes stale by standing still.** Its activities were in the future when
+they were seeded and are in the past a week later, and a feed of things that
+already happened is a worse advert than an empty one. `npm run db:shift:demo`
+moves every activity forward instead of reseeding, which keeps whatever people
+trying the demo have made — on the last run, 14 of the 44 activities were
+theirs. It shifts by **days in the city's calendar**, not by 24 hours a time,
+because an 18:30 run has to still be at 18:30 afterwards and
+`+ 7 * 86_400_000` makes it 17:30 across the last Sunday in October. Nothing
+but `starts_at` moves: `created_at` records when something happened, and
+history is not ours to rewrite. Dry run by default; `SHIFT_CONFIRM=yes` writes.
+
 A migration that adds a table people were already generating rows for needs a
 backfill, because triggers only fire on what happens next. Keep it narrow and
 idempotent: only what is still waiting on somebody, with the original

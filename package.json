@@ -21,6 +21,8 @@
     "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
     "db:seed": "tsx scripts/seed-demo.ts",
     "db:seed:demo": "RUNDUM_ENV_FILE=.env.demo tsx scripts/seed-demo.ts",
+    "db:shift": "tsx scripts/shift-dates.mts",
+    "db:shift:demo": "RUNDUM_ENV_FILE=.env.demo tsx scripts/shift-dates.mts",
     "db:verify": "tsx scripts/verify-rls.mts",
     "smoke": "tsx scripts/smoke.mts",
     "check": "npm run typecheck && npm run lint && npm run test"
