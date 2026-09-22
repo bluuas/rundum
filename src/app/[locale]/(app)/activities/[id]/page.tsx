@@ -24,7 +24,7 @@ import {
   getMyJoinRequest,
   getRoster,
 } from '@/lib/queries/activity-detail'
-import { isSportKey, type Level } from '@/lib/sports'
+import { getSport, isSportKey, type Level } from '@/lib/sports'
 import { getCurrentUserId } from '@/lib/supabase/server'
 
 /** Matches the 250 m storage grid, so the circle is honest about the precision. */
@@ -77,7 +77,7 @@ export default async function ActivityDetailPage({
     : activity.sportKey
 
   const distance = formatActivityDistance(activity.distanceM)
-  const pace = formatPace(activity.paceSecondsPerKm)
+  const pace = formatPace(activity.paceSecondsPerKm, getSport(activity.sportKey).paceUnit)
   const hasFacts = Boolean(distance || pace || activity.level)
 
   return (

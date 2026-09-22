@@ -8,7 +8,7 @@ import { fill } from '@/lib/i18n'
 import { localeHref } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/provider'
 import type { MyActivity } from '@/lib/queries/my-activities'
-import type { Level } from '@/lib/sports'
+import { getSport, type Level } from '@/lib/sports'
 
 /**
  * Card for "My activities".
@@ -29,7 +29,7 @@ export function ActivityListItem({
 
   const facts = [
     formatActivityDistance(activity.distanceM),
-    formatPace(activity.paceSecondsPerKm),
+    formatPace(activity.paceSecondsPerKm, getSport(activity.sportKey).paceUnit),
     activity.level ? t.levels[activity.level as Level] : null,
   ].filter(Boolean)
 

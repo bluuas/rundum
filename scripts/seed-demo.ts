@@ -12,6 +12,7 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { DEMO_PASSWORD, DEMO_USERS, DEMO_USER_KEYS, type DemoUserKey } from './demo-cast'
+import { instantAt, wallClock } from '../src/lib/time'
 import { assertSeedable, loadEnv } from './target'
 
 loadEnv()
@@ -59,8 +60,16 @@ type DemoActivity = {
   title: string
   description: string
   place: PlaceKey
-  /** Hours from now. Negative values are already archived. */
-  inHours: number
+  /** Whole days from today, in Schwyz. Negative is already over. */
+  inDays: number
+  /**
+   * Swiss wall clock, 24-hour. Not an offset from the moment the seed happens
+   * to run: that put every activity in the demo at 07:48, whatever the title
+   * said, because it was whatever minute the script started at.
+   */
+  at: string
+  /** Slides forward to the next such day, for titles that name one. */
+  onWeekday?: Weekday
   radiusKm: number
   distanceM?: number
   paceSecondsPerKm?: number
@@ -68,6 +77,61 @@ type DemoActivity = {
   /** null means no limit. */
   maxParticipants: number | null
   status?: 'published' | 'cancelled' | 'hidden'
+}
+
+const WEEKDAY = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+} as const
+
+type Weekday = keyof typeof WEEKDAY
+
+/**
+ * When a seeded activity starts.
+ *
+ * A day and a time in Schwyz, resolved through `instantAt` rather than by
+ * adding milliseconds to `Date.now()`. Two reasons, and the second is the one
+ * that bites: the demo used to schedule everything at whatever minute the seed
+ * ran, so a "sunrise hike" started at 15:48; and an activity at 18:30 in
+ * Schwyz is at 18:30 whichever side of the October clock change it falls on,
+ * which arithmetic on milliseconds gets wrong by an hour.
+ */
+function startsAt(activity: DemoActivity): string {
+  const today = wallClock(new Date())
+  const [hour, minute] = activity.at.split(':').map(Number)
+
+  let day = today.day + activity.inDays
+
+  if (activity.onWeekday !== undefined) {
+    // Titles that name a day should land on it. A "Sunday long run" happening
+    // on a Tuesday is exactly the kind of detail that makes a demo read as
+    // filler.
+    const landedOn = wallClock(instantAt(today.year, today.month, day, hour, minute))
+    day += (WEEKDAY[activity.onWeekday] - landedOn.weekday + 7) % 7
+  }
+
+  let starts = instantAt(today.year, today.month, day, hour, minute)
+
+  /*
+   * A day that has not arrived yet, unless the activity is meant to be over.
+   *
+   * `inDays: 0` means this evening, which is only true while this evening is
+   * still ahead. Seed at 22:00 and a 18:15 run is already history — which is
+   * the complaint this whole file exists to answer, arriving by the back door.
+   * Weekday-anchored ones move a week rather than a day, so a Sunday run stays
+   * on a Sunday.
+   */
+  if (activity.inDays >= 0 && starts.getTime() <= Date.now()) {
+    day += activity.onWeekday === undefined ? 1 : 7
+    starts = instantAt(today.year, today.month, day, hour, minute)
+  }
+
+  return starts.toISOString()
 }
 
 const DEMO_ACTIVITIES: DemoActivity[] = [
@@ -78,7 +142,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     description:
       'Flat and conversational. We regroup at every corner, nobody gets dropped.',
     place: 'ibach',
-    inHours: 14,
+    inDays: 1,
+    at: '06:45',
     radiusKm: 25,
     distanceM: 8000,
     paceSecondsPerKm: 330,
@@ -91,10 +156,11 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Hill repeats up to Rickenbach',
     description: 'Six by three minutes uphill, jog back down. Bring a jacket for after.',
     place: 'rickenbach',
-    inHours: 38,
+    inDays: 2,
+    at: '18:30',
     radiusKm: 25,
     distanceM: 12000,
-    paceSecondsPerKm: 285,
+    paceSecondsPerKm: 315,
     level: 'advanced',
     maxParticipants: 8,
   },
@@ -105,7 +171,9 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     description:
       'Full loop of the lake at an easy pace. About two hours including a stop.',
     place: 'lauerz',
-    inHours: 96,
+    inDays: 4,
+    at: '08:30',
+    onWeekday: 'sunday',
     radiusKm: 50,
     distanceM: 21000,
     paceSecondsPerKm: 345,
@@ -118,7 +186,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'After-work 5k, all paces',
     description: 'Short and social. We split into two groups if the spread is wide.',
     place: 'hauptplatz',
-    inHours: 6,
+    inDays: 0,
+    at: '18:15',
     radiusKm: 15,
     distanceM: 5000,
     paceSecondsPerKm: 360,
@@ -132,10 +201,12 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Rigi climb from Goldau',
     description: 'Steady climb, no racing. Regroup at the top before the descent.',
     place: 'goldau',
-    inHours: 30,
+    inDays: 3,
+    at: '08:00',
     radiusKm: 50,
-    distanceM: 42000,
-    paceSecondsPerKm: 180,
+    distanceM: 35000,
+    // 14 km/h — it is 1300 m of climbing, not a flat spin.
+    paceSecondsPerKm: 257,
     level: 'intermediate',
     maxParticipants: 8,
   },
@@ -145,9 +216,11 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Lakeside spin to Gersau and back',
     description: 'Flat, about two hours, coffee in Gersau. Road bikes.',
     place: 'brunnen',
-    inHours: 54,
+    inDays: 2,
+    at: '17:45',
     radiusKm: 30,
-    distanceM: 55000,
+    distanceM: 50000,
+    // 24 km/h
     paceSecondsPerKm: 150,
     level: 'all_levels',
     maxParticipants: 10,
@@ -158,9 +231,12 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Gravel through the Muotatal',
     description: 'Mixed surface, some loose sections. Tyres 38mm and up.',
     place: 'muotathal',
-    inHours: 120,
+    inDays: 5,
+    at: '09:00',
     radiusKm: 50,
     distanceM: 48000,
+    // 18 km/h on gravel
+    paceSecondsPerKm: 200,
     level: 'advanced',
     maxParticipants: 6,
   },
@@ -171,7 +247,9 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Sunday walk around the Lauerzersee',
     description: 'Two hours at a gentle pace. Dogs welcome, kids welcome.',
     place: 'lauerz',
-    inHours: 90,
+    inDays: 3,
+    at: '10:00',
+    onWeekday: 'sunday',
     radiusKm: 25,
     distanceM: 7000,
     level: 'all_levels',
@@ -183,7 +261,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Evening stroll along the Brunnen waterfront',
     description: 'Short and flat, finishing at the gelateria.',
     place: 'brunnen',
-    inHours: 10,
+    inDays: 0,
+    at: '19:00',
     radiusKm: 20,
     distanceM: 4000,
     level: 'beginner',
@@ -196,7 +275,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Fronalpstock sunrise hike',
     description: 'Early start, head torch needed for the first hour. Down by cable car.',
     place: 'morschach',
-    inHours: 46,
+    inDays: 2,
+    at: '05:00',
     radiusKm: 50,
     distanceM: 11000,
     level: 'advanced',
@@ -208,7 +288,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Stoos ridge, easy half day',
     description: 'Well-marked ridge path with a long lunch stop. No exposure.',
     place: 'morschach',
-    inHours: 160,
+    inDays: 6,
+    at: '09:30',
     radiusKm: 50,
     distanceM: 9000,
     level: 'intermediate',
@@ -220,7 +301,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Sattel to Mostelberg family hike',
     description: 'Short, shaded, and a playground at the top.',
     place: 'sattel',
-    inHours: 200,
+    inDays: 8,
+    at: '10:30',
     radiusKm: 30,
     distanceM: 6000,
     level: 'beginner',
@@ -233,7 +315,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Outdoor circuit at the Hauptplatz',
     description: 'Bodyweight circuit, 40 on 20 off, six rounds. Bring a mat.',
     place: 'hauptplatz',
-    inHours: 22,
+    inDays: 1,
+    at: '12:15',
     radiusKm: 15,
     level: 'all_levels',
     maxParticipants: 14,
@@ -244,7 +327,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Stair intervals in Seewen',
     description: 'Thirty minutes of stairs. Harder than it sounds.',
     place: 'seewen',
-    inHours: 70,
+    inDays: 3,
+    at: '18:45',
     radiusKm: 20,
     level: 'intermediate',
     maxParticipants: 10,
@@ -256,7 +340,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Pull day, open to anyone',
     description: 'Happy to spot and to show the basics if you are starting out.',
     place: 'ibach',
-    inHours: 26,
+    inDays: 1,
+    at: '19:30',
     radiusKm: 15,
     level: 'intermediate',
     maxParticipants: 4,
@@ -267,7 +352,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Squat session, early evening',
     description: 'Working sets around 5x5. Bring your own belt.',
     place: 'ibach',
-    inHours: 98,
+    inDays: 4,
+    at: '18:00',
     radiusKm: 15,
     level: 'advanced',
     maxParticipants: 3,
@@ -279,10 +365,12 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Open water swim at Lauerzersee',
     description: 'About 1500 m along the shore. Bring a tow float.',
     place: 'lauerz',
-    inHours: 34,
+    inDays: 2,
+    at: '07:30',
     radiusKm: 30,
     distanceM: 1500,
-    paceSecondsPerKm: 1500,
+    // 2:10 /100m
+    paceSecondsPerKm: 1300,
     level: 'intermediate',
     maxParticipants: 8,
   },
@@ -292,9 +380,12 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Lake swim and breakfast in Arth',
     description: 'Short swim, long breakfast. The better ratio.',
     place: 'arth',
-    inHours: 106,
+    inDays: 5,
+    at: '08:00',
     radiusKm: 30,
     distanceM: 800,
+    // 2:30 /100m, easy
+    paceSecondsPerKm: 1500,
     level: 'beginner',
     maxParticipants: 10,
   },
@@ -305,7 +396,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Sunrise yoga by the lake',
     description: 'Slow flow, 60 minutes, suitable for complete beginners. Mats provided.',
     place: 'brunnen',
-    inHours: 18,
+    inDays: 1,
+    at: '06:30',
     radiusKm: 25,
     level: 'beginner',
     maxParticipants: 12,
@@ -316,7 +408,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Evening yin in Steinen',
     description: 'Long holds, quiet room, no experience needed.',
     place: 'steinen',
-    inHours: 62,
+    inDays: 3,
+    at: '20:00',
     radiusKm: 20,
     level: 'all_levels',
     maxParticipants: 10,
@@ -327,7 +420,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Post-run mobility, 30 minutes',
     description: 'Hips and calves, straight after the Thursday group run.',
     place: 'hauptplatz',
-    inHours: 42,
+    inDays: 2,
+    at: '19:45',
     radiusKm: 15,
     level: 'all_levels',
     maxParticipants: 15,
@@ -339,7 +433,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Doubles in Seewen, two spots left',
     description: 'Friendly doubles, mixed levels. Balls provided.',
     place: 'seewen',
-    inHours: 28,
+    inDays: 1,
+    at: '18:00',
     radiusKm: 20,
     level: 'intermediate',
     maxParticipants: 4,
@@ -350,7 +445,9 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Saturday hitting session',
     description: 'Just rallying and drills, no matches. Good for rebuilding consistency.',
     place: 'kuessnacht',
-    inHours: 78,
+    inDays: 3,
+    at: '10:00',
+    onWeekday: 'saturday',
     radiusKm: 40,
     level: 'beginner',
     maxParticipants: 2,
@@ -362,7 +459,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Padel, need a fourth',
     description: 'Two hours booked. Intermediate level, quick rotation.',
     place: 'kuessnacht',
-    inHours: 12,
+    inDays: 1,
+    at: '20:15',
     radiusKm: 40,
     level: 'intermediate',
     maxParticipants: 4,
@@ -374,7 +472,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     description:
       'Never played? Perfect. We go through the basics for the first half hour.',
     place: 'goldau',
-    inHours: 50,
+    inDays: 2,
+    at: '19:00',
     radiusKm: 40,
     level: 'beginner',
     maxParticipants: 8,
@@ -385,7 +484,9 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Sunday morning padel ladder',
     description: 'Rotating pairs, everyone plays everyone. Three hours.',
     place: 'kuessnacht',
-    inHours: 140,
+    inDays: 5,
+    at: '09:30',
+    onWeekday: 'sunday',
     radiusKm: 40,
     level: 'all_levels',
     maxParticipants: 8,
@@ -398,7 +499,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Cancelled: track session in Ibach',
     description: 'Track is closed for maintenance. Rescheduling for next week.',
     place: 'ibach',
-    inHours: 20,
+    inDays: 1,
+    at: '18:30',
     radiusKm: 25,
     distanceM: 10000,
     level: 'advanced',
@@ -411,7 +513,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Draft: club ride, route not final',
     description: 'Hidden while I work out the route.',
     place: 'steinen',
-    inHours: 200,
+    inDays: 8,
+    at: '08:30',
     radiusKm: 50,
     distanceM: 70000,
     level: 'advanced',
@@ -424,7 +527,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Last week: easy 10k',
     description: 'This one has already happened and should be archived.',
     place: 'hauptplatz',
-    inHours: -120,
+    inDays: -5,
+    at: '18:30',
     radiusKm: 25,
     distanceM: 10000,
     paceSecondsPerKm: 340,
@@ -437,7 +541,8 @@ const DEMO_ACTIVITIES: DemoActivity[] = [
     title: 'Yesterday: lunchtime flow',
     description: 'Archived, kept so the past view has something in it.',
     place: 'seewen',
-    inHours: -26,
+    inDays: -1,
+    at: '12:30',
     radiusKm: 20,
     level: 'all_levels',
     maxParticipants: 12,
@@ -555,7 +660,7 @@ async function main() {
       sport_key: activity.sport,
       title: activity.title,
       description: activity.description,
-      starts_at: new Date(Date.now() + activity.inHours * 3_600_000).toISOString(),
+      starts_at: startsAt(activity),
       // The database trigger snaps this to the 250 m grid on insert.
       meeting_point: `SRID=4326;POINT(${place.lng} ${place.lat})`,
       location_label: place.label,

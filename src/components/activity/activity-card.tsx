@@ -7,7 +7,7 @@ import { formatActivityDistance, formatDistanceBucket, formatPace } from '@/lib/
 import { fill } from '@/lib/i18n'
 import { localeHref } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/provider'
-import type { Level } from '@/lib/sports'
+import { getSport, type Level } from '@/lib/sports'
 import type { NearbyActivity } from '@/lib/supabase/rows'
 
 export function ActivityCard({ activity }: { activity: NearbyActivity }) {
@@ -16,7 +16,7 @@ export function ActivityCard({ activity }: { activity: NearbyActivity }) {
 
   const facts = [
     formatActivityDistance(activity.activity_distance_m),
-    formatPace(activity.pace_seconds_per_km),
+    formatPace(activity.pace_seconds_per_km, getSport(activity.sport_key).paceUnit),
     activity.level ? t.levels[activity.level as Level] : null,
   ].filter(Boolean)
 

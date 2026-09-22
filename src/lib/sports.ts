@@ -24,6 +24,21 @@ export const SPORT_KEYS = [
 
 export type SportKey = (typeof SPORT_KEYS)[number]
 
+/**
+ * How a sport talks about speed.
+ *
+ * The database stores one canonical number — seconds per kilometre — and this
+ * decides how it is written and read back. Runners say "5:30 /km", cyclists
+ * say "28 km/h", swimmers say "2:00 /100m", and each of those is nonsense to
+ * the other two: a cyclist told their ride is "2:30 /km" has to do arithmetic
+ * to find out whether that is fast.
+ *
+ * Presentation rather than storage, deliberately. One column means the filters
+ * and the ordering keep working across sports, and adding a unit is a line
+ * here instead of a migration.
+ */
+export type PaceUnit = 'min_per_km' | 'km_per_h' | 'min_per_100m'
+
 export type Sport = {
   key: SportKey
   label: string
@@ -31,6 +46,8 @@ export type Sport = {
   icon: string
   supportsDistance: boolean
   supportsPace: boolean
+  /** Only meaningful when `supportsPace`. */
+  paceUnit: PaceUnit
   /** Tailwind classes for the sport badge, light and dark safe. */
   badgeClass: string
 }
@@ -53,6 +70,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🏃',
     supportsDistance: true,
     supportsPace: true,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -61,6 +79,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🚴',
     supportsDistance: true,
     supportsPace: true,
+    paceUnit: 'km_per_h',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -69,6 +88,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🚶',
     supportsDistance: true,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -77,6 +97,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🥾',
     supportsDistance: true,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -85,6 +106,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🤸',
     supportsDistance: false,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -93,6 +115,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🏋️',
     supportsDistance: false,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -101,6 +124,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🏊',
     supportsDistance: true,
     supportsPace: true,
+    paceUnit: 'min_per_100m',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -109,6 +133,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🧘',
     supportsDistance: false,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -117,6 +142,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🎾',
     supportsDistance: false,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
   {
@@ -125,6 +151,7 @@ export const SPORTS: readonly Sport[] = [
     icon: '🥎',
     supportsDistance: false,
     supportsPace: false,
+    paceUnit: 'min_per_km',
     badgeClass: NEUTRAL_BADGE,
   },
 ]
@@ -144,6 +171,7 @@ export function getSport(key: string): Sport {
       icon: '•',
       supportsDistance: false,
       supportsPace: false,
+      paceUnit: 'min_per_km',
       badgeClass: 'bg-surface-muted text-fg-muted',
     }
   )

@@ -103,3 +103,51 @@ test('a signed-out visitor is asked to sign in before creating', async ({ page }
   await page.goto(path('/activities/new'))
   await expect(page.getByText('Sign in to create an activity')).toBeVisible()
 })
+
+test('a ride asks for a speed, and says it back as one', async ({ page }) => {
+  await signInAsDemoUser(page)
+
+  const title = `Test ride ${Date.now()}`
+  await page.goto(path('/activities/new'))
+
+  await page.getByRole('button', { name: 'Cycling' }).click()
+
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  await page.getByLabel('Date').fill(tomorrow)
+  await page.getByLabel('Start time').fill('17:45')
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.getByLabel('Name this area').fill('Brunnen waterfront')
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.getByLabel('Title').fill(title)
+  await page.getByLabel('Description').fill('Created by an end-to-end test.')
+  await page.getByLabel('Distance').fill('50')
+
+  /*
+   * The whole point: a cyclist is asked for a speed, not a pace. "2:30 /km" is
+   * a true statement about a 24 km/h ride and tells the person nothing without
+   * arithmetic, so the field has to be the one they think in.
+   */
+  await expect(page.getByLabel('Pace')).toHaveCount(0)
+  await expect(page.getByLabel('Speed')).toBeVisible()
+  await page.getByLabel('Speed').fill('24')
+
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  // The review step, then the detail page, both in km/h.
+  await expect(page.getByText('24 km/h')).toBeVisible()
+  await page.getByRole('button', { name: 'Publish' }).click()
+
+  await page.waitForURL(/\/en\/activities\/[0-9a-f-]{36}$/)
+  await expect(page.getByRole('heading', { name: title })).toBeVisible()
+  await expect(page.getByText('24 km/h')).toBeVisible()
+  await expect(page.getByText('/km')).toHaveCount(0)
+})
+
+test('a seeded swim reads in the unit swimmers use', async ({ page }) => {
+  // 1300 seconds per kilometre is 2:10 per 100 m. Shown as "21:40 /km" it is
+  // arithmetic homework; shown per 100 m it is a pace a swimmer recognises.
+  await page.goto(path('/?sports=swim&radius=50000'))
+  await expect(page.getByText('2:10 /100m').first()).toBeVisible()
+})

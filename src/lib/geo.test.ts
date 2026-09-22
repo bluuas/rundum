@@ -5,6 +5,7 @@ import {
   formatActivityDistance,
   formatDistanceBucket,
   formatPace,
+  paceInputValue,
   formatRadius,
   haversineMeters,
   parsePace,
@@ -135,5 +136,63 @@ describe('pace', () => {
     expect(parsePace('5:99')).toBeNull()
     expect(parsePace('abc')).toBeNull()
     expect(parsePace('530')).toBeNull()
+  })
+})
+
+describe('pace, in the unit the sport uses', () => {
+  it('writes cycling as a speed and swimming per 100 m', () => {
+    expect(formatPace(330, 'min_per_km')).toBe('5:30 /km')
+    expect(formatPace(150, 'km_per_h')).toBe('24 km/h')
+    expect(formatPace(1_500, 'min_per_100m')).toBe('2:30 /100m')
+  })
+
+  it('is what a cyclist and a swimmer used to be shown instead', () => {
+    // Both of these are the same stored values as above, read in the one unit
+    // the app had. Neither is wrong; both are unreadable to the person the
+    // activity is for.
+    expect(formatPace(150, 'min_per_km')).toBe('2:30 /km')
+    expect(formatPace(1_500, 'min_per_km')).toBe('25:00 /km')
+  })
+
+  it('reads a speed back into seconds per kilometre', () => {
+    expect(parsePace('24', 'km_per_h')).toBe(150)
+    expect(parsePace('28', 'km_per_h')).toBe(129)
+    // A comma is what a Swiss keyboard offers for a decimal point.
+    expect(parsePace('24,5', 'km_per_h')).toBe(parsePace('24.5', 'km_per_h'))
+  })
+
+  it('reads a 100 m split back into seconds per kilometre', () => {
+    expect(parsePace('2:00', 'min_per_100m')).toBe(1_200)
+    expect(formatPace(parsePace('1:45', 'min_per_100m'), 'min_per_100m')).toBe(
+      '1:45 /100m',
+    )
+  })
+
+  it('rejects a clock in a speed field and a number in a pace field', () => {
+    // Switching sport must clear the field, and this is the other half of that
+    // guarantee: "5:30" left behind never becomes a plausible speed.
+    expect(parsePace('5:30', 'km_per_h')).toBeNull()
+    expect(parsePace('28', 'min_per_km')).toBeNull()
+  })
+
+  it('keeps every whole speed anybody rides through the round trip', () => {
+    /*
+     * The column is integer seconds per kilometre, so a speed only survives
+     * being stored if it lands back on itself. Whole km/h does for the entire
+     * plausible range; one decimal place does not, which is why the field
+     * takes whole numbers. This test is the reason there is no migration.
+     */
+    for (let kmh = 8; kmh <= 60; kmh += 1) {
+      expect(formatPace(parsePace(String(kmh), 'km_per_h'), 'km_per_h')).toBe(
+        `${kmh} km/h`,
+      )
+    }
+  })
+
+  it('gives an editable field the bare value, with no unit on it', () => {
+    expect(paceInputValue(150, 'km_per_h')).toBe('24')
+    expect(paceInputValue(150, 'min_per_km')).toBe('2:30')
+    expect(paceInputValue(1_500, 'min_per_100m')).toBe('2:30')
+    expect(paceInputValue(null, 'km_per_h')).toBe('')
   })
 })

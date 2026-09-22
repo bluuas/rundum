@@ -382,6 +382,24 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
   stays a Server Component. The count stays in the header, because it is the
   only thing left to read once a section is closed. Folding is not remembered
   across navigations; nothing depends on it being remembered.
+- **Speed is said in the unit the sport uses.** One column —
+  `pace_seconds_per_km` — and three readings, chosen by `paceUnit` in
+  `sports.ts`: runners get "5:30 /km", cyclists "28 km/h", swimmers
+  "2:00 /100m". A cyclist shown "2:30 /km" has to divide to find out whether
+  that is fast, and "25:00 /km" is not a number any swimmer recognises.
+  Presentation, not storage, so filters and ordering keep working across
+  sports and a new unit is a line rather than a migration. Cycling speed is
+  **whole km/h**: seconds per kilometre is an integer, and a whole number
+  survives the round trip exactly from 8 to 60 km/h where one decimal does
+  not — `geo.test.ts` proves it, and that test is the reason there is no
+  schema change. Changing sport clears the field, because "5:30" left in a
+  box that now means km/h is not a value, it is a trap.
+- **Seed times are a day and a Swiss wall clock, never an offset from now.**
+  `inHours` from `Date.now()` put every demo activity at whatever minute the
+  script happened to run — a sunrise hike at 15:48 — and drifted by an hour
+  across the October clock change. `startsAt` in `seed-demo.ts` uses
+  `instantAt`, pushes anything non-negative that has already passed to the next
+  day, and slides `onWeekday` titles onto the day they name.
 - **Sport badges are neutral.** One grey pill for every sport; the emoji and the
   name carry it. Ten hues were the loudest thing on a monochrome screen and read
   as decoration rather than information.

@@ -7,12 +7,13 @@ import { updateActivity } from '@/app/[locale]/(app)/activities/actions'
 import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
+import { PaceField } from '@/components/activity/pace-field'
 import { ParticipantLimitField } from '@/components/activity/participant-limit-field'
 import { WhenFields } from '@/components/activity/when-fields'
 import {
   RADIUS_OPTIONS_M,
-  formatPace,
   formatRadius,
+  paceInputValue,
   parsePace,
   snapToGrid,
   type LatLng,
@@ -53,9 +54,7 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
     activity.distanceM ? String(activity.distanceM / 1000) : '',
   )
   const [pace, setPace] = useState(
-    activity.paceSecondsPerKm
-      ? (formatPace(activity.paceSecondsPerKm) ?? '').replace(' /km', '')
-      : '',
+    paceInputValue(activity.paceSecondsPerKm, getSport(activity.sportKey).paceUnit),
   )
   const [level, setLevel] = useState<string>(activity.level ?? '')
   const [maxParticipants, setMaxParticipants] = useState<number | null>(
@@ -84,7 +83,8 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         sport.supportsDistance && distanceKm
           ? Math.round(Number(distanceKm) * 1000)
           : null,
-      paceSecondsPerKm: sport.supportsPace && pace ? parsePace(pace) : null,
+      paceSecondsPerKm:
+        sport.supportsPace && pace ? parsePace(pace, sport.paceUnit) : null,
       level: level ? level : null,
       maxParticipants,
     }
@@ -128,7 +128,13 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
         <SelectInput
           id="sport"
           value={sportKey}
-          onChange={(event) => setSportKey(event.target.value as SportKey)}
+          onChange={(event) => {
+            const next = event.target.value as SportKey
+            setSportKey(next)
+            // Switching run to ride would otherwise leave "5:30" sitting in a
+            // field that now means kilometres per hour.
+            if (getSport(next).paceUnit !== sport.paceUnit) setPace('')
+          }}
         >
           {SPORTS.map((option) => (
             <option key={option.key} value={option.key}>
@@ -232,19 +238,12 @@ export function EditActivityForm({ activity }: { activity: ActivityDetail }) {
       ) : null}
 
       {sport.supportsPace ? (
-        <Field
-          label={t.create.fieldPace}
-          htmlFor="pace"
-          optional
-          hint={t.create.paceHint}
+        <PaceField
+          unit={sport.paceUnit}
+          value={pace}
+          onChange={setPace}
           error={fieldErrors.paceSecondsPerKm?.[0]}
-        >
-          <TextInput
-            id="pace"
-            value={pace}
-            onChange={(event) => setPace(event.target.value)}
-          />
-        </Field>
+        />
       ) : null}
 
       <Field label={t.create.fieldLevel} htmlFor="level" optional>

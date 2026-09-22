@@ -6,12 +6,14 @@ import { createActivity } from '@/app/[locale]/(app)/activities/actions'
 import { AreaMap } from '@/components/map/area-map'
 import { Button } from '@/components/ui/button'
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/field'
+import { PaceField } from '@/components/activity/pace-field'
 import { ParticipantLimitField } from '@/components/activity/participant-limit-field'
 import { WhenFields } from '@/components/activity/when-fields'
 import {
   DEFAULT_CITY_CENTER,
   DEFAULT_RADIUS_M,
   RADIUS_OPTIONS_M,
+  formatPace,
   formatRadius,
   parsePace,
   snapToGrid,
@@ -76,7 +78,8 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
         sport?.supportsDistance && distanceKm
           ? Math.round(Number(distanceKm) * 1000)
           : null,
-      paceSecondsPerKm: sport?.supportsPace && pace ? parsePace(pace) : null,
+      paceSecondsPerKm:
+        sport?.supportsPace && pace ? parsePace(pace, sport.paceUnit) : null,
       level: level ? level : null,
       maxParticipants,
     }
@@ -157,6 +160,9 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
                 aria-pressed={sportKey === option.key}
                 onClick={() => {
                   setSportKey(option.key)
+                  // "5:30" left in a field that now reads kilometres per hour
+                  // is not a value, it is a trap.
+                  if (getSport(option.key).paceUnit !== sport?.paceUnit) setPace('')
                   setStep(1)
                 }}
                 className={cn(
@@ -296,20 +302,12 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
           ) : null}
 
           {sport?.supportsPace ? (
-            <Field
-              label={t.create.fieldPace}
-              htmlFor="pace"
-              optional
-              hint={t.create.paceHint}
+            <PaceField
+              unit={sport.paceUnit}
+              value={pace}
+              onChange={setPace}
               error={fieldErrors.paceSecondsPerKm?.[0]}
-            >
-              <TextInput
-                id="pace"
-                value={pace}
-                placeholder="5:30"
-                onChange={(event) => setPace(event.target.value)}
-              />
-            </Field>
+            />
           ) : null}
 
           <Field label={t.create.fieldLevel} htmlFor="level" optional>
@@ -374,7 +372,14 @@ export function CreateActivityForm({ signedIn }: { signedIn: boolean }) {
               <Row label={t.create.reviewDistance} value={`${distanceKm} km`} />
             ) : null}
             {sport?.supportsPace && pace ? (
-              <Row label={t.create.reviewPace} value={`${pace} /km`} />
+              <Row
+                label={
+                  sport.paceUnit === 'km_per_h' ? t.create.fieldSpeed : t.create.fieldPace
+                }
+                value={
+                  formatPace(parsePace(pace, sport.paceUnit), sport.paceUnit) ?? pace
+                }
+              />
             ) : null}
             {level ? (
               <Row label={t.create.reviewLevel} value={t.levels[level as Level]} />

@@ -13,6 +13,7 @@
 
 import { getDictionary } from '@/lib/i18n'
 import { DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config'
+import type { PaceUnit } from '@/lib/sports'
 
 export type LatLng = {
   lat: number
@@ -106,22 +107,76 @@ export function formatActivityDistance(meters: number | null | undefined): strin
   return `${km.toFixed(decimals)} km`
 }
 
-/** Pace as "5:30 /km". */
-export function formatPace(secondsPerKm: number | null | undefined): string | null {
+function clock(totalSeconds: number): string {
+  const total = Math.round(totalSeconds)
+  return `${Math.floor(total / 60)}:${(total % 60).toString().padStart(2, '0')}`
+}
+
+/**
+ * Pace in the unit the sport actually uses: "5:30 /km", "28 km/h", "2:00 /100m".
+ *
+ * Always stored as seconds per kilometre — see `PaceUnit` in sports.ts for why
+ * one column and three readings rather than three columns.
+ *
+ * Speed is whole kilometres per hour on purpose. Seconds per kilometre is an
+ * integer, and a whole number of km/h survives the round trip through it
+ * exactly for every speed anybody rides (8 to 60 km/h); one decimal place does
+ * not, so 28.4 would come back as 28.3 and look like a bug in the form.
+ */
+export function formatPace(
+  secondsPerKm: number | null | undefined,
+  unit: PaceUnit = 'min_per_km',
+): string | null {
   if (secondsPerKm == null || !Number.isFinite(secondsPerKm) || secondsPerKm <= 0) {
     return null
   }
-  const total = Math.round(secondsPerKm)
-  const minutes = Math.floor(total / 60)
-  const seconds = total % 60
-  return `${minutes}:${seconds.toString().padStart(2, '0')} /km`
+
+  if (unit === 'km_per_h') return `${Math.round(3_600 / secondsPerKm)} km/h`
+  if (unit === 'min_per_100m') return `${clock(secondsPerKm / 10)} /100m`
+  return `${clock(secondsPerKm)} /km`
 }
 
-/** Parses "5:30" into seconds per km. Returns null for anything malformed. */
-export function parsePace(input: string): number | null {
-  const match = /^(\d{1,2}):([0-5]\d)$/.exec(input.trim())
+/**
+ * The same value with no unit on it, for an editable field.
+ *
+ * `formatPace(...).replace(' /km', '')` was how the edit form did this, which
+ * worked while there was one unit and silently produced "28 km/h" in a number
+ * field the moment there were three.
+ */
+export function paceInputValue(
+  secondsPerKm: number | null | undefined,
+  unit: PaceUnit = 'min_per_km',
+): string {
+  if (secondsPerKm == null || !Number.isFinite(secondsPerKm) || secondsPerKm <= 0) {
+    return ''
+  }
+  if (unit === 'km_per_h') return String(Math.round(3_600 / secondsPerKm))
+  return clock(unit === 'min_per_100m' ? secondsPerKm / 10 : secondsPerKm)
+}
+
+/**
+ * Reads what the organizer typed back into seconds per kilometre.
+ *
+ * Returns null for anything malformed, so a half-typed "5:" never reaches the
+ * database as a number that happens to parse.
+ */
+export function parsePace(input: string, unit: PaceUnit = 'min_per_km'): number | null {
+  const text = input.trim()
+
+  if (unit === 'km_per_h') {
+    // A speed, not a clock. "28", and "28.5" for anyone who insists, though it
+    // is rounded to the whole km/h the column can represent.
+    if (!/^\d{1,2}([.,]\d+)?$/.test(text)) return null
+    const kmh = Number(text.replace(',', '.'))
+    if (!Number.isFinite(kmh) || kmh <= 0) return null
+    return Math.round(3_600 / kmh)
+  }
+
+  const match = /^(\d{1,2}):([0-5]\d)$/.exec(text)
   if (!match) return null
-  return Number(match[1]) * 60 + Number(match[2])
+  const seconds = Number(match[1]) * 60 + Number(match[2])
+
+  return unit === 'min_per_100m' ? seconds * 10 : seconds
 }
 
 function toRadians(degrees: number): number {
