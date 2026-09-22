@@ -407,9 +407,12 @@ definer` RPC, not an RLS policy.** A policy can say who may touch a row, but
   the reader's operating system, so the weight-training figure was a different
   person on an iPhone, an Android and a Windows laptop, and it arrived in
   colour on a screen that is otherwise paper and one maroon accent. Twenty
-  Phosphor glyphs are inlined as path data in `src/lib/icons.ts` and rendered
-  by `<Icon name="…" />`, which takes `currentColor` so dark mode and the
-  accent follow without a second asset. `icons.ts` is data only, so `sports.ts`
+  Phosphor glyphs, **duotone weight**, are inlined as path data in
+  `src/lib/icons.ts` and rendered by `<Icon name="…" />`. Duotone is the
+  outline plus a second path at `opacity="0.2"`, and both take `currentColor`
+  — so the soft layer is the text colour at a fifth strength rather than a
+  second hue, and dark mode and the maroon accent follow with no second asset
+  and nothing to theme. A literal colour in that path would break both. `icons.ts` is data only, so `sports.ts`
   can name an icon without dragging a component into the module the validation
   schemas import. Copied rather than installed, which is why the MIT notice
   sits in that file and in `THIRD-PARTY-NOTICES.md` — an npm package carries

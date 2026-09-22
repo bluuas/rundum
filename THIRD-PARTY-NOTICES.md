@@ -11,11 +11,13 @@ ourselves.
 Twenty icons are inlined as SVG path data in
 [`src/lib/icons.ts`](src/lib/icons.ts) — the ten sports, the four navigation
 tabs, and the marks used by the empty, error and notification states. Regular
-weight, from `@phosphor-icons/core` 2.1.1.
+**Duotone** weight, from `@phosphor-icons/core` 2.1.1 — each glyph is its
+outline plus a second path at 20% opacity filling the body, both taking
+`currentColor`.
 
 They are copied rather than installed because Rundum uses twenty of several
-thousand icons, and each is a single filled path on a 256 grid: about 9 KB in
-total, with no dependency to keep current and no request to make. The notice
+thousand icons, all on the same 256 grid: about 12 KB in total, with no
+dependency to keep current and no request to make. The notice
 below is reproduced in that file as well, so it travels with the paths if they
 are ever moved.
 

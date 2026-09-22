@@ -13,6 +13,22 @@ describe('the inlined icon set', () => {
     }
   })
 
+  it('carries the duotone layer, and carries it in currentColor', () => {
+    /*
+     * Duotone is the outline plus a second path at a fifth opacity. Paste in a
+     * glyph from another weight and it still renders — just flat, and only
+     * next to the others would you notice. Hence the check.
+     *
+     * The opacity matters more than it looks: it means the soft layer is the
+     * text colour at 20%, not a second hue. A literal colour here would need
+     * its own dark-mode value and would stop following the maroon accent.
+     */
+    for (const [name, path] of Object.entries(ICON_PATHS)) {
+      expect(path, `${name} is not duotone`).toContain('opacity="0.2"')
+      expect(path, `${name} hard-codes a colour`).not.toMatch(/fill="(?!currentColor)/)
+    }
+  })
+
   it('gives every sport its own icon', () => {
     /*
      * The reason Phosphor was chosen over Lucide, kept as a test. Lucide has
